@@ -1,6 +1,6 @@
 <template>
     <Header></Header>
-    <main class="container mx-auto p-4">
+    <main class="flex-grow">
         <slot></slot>
     </main>
     <Footer></Footer>
@@ -11,6 +11,6 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Roboto;
+    font-family: 'Inter', sans-serif;
 }
 </style>

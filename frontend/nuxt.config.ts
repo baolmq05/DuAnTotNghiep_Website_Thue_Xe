@@ -3,22 +3,32 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/fonts'],
+  css: ['~/assets/css/tailwind.css'],
   fonts: {
-    provider: 'google', // sets default provider
     families: [
       {
-        name: 'Roboto', // the 'canonical' name of the font used to look it up in a provider database
-        provider: 'local', // you can override the provider on a per-family basis
-        // provider specific options can be provided
-        src: '~/public/roboto.woff2', // you can specify a source within your project
-        // specific configuration will be used to generate `@font-face` definitions
-        subsets: ['latin', 'greek'],
-        display: 'swap', // or 'block'
-        weight: [400, 700],
-        style: 'normal',
-        // and produce CSS overrides to reduce layout shift (using fontaine)
-        fallbacks: ['Arial'],
+        name: 'Inter',
+        provider: 'google',
+        weights: [300, 400, 500, 600, 700, 800],
+        display: 'swap',
+        fallbacks: ['sans-serif']
       }
     ]
+  },
+  tailwindcss: {
+    config: {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#10414F',       // Mã 1: Deep forest teal
+              primary: '#286874',    // Mã 2: Primary brand teal
+              accent: '#A77E52',     // Mã 3: Gold/Bronze accent
+              light: '#FEE3CE',      // Mã 4: Warm cream/peach
+            }
+          }
+        }
+      }
+    }
   }
 })
