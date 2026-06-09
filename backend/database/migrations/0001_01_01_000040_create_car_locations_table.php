@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('car_locations', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('province_id')->comment('mã tỉnh/thành phố')->unsigned();
-            $table->bigInteger('ward_code ')->comment('mã phường/xã')->unsigned();
+            $table->bigInteger('ward_code')->comment('mã phường/xã')->unsigned();
             $table->text('street_name')->comment('tên đường')->nullable();
             $table->timestamps();
         });
