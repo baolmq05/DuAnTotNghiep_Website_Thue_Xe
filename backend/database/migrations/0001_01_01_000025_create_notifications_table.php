@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('notifications', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->text('message')->comment('Nội dung thông báo');
             $table->enum('is_read', ['0', '1'])->default('0')->comment('Trạng thái đã đọc hay chưa');

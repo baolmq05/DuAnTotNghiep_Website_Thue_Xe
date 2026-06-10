@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('car_types', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('type_name', 255)->comment('tên loại xe')->unique();
             $table->unsignedBigInteger('car_brand_id')->comment('id thương hiệu xe');

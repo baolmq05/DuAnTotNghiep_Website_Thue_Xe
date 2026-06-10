@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('cars', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('name', 255)->comment('tên xe');
             $table->string('license_plate', 12)->comment('biển số xe')->unique();

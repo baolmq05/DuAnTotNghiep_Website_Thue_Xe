@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reviews', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->unsignedBigInteger('trip_id')->comment('mã chuyến đi');
             $table->unsignedBigInteger('reviewer_id')->comment('mã người đánh giá');

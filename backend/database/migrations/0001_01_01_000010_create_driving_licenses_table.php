@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('driving_licenses', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('full_name')->comment('Tên đầy đủ');
             $table->text('image')->comment('Ảnh bằng lái xe');

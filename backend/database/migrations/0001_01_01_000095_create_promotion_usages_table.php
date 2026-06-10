@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('promotion_usages', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->unsignedBigInteger('user_id')->comment('ID của người dùng');
             $table->unsignedBigInteger('promotion_id')->comment('ID của khuyến mãi');

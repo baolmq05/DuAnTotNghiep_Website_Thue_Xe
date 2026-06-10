@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('features', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('feature_name', 255)->comment('tên tính năng')->unique();
             $table->text('icon')->comment('biểu tượng');

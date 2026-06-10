@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\CarDeliveryOption;
 
 class CarDeliveryOptionSeeder extends Seeder
 {
@@ -13,5 +14,31 @@ class CarDeliveryOptionSeeder extends Seeder
     public function run(): void
     {
         //
+        CarDeliveryOption::create([
+            'max_distance' => 10,
+            'fee_distance' => 50000,
+            'status' => 1
+        ]);
+            CarDeliveryOption::create([
+                'max_distance' => 20,
+                'fee_distance' => 100000,
+                'status' => 1
+            ]);
+    
+            CarDeliveryOption::create([
+                'max_distance' => 30,
+                'fee_distance' => 150000,
+                'status' => 1
+            ]);
+            CarDeliveryOption::create([
+                'max_distance' => 40,
+                'fee_distance' => 200000,
+                'status' => 1
+            ]);
+             CarDeliveryOption::create([
+                'max_distance' => 50,
+                'fee_distance' => 250000,
+                'status' => 1
+            ]);
     }
 }

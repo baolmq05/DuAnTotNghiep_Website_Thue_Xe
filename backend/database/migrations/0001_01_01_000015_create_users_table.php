@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->text('name')->comment('Tên người dùng');
             $table->string('email')->unique()->comment('Địa chỉ email');

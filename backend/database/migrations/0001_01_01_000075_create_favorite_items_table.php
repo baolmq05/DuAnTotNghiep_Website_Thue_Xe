@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('driving_favorite_items', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->unsignedBigInteger('favorite_id')->comment('ID của mục yêu thích');
             $table->unsignedBigInteger('car_id')->comment('ID của xe');

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('car_delivery_options', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->float('max_distance', 10, 2)->comment('khoảng cách tối đa')->unsigned();
             $table->float('fee_distance', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa')->unsigned();

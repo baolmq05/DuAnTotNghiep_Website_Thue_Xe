@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('car_brands', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('brand_name', 255)->comment('tên thương hiệu')->unique();
             $table->timestamps();

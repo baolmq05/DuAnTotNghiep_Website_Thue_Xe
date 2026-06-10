@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('promotions', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->string('code')->unique()->comment('Mã khuyến mãi');
             $table->string('name')->comment('Tên khuyến mãi');

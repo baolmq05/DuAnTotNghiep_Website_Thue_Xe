@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('car_locations', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->bigInteger('province_id')->comment('mã tỉnh/thành phố')->unsigned();
             $table->bigInteger('ward_code')->comment('mã phường/xã')->unsigned();

@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('car_images', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->tinyInteger('is_thumbnail')->comment('0 - không phải ảnh đại diện, 1 - ảnh đại diện')->default(0);
             $table->text('image_url')->comment('đường dẫn hình ảnh');

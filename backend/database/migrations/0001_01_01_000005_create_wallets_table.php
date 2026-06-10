@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('wallets', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->decimal('amount', 10)->default(0)->comment('Số dư trong ví');
             $table->timestamps();

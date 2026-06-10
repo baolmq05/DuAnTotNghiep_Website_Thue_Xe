@@ -12,6 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('trips', function (Blueprint $table) {
+            $table->engine = 'InnoDB';
             $table->id();
             $table->decimal('cost', 10, 2)->comment('chi phí chuyến đi')->unsigned();
             $table->decimal('discount_amount', 10, 2)->comment('số tiền giảm giá')->unsigned()->default(0);
