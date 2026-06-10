@@ -22,11 +22,11 @@
 
             <div class="relative z-10 my-auto">
               <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-brand-dark leading-tight tracking-tight">
-                Khám Phá Hành Trình,<br />
                 <span class="text-slate-800 bg-clip-text">Tự Do Cầm Lái</span>
               </h1>
-              <p class="text-slate-700 text-sm sm:text-base mt-4 sm:mt-6 leading-relaxed max-w-md">
-                Trải nghiệm sự khác biệt với hơn <span class="text-brand-dark font-extrabold">15.000</span> xe tự lái chất
+              <p class="text-sm sm:text-base mt-4 sm:mt-6 leading-relaxed max-w-md">
+                Trải nghiệm sự khác biệt với hơn <span class="text-brand-dark font-extrabold">15.000</span> xe tự lái
+                chất
                 lượng, đa dạng mẫu mã và dịch vụ chuyên nghiệp trên khắp cả nước.
               </p>
             </div>
@@ -34,7 +34,8 @@
             <!-- Extra info -->
             <div class="relative z-10 mt-6 pt-6 border-t border-white/20 flex items-center gap-3">
               <div class="flex items-center text-brand-primary">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-accent" viewBox="0 0 20 20" fill="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-accent" viewBox="0 0 20 20"
+                  fill="currentColor">
                   <path fill-rule="evenodd"
                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                     clip-rule="evenodd" />
@@ -97,12 +98,12 @@
 
       <!-- Overlapping Search Bar -->
       <div class="relative z-20 mt-8 lg:-mt-7 mx-auto max-w-5xl">
-        <BannerSearchBar />
+        <HomePageSearchBar />
       </div>
 
       <!-- Vehicle Categories Bottom Section -->
       <div class="mt-8 md:mt-12">
-        <BannerCategoryList />
+        <HomePageCategoryList />
       </div>
 
     </div>

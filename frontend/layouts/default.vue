@@ -1,6 +1,6 @@
 <template>
     <Header></Header>
-    <main class="flex-grow">
+    <main class="flex-grow overflow-x-hidden pb-[80px] md:pb-0">
         <slot></slot>
     </main>
     <Footer></Footer>

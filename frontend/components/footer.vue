@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-[#286874] text-white py-12 px-4 md:px-8 font-sans">
+  <footer class="bg-brand-primary text-white py-12 px-4 md:px-8 font-sans">
     <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
 
       <!-- Logo -->
@@ -20,7 +20,7 @@
                 class="h-9 rounded border border-gray-600" />
             </a>
 
-            <a href="#" >
+            <a href="#">
               <img src="https://placehold.co/135x40/png?text=Google+Play" alt="Google Play"
                 class="h-9 rounded border border-gray-600" />
             </a>
@@ -100,7 +100,7 @@
           <input v-model="emailInput" type="email" placeholder="Email nhận ưu đãi"
             class="bg-white text-gray-800 text-sm px-3 py-2 rounded-md" required />
 
-          <button type="submit" class="bg-[#1ea69a] text-white py-2 rounded-md hover:bg-[#178b81] transition">
+          <button type="submit" class="bg-brand-accent text-white py-2 rounded-md hover:opacity-90 transition duration-200">
             Đăng ký
           </button>
         </form>
