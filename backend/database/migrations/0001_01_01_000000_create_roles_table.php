@@ -15,6 +15,7 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->id();
             $table->string('name')->unique()->comment('Tên vai trò');
+            $table->text('description')->nullable()->comment('Mô tả vai trò');
             $table->timestamps();
         });
     }
