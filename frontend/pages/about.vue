@@ -2,11 +2,11 @@
     <div class="bg-white min-h-screen font-sans antialiased text-gray-900">
 
         <section
-            class="relative overflow-hidden bg-gradient-to-r from-[#1e4e57] to-[#286874] min-h-[600px] flex items-center">
+            class="relative overflow-hidden bg-gradient-to-b from-brand-dark via-brand-primary to-brand-light/35 min-h-[600px] flex items-center">
             <div class="absolute inset-0 z-0">
-                <img src="/images/about/aboutHero.jpg" alt="Đường đèo núi rực rỡ"
-                    class="w-full h-full object-cover opacity-25 mix-blend-overlay" />
-                <div class="absolute inset-0 bg-gradient-to-t from-[#286874]/50 to-transparent" />
+                <img :key="heroImageKey" :src="heroImageSrc" alt="Hành trình khám phá" loading="eager"
+                    fetchpriority="high" decoding="async" class="hero-visual w-full h-full object-cover opacity-30" />
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/65 via-brand-primary/35 to-transparent" />
             </div>
 
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
@@ -348,9 +348,30 @@
 </template>
 
 <script setup>
+import { ref, onMounted, onActivated } from 'vue'
+
+const heroImageSrc = '/images/about/aboutHero.jpg'
+const heroImageKey = ref(0)
+
+const refreshHeroImage = () => {
+    heroImageKey.value += 1
+}
+
+onMounted(() => {
+    refreshHeroImage()
+})
+
+onActivated(() => {
+    refreshHeroImage()
+})
 </script>
 
 <style scoped>
+.hero-visual {
+    transform: translateZ(0);
+    will-change: opacity, transform;
+}
+
 /* 🎯 Class quản lý khoảng cách đồng bộ cho toàn bộ các Section trên trang */
 .section-padding {
     padding-top: 5rem;
@@ -359,7 +380,7 @@
 }
 
 /* Kiềm chế khoảng cách tối ưu trên màn hình điện thoại nhỏ */
-@media (max-w: 640px) {
+@media (max-width: 640px) {
     .section-padding {
         padding-top: 3rem;
         padding-bottom: 3rem;
