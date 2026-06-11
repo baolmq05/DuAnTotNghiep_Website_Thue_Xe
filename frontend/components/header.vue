@@ -118,7 +118,9 @@ const navItems = [
   { text: 'Trang chủ', to: '/' },
   { text: 'Về Drivio', to: '/about' },
   { text: 'Bài viết', to: '/blog' },
-  { text: 'Trở thành chủ xe', to: '/become-host' }
+  { text: 'Trở thành chủ xe', to: '/become-host' },
+  {text: 'Chính Sách', to: '/policy' }
+  
 ]
 
 const bottomNavItems = [
@@ -126,7 +128,8 @@ const bottomNavItems = [
   { text: 'Về Drivio', icon: 'info' },
   { text: 'Bài viết', icon: 'blog' },
   { text: 'Chủ xe', icon: 'host' },
-  { text: 'Tài khoản', icon: 'account' }
+  { text: 'Tài khoản', icon: 'account' },
+  { text: 'Chính Sách', icon: 'policy' },
 ]
 
 const handleScroll = () => {
