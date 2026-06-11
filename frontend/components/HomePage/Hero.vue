@@ -118,19 +118,19 @@ let autoplayTimer: any = null
 
 const slides = [
   {
-    url: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=1200&q=80',
+    url: '/images/index/banner/image1.psd.webp',
     alt: 'Volvo SUV driving on scenic winding coastal road at sunset'
   },
   {
-    url: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+    url: '/images/index/banner/image2.psd.webp',
     alt: 'Premium sports car driving fast on a sunset highway'
   },
   {
-    url: 'https://images.unsplash.com/photo-1563720223185-11003d516935?auto=format&fit=crop&w=1200&q=80',
+    url: '/images/index/banner/image3.psd.webp',
     alt: 'Electric SUV charging by a scenic view'
   },
   {
-    url: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&w=1200&q=80',
+    url: '/images/index/banner/image4.psd.webp',
     alt: 'Premium car parked next to a beautiful seaside sunset cliffs'
   }
 ]

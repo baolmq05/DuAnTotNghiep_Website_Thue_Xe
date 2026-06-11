@@ -9,8 +9,7 @@
 					<div
 						class="overflow-hidden rounded-3xl w-full h-[180px] sm:h-[260px] lg:h-[350px] shadow-md border border-slate-100 hover:shadow-lg transition-all duration-300">
 						<img class="w-full h-full object-cover rounded-3xl transform hover:scale-105 transition-transform duration-700"
-							src="https://n1-cstg.mioto.vn/g/2026/05/09/09/6L6M2Z9U.jpg"
-							alt="Bảo hiểm Drivio Banner A">
+							src="https://n1-cstg.mioto.vn/g/2026/05/09/09/6L6M2Z9U.jpg" alt="Bảo hiểm Drivio Banner A">
 					</div>
 				</div>
 
@@ -30,28 +29,28 @@
 						<!-- Partner 1: MIC -->
 						<div
 							class="bg-white border border-slate-100 p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 flex items-center justify-center h-16 sm:h-20 md:h-24 lg:h-[167px]">
-							<img src="/mic.svg" alt="Bảo hiểm MIC"
+							<img src="/images/index/insurance/image1.psd.webp" alt="Bảo hiểm MIC"
 								class="max-h-8 sm:max-h-12 max-w-[80%] object-contain" />
 						</div>
 
 						<!-- Partner 2: PVI -->
 						<div
 							class="bg-white border border-slate-100 p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 flex items-center justify-center h-16 sm:h-20 md:h-24 lg:h-[167px]">
-							<img src="/pvi.svg" alt="Bảo hiểm PVI"
+							<img src="/images/index/insurance/image2.psd.webp" alt="Bảo hiểm PVI"
 								class="max-h-8 sm:max-h-12 max-w-[80%] object-contain" />
 						</div>
 
 						<!-- Partner 3: VNI -->
 						<div
 							class="bg-white border border-slate-100 p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 flex items-center justify-center h-16 sm:h-20 md:h-24 lg:h-[167px]">
-							<img src="/vni.svg" alt="Bảo hiểm VNI"
+							<img src="/images/index/insurance/image3.psd.webp" alt="Bảo hiểm VNI"
 								class="max-h-8 sm:max-h-12 max-w-[80%] object-contain" />
 						</div>
 
 						<!-- Partner 4: BSH -->
 						<div
 							class="bg-white border border-slate-100 p-3 sm:p-4 rounded-2xl shadow-sm hover:shadow-md hover:scale-105 transition-all duration-300 flex items-center justify-center h-16 sm:h-20 md:h-24 lg:h-[167px]">
-							<img src="/bsh.svg" alt="Bảo hiểm BSH"
+							<img src="/images/index/insurance/image4.psd.webp" alt="Bảo hiểm BSH"
 								class="max-h-8 sm:max-h-12 max-w-[80%] object-contain" />
 						</div>
 					</div>

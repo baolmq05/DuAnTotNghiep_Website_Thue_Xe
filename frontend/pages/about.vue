@@ -4,7 +4,7 @@
         <section
             class="relative overflow-hidden bg-gradient-to-r from-[#1e4e57] to-[#286874] min-h-[600px] flex items-center">
             <div class="absolute inset-0 z-0">
-                <img src="../assets/images/about/aboutHero.jpg" alt="Đường đèo núi rực rỡ"
+                <img src="/images/about/aboutHero.jpg" alt="Đường đèo núi rực rỡ"
                     class="w-full h-full object-cover opacity-25 mix-blend-overlay" />
                 <div class="absolute inset-0 bg-gradient-to-t from-[#286874]/50 to-transparent" />
             </div>
@@ -43,7 +43,7 @@
 
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group hover:shadow-md transition-all duration-300">
-                        <img src="../assets/images/about/about4.jpg" alt="Khách hàng"
+                        <img src="/images/about/about4.jpg" alt="Khách hàng"
                             class="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div class="p-6 text-center">
                             <h3 class="text-4xl font-black text-[#286874]">10K+</h3>
@@ -53,7 +53,7 @@
 
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group hover:shadow-md transition-all duration-300">
-                        <img src="../assets/images/about/about5.jpg" alt="Đội xe"
+                        <img src="/images/about/about5.jpg" alt="Đội xe"
                             class="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div class="p-6 text-center">
                             <h3 class="text-4xl font-black text-[#286874]">500+</h3>
@@ -63,7 +63,7 @@
 
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group hover:shadow-md transition-all duration-300">
-                        <img src="../assets/images/about/about6.jpg" alt="Tỉnh thành"
+                        <img src="/images/about/about6.jpg" alt="Tỉnh thành"
                             class="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div class="p-6 text-center">
                             <h3 class="text-4xl font-black text-[#286874]">30+</h3>
@@ -73,7 +73,7 @@
 
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden border border-slate-100 group hover:shadow-md transition-all duration-300">
-                        <img src="../assets/images/about/about7.jpg" alt="Mức độ hài lòng"
+                        <img src="/images/about/about7.jpg" alt="Mức độ hài lòng"
                             class="h-40 w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                         <div class="p-6 text-center">
                             <h3 class="text-4xl font-black text-[#286874]">98%</h3>
@@ -91,15 +91,15 @@
 
                     <div class="lg:col-span-6 grid grid-cols-12 gap-4">
                         <div class="col-span-12">
-                            <img src="../assets/images/about/about1.jpg" alt="Gia đình đi du lịch"
+                            <img src="/images/about/about1.jpg" alt="Gia đình đi du lịch"
                                 class="rounded-3xl shadow-md w-full object-cover h-[280px] hover:scale-[1.01] transition-transform duration-300">
                         </div>
                         <div class="col-span-6">
-                            <img src="../assets/images/about/about2.jpg" alt="Bàn giao chìa khóa xe"
+                            <img src="/images/about/about2.jpg" alt="Bàn giao chìa khóa xe"
                                 class="rounded-3xl shadow-md w-full object-cover h-[200px] hover:scale-[1.01] transition-transform duration-300">
                         </div>
                         <div class="col-span-6">
-                            <img src="../assets/images/about/about3.jpg" alt="Khách hàng trải nghiệm xe"
+                            <img src="/images/about/about3.jpg" alt="Khách hàng trải nghiệm xe"
                                 class="rounded-3xl shadow-md w-full object-cover h-[200px] hover:scale-[1.01] transition-transform duration-300">
                         </div>
                     </div>
@@ -153,8 +153,7 @@
                             <div
                                 class="absolute -inset-2 bg-gradient-to-tr from-[#286874] to-cyan-100 rounded-3xl opacity-20 blur-lg group-hover:opacity-30 transition-opacity duration-500" />
                             <div class="relative rounded-3xl overflow-hidden shadow-md h-[350px] sm:h-[400px]">
-                                <img src="../assets/images/about/about15.jpg"
-                                    alt="Sứ mệnh đồng hành"
+                                <img src="/images/about/about15.jpg" alt="Sứ mệnh đồng hành"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                 <div class="absolute inset-0 bg-slate-950/10 mix-blend-multiply" />
                             </div>
@@ -204,8 +203,7 @@
                             <div
                                 class="absolute -inset-2 bg-gradient-to-tl from-slate-900 to-cyan-50 rounded-3xl opacity-10 blur-lg group-hover:opacity-20 transition-opacity duration-500" />
                             <div class="relative rounded-3xl overflow-hidden shadow-md h-[350px] sm:h-[400px]">
-                                <img src="../assets/images/about/about16.jpg"
-                                    alt="Tầm nhìn công nghệ"
+                                <img src="/images/about/about16.jpg" alt="Tầm nhìn công nghệ"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                                 <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#1e4e57]/20" />
                             </div>
@@ -232,7 +230,7 @@
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 border border-slate-100">
                         <div class="h-44 overflow-hidden relative">
-                            <img src="../assets/images/about/about8.jpg" alt="An toàn tuyệt đối"
+                            <img src="/images/about/about8.jpg" alt="An toàn tuyệt đối"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div class="absolute top-4 left-4 bg-[#286874] text-white p-2.5 rounded-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -253,7 +251,7 @@
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 border border-slate-100">
                         <div class="h-44 overflow-hidden relative">
-                            <img src="../assets/images/about/about9.jpg" alt="Minh bạch chi phí"
+                            <img src="/images/about/about9.jpg" alt="Minh bạch chi phí"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div class="absolute top-4 left-4 bg-[#286874] text-white p-2.5 rounded-xl">
                                 <svg xmlns="http://www.w3.org/2000/xl" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -274,7 +272,7 @@
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 border border-slate-100">
                         <div class="h-44 overflow-hidden relative">
-                            <img src="../assets/images/about/about10.jpg" alt="Nhanh chóng tiện lợi"
+                            <img src="/images/about/about10.jpg" alt="Nhanh chóng tiện lợi"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div class="absolute top-4 left-4 bg-[#286874] text-white p-2.5 rounded-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -295,7 +293,7 @@
                     <div
                         class="bg-white rounded-3xl shadow-sm overflow-hidden group hover:shadow-md transition-all duration-300 border border-slate-100">
                         <div class="h-44 overflow-hidden relative">
-                            <img src="../assets/images/about/about11.jpg" alt="Hỗ trợ tận tâm"
+                            <img src="/images/about/about11.jpg" alt="Hỗ trợ tận tâm"
                                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                             <div class="absolute top-4 left-4 bg-[#286874] text-white p-2.5 rounded-xl">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24"
@@ -319,12 +317,12 @@
 
         <section class=" section-padding bg-[#286874] relative overflow-hidden ">
             <div class="absolute inset-y-0 left-0 w-1/4 hidden xl:block opacity-40">
-                <img src="../assets/images/about/about13.jpg"
-                    alt="Cung đường ven biển trái" class="w-full h-full object-cover mask-image-linear-right" />
+                <img src="/images/about/about13.jpg" alt="Cung đường ven biển trái"
+                    class="w-full h-full object-cover mask-image-linear-right" />
             </div>
             <div class="absolute inset-y-0 right-0 w-1/4 hidden xl:block opacity-40">
-                <img src="../assets/images/about/about14.jpg"
-                    alt="Góc nhìn vô lăng phải" class="w-full h-full object-cover mask-image-linear-left" />
+                <img src="/images/about/about14.jpg" alt="Góc nhìn vô lăng phải"
+                    class="w-full h-full object-cover mask-image-linear-left" />
             </div>
 
             <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center text-white">
