@@ -103,7 +103,7 @@ const asideClass = computed(() => {
 
 <template>
   <aside :class="asideClass">
-    <div class="px-8 py-1">
+    <div class="px-2 py-1">
       <div
         v-if="mobile"
         class="mb-6 flex items-right justify-end"

@@ -65,7 +65,7 @@
 
               <span class="font-medium break-all"> +84338650615 </span>
             </div>
-
+            
             <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span class="text-gray-500"> Email </span>
 
@@ -218,6 +218,6 @@
 
 <script setup lang="ts">
 definePageMeta({
-  layout: "profile",
-});
+  layout: 'profile',
+})
 </script>

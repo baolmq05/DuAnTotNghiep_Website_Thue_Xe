@@ -2,7 +2,7 @@
 <template>
   <div class="profile-layout">
     <HeaderProfile />
-    <main class="mt-[140px] pb-[80px]">
+    <main class="mt-[140px] pb-[80px] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <button
         type="button"
         class="mx-4 mb-4 inline-flex items-center gap-2 rounded-xl bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm ring-1 ring-gray-200 lg:hidden"
