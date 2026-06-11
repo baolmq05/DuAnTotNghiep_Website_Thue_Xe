@@ -11,12 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('address', function (Blueprint $table) {
-            $table->engine = 'InnoDB';
+        Schema::create('post_categories', function (Blueprint $table) {
             $table->id();
-            $table->string('address_name')->comment('Tên địa chỉ');
-            $table->unsignedBigInteger('user_id')->comment('ID của người dùng');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('name')->comment('Tên danh mục bài viết');
+            $table->tinyInteger('status')->default(1)->comment('Trạng thái: 0 - Không hoạt động, 1 - Hoạt động');
             $table->timestamps();
         });
     }
@@ -26,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('address');
+        Schema::dropIfExists('post_categories');
     }
 };

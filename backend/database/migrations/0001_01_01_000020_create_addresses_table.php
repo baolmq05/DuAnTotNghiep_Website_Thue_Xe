@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('view_historys', function (Blueprint $table) {
+        Schema::create('addresses', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->unsignedBigInteger('user_id')->comment('mã người dùng');
-            $table->unsignedBigInteger('car_id')->comment('mã xe');
+            $table->string('address_name')->comment('Tên địa chỉ');
+            $table->unsignedBigInteger('user_id')->comment('ID của người dùng');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('car_id')->references('id')->on('cars')->onDelete('cascade');
             $table->timestamps();
         });
     }
@@ -27,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('view_historys');
+        Schema::dropIfExists('addresses');
     }
 };

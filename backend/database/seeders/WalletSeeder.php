@@ -14,10 +14,10 @@ class WalletSeeder extends Seeder
     public function run(): void
     {
         Wallet::create([
-            'balance' => 1000000,
+            'amount' => 1000000,
         ]);
         Wallet::create([
-            'balance' => 500000,
+            'amount' => 500000,
         ]);
     }
 }
