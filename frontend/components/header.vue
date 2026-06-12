@@ -118,8 +118,8 @@ const navItems = [
   { text: 'Trang chủ', to: '/' },
   { text: 'Về Drivio', to: '/about' },
   { text: 'Bài viết', to: '/blog' },
-  { text: 'Trở thành chủ xe', to: '/become-host' },
-  {text: 'Chính Sách', to: '/policy' }
+  { text: 'Trở thành chủ xe', to: '/car-register' },
+  { text: 'Chính Sách', to: '/policy' }
   
 ]
 
