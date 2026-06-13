@@ -35,7 +35,7 @@ const mainMenus = [
   {
     title: "Chuyến của tôi",
     icon: "ic:outline-work-history",
-    href: "/profile/trips",
+    href: "/profile/my-trips",
   },
   {
     title: "Đơn hàng Thuê xe dài hạn",
