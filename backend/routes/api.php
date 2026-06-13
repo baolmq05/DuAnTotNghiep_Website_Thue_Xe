@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,3 +17,6 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('profile', [AuthController::class, 'getProfile']);
 });
+
+Route::get('cars', [CarController::class, 'index']);
+Route::get('cars/{id}', [CarController::class, 'show']);

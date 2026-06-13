@@ -26,4 +26,54 @@ class Car extends Model
         'delivery_option_id',
         'usage_limit_id'
     ];
+
+    public function carLocation()
+    {
+        return $this->belongsTo(CarLocation::class);
+    }
+
+    public function carBrand()
+    {
+        return $this->belongsTo(CarBrand::class);
+    }
+
+    public function carType()
+    {
+        return $this->belongsTo(CarType::class);
+    }
+
+    public function deliveryOption()
+    {
+        return $this->belongsTo(CarDeliveryOption::class, 'delivery_option_id');
+    }
+
+    public function usageLimit()
+    {
+        return $this->belongsTo(CarUsageLimit::class, 'usage_limit_id');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(CarImage::class);
+    }
+
+    public function features()
+    {
+        return $this->belongsToMany(Feature::class, 'car_features', 'car_id', 'feature_id');
+    }
+
+    public function trips()
+    {
+        return $this->hasMany(Trip::class);
+    }
+
+    public function reviews()
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }
