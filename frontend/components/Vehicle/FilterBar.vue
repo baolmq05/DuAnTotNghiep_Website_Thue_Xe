@@ -7,51 +7,67 @@
             <div class="flex-shrink-0">
                 <button @click="openModal('seats')" type="button"
                     :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-2', selectedSeats.length > 0 ? 'border-brand-primary bg-brand-primary/5 text-brand-primary' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                    <span>🚗 Loại xe</span>
+                    <span class="flex items-center gap-2">
+                        <Icon name="mdi:car-sports" class="w-4 h-4" /> Loại xe
+                    </span>
                     <span v-if="selectedSeats.length > 0"
                         class="bg-brand-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">{{
-                        selectedSeats.length }}</span>
+                            selectedSeats.length }}</span>
                 </button>
             </div>
 
             <div class="flex-shrink-0">
                 <button @click="openModal('brands')" type="button"
                     :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-2 flex-shrink-0', selectedBrands.length > 0 ? 'border-brand-primary bg-brand-primary/5 text-brand-primary' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                    <span>✨ Hãng xe</span>
+                    <span class="flex items-center gap-2">
+                        <Icon name="lucide:globe" class="w-4 h-4" /> Hãng xe
+                    </span>
                     <span v-if="selectedBrands.length > 0"
                         class="bg-brand-primary text-white text-[10px] w-4 h-4 flex items-center justify-center rounded-full font-bold">{{
-                        selectedBrands.length }}</span>
+                            selectedBrands.length }}</span>
                 </button>
             </div>
 
             <button @click="isHourlyRent = !isHourlyRent" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', isHourlyRent ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>⏱️ Thuê giờ</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:clock" class="w-4 h-4" /> Thuê giờ
+                </span>
             </button>
 
             <button @click="deliveryToHome = !deliveryToHome" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', deliveryToHome ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>📍 Giao tận nơi</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:home" class="w-4 h-4" /> Giao tận nơi
+                </span>
             </button>
 
             <button @click="isFiveStarHost = !isFiveStarHost" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', isFiveStarHost ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>🏅 Chủ xe 5★</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:star" class="w-4 h-4" /> Chủ xe 5★
+                </span>
             </button>
 
             <button @click="instantBook = !instantBook" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', instantBook ? 'border-amber-500 bg-amber-50 text-amber-700 shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>⚡ Đặt nhanh</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:zap" class="w-4 h-4" /> Đặt nhanh
+                </span>
             </button>
 
             <button @click="noDeposit = !noDeposit" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', noDeposit ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>🪪 Miễn thế chấp</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:shield" class="w-4 h-4" /> Miễn thế chấp
+                </span>
             </button>
 
             <button @click="hasDiscount = !hasDiscount" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0 mr-2', hasDiscount ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span>🉐 Giảm giá</span>
+                <span class="flex items-center gap-2">
+                    <Icon name="lucide:tag" class="w-4 h-4" /> Giảm giá
+                </span>
             </button>
         </div>
 
@@ -68,11 +84,7 @@
 
             <button @click="openModal('advanced')" type="button"
                 :class="['px-4 py-2 text-xs font-bold rounded-xl border transition-all flex items-center gap-2 shadow-sm', isAnyAdvancedFilterActive ? 'border-brand-primary bg-brand-primary text-white' : 'border-slate-200 text-slate-800 bg-white hover:bg-slate-50']">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                </svg>
+                <Icon name="lucide:filter" class="w-4 h-4" />
                 <span>Bộ lọc</span>
             </button>
         </div>
@@ -89,12 +101,9 @@
                             <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">{{
                                 modalTitles[activeModal] }}</h4>
                             <button @click="closeModal"
-                                class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"><svg
-                                    xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M6 18L18 6M6 6l12 12" />
-                                </svg></button>
+                                class="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">
+                                <Icon name="lucide:x" class="w-5 h-5" />
+                            </button>
                         </div>
 
                         <div class="p-5 overflow-y-auto custom-scrollbar flex-1">
@@ -245,14 +254,14 @@ const seatOptions = [
 const brandOptions = ['VinFast', 'Toyota', 'Hyundai', 'Kia', 'Honda', 'Mitsubishi', 'Mazda', 'Ford', 'Suzuki', 'Nissan']
 
 const featureOptions = [
-    { label: '🗺️ Bản đồ / GPS', value: 'gps' },
-    { label: '📷 Camera lùi', value: 'camera_rear' },
-    { label: '📸 Camera 360', value: 'camera_360' },
-    { label: '☀️ Cửa sổ trời', value: 'sunroof' },
-    { label: '🔌 Cổng sạc USB', value: 'usb' },
-    { label: '📶 Bluetooth', value: 'bluetooth' },
-    { label: '👶 Ghế trẻ em', value: 'baby_seat' },
-    { label: '💳 Thẻ ETC', value: 'etc' }
+    { label: ' Bản đồ / GPS', value: 'gps' },
+    { label: ' Camera lùi', value: 'camera_rear' },
+    { label: ' Camera 360', value: 'camera_360' },
+    { label: ' Cửa sổ trời', value: 'sunroof' },
+    { label: ' Cổng sạc USB', value: 'usb' },
+    { label: ' Bluetooth', value: 'bluetooth' },
+    { label: ' Ghế trẻ em', value: 'baby_seat' },
+    { label: ' Thẻ ETC', value: 'etc' }
 ]
 
 const isAnyAdvancedFilterActive = computed(() => {

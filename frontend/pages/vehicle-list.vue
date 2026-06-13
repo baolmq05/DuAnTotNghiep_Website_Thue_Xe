@@ -42,6 +42,7 @@
                                 :trips="car.trips"
                                 :is-instant-book="car.isInstantBook"
                                 :is-delivery="car.isDelivery"
+                                :no-deposit="car.noDeposit"
                                 :discount="car.discount"
                             />
                         </div>
@@ -74,6 +75,7 @@ const carList = ref([
         trips: 45,
         isInstantBook: true,
         isDelivery: true,
+        noDeposit: true,
         discount: 10
     },
     {
