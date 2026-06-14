@@ -29,6 +29,7 @@ class CarSeeder extends Seeder
             'manufacture_year' => '2020-01-01',
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
+            'status' => 1,
             'user_id' => 1,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
@@ -48,6 +49,7 @@ class CarSeeder extends Seeder
             'manufacture_year' => '2019-01-01',
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
+            'status' => 1,
             'user_id' => 1,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
@@ -67,6 +69,7 @@ class CarSeeder extends Seeder
             'manufacture_year' => '2021-01-01',
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
+            'status' => 2,
             'user_id' => 1,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
@@ -86,6 +89,7 @@ class CarSeeder extends Seeder
             'manufacture_year' => '2022-01-01',
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
+            'status' => 0,
             'user_id' => 1,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
