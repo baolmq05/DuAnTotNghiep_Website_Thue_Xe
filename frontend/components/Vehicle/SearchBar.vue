@@ -56,9 +56,23 @@
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
-const location = ref('')
-const startDate = ref('')
-const endDate = ref('')
+const route = useRoute()
+const router = useRouter()
+
+const location = ref(route.query.location as string || '')
+const startDate = ref(route.query.startDate as string || '')
+const endDate = ref(route.query.endDate as string || '')
+
+watch([location, startDate, endDate], ([newLocation, newStartDate, newEndDate]) => {
+    router.push({
+        query: {
+            ...route.query,
+            location: newLocation || undefined,
+            startDate: newStartDate || undefined,
+            endDate: newEndDate || undefined
+        }
+    })
+})
 </script>

@@ -198,7 +198,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
+
+const emit = defineEmits(['filterChange'])
 
 const activeModal = ref('')
 
@@ -273,12 +275,6 @@ const closeModal = () => { activeModal.value = '' }
 
 const applyFilters = () => {
     closeModal()
-    console.log('Gửi dữ liệu lọc:', {
-        seats: selectedSeats.value, brands: selectedBrands.value, hourly: isHourlyRent.value,
-        delivery: deliveryToHome.value, fiveStar: isFiveStarHost.value, instant: instantBook.value,
-        noDeposit: noDeposit.value, discount: hasDiscount.value, priceMin: priceMin.value,
-        priceMax: priceMax.value, transmission: transmission.value, fuel: fuelType.value, features: selectedFeatures.value
-    })
 }
 
 const resetFilters = () => {
@@ -298,6 +294,27 @@ const resetFilters = () => {
     fuelType.value = ''
     selectedFeatures.value = []
 }
+
+watch([
+    selectedSeats, selectedBrands, isHourlyRent, deliveryToHome, isFiveStarHost, instantBook, 
+    noDeposit, hasDiscount, priceMin, priceMax, transmission, fuelType, selectedFeatures
+], () => {
+    emit('filterChange', {
+        seats: selectedSeats.value,
+        brands: selectedBrands.value,
+        hourly: isHourlyRent.value,
+        delivery: deliveryToHome.value,
+        fiveStar: isFiveStarHost.value,
+        instant: instantBook.value,
+        noDeposit: noDeposit.value,
+        discount: hasDiscount.value,
+        priceMin: priceMin.value,
+        priceMax: priceMax.value,
+        transmission: transmission.value,
+        fuel: fuelType.value,
+        features: selectedFeatures.value
+    })
+}, { deep: true })
 </script>
 
 <style scoped>

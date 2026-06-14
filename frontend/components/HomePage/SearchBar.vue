@@ -22,20 +22,15 @@
     <div class="hidden md:block h-8 w-px bg-slate-300/60"></div>
 
     <!-- Field 2: Ngày nhận -->
-    <div class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
+    <div @click="isDatePickerOpen = true" class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
       <div class="flex-grow min-w-0">
         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ngày nhận</label>
-        <input 
-          v-model="startDate"
-          type="text" 
-          placeholder="Chọn ngày nhận xe" 
-          class="block w-full bg-transparent border-0 p-0 text-sm font-semibold text-slate-800 placeholder-slate-500 focus:ring-0 focus:outline-none"
-          onfocus="this.type='date'; this.showPicker()"
-          onblur="if(!this.value) this.type='text'"
-        />
+        <div class="block w-full text-sm font-semibold truncate" :class="formattedStart ? 'text-slate-800' : 'text-slate-400'">
+          {{ formattedStart || 'Chọn ngày nhận xe' }}
+        </div>
       </div>
     </div>
 
@@ -43,20 +38,15 @@
     <div class="hidden md:block h-8 w-px bg-slate-300/60"></div>
 
     <!-- Field 3: Ngày trả -->
-    <div class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
+    <div @click="isDatePickerOpen = true" class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
       </svg>
       <div class="flex-grow min-w-0">
         <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ngày trả</label>
-        <input 
-          v-model="endDate"
-          type="text" 
-          placeholder="Chọn ngày trả xe" 
-          class="block w-full bg-transparent border-0 p-0 text-sm font-semibold text-slate-800 placeholder-slate-500 focus:ring-0 focus:outline-none"
-          onfocus="this.type='date'; this.showPicker()"
-          onblur="if(!this.value) this.type='text'"
-        />
+        <div class="block w-full text-sm font-semibold truncate" :class="formattedEnd ? 'text-slate-800' : 'text-slate-400'">
+          {{ formattedEnd || 'Chọn ngày trả xe' }}
+        </div>
       </div>
     </div>
 
@@ -97,24 +87,57 @@
     </button>
 
   </div>
+  <DatePickerModal 
+    :is-open="isDatePickerOpen" 
+    :initial-start="selectedStart || undefined" 
+    :initial-end="selectedEnd || undefined" 
+    @close="isDatePickerOpen = false" 
+    @apply="handleApplyDates"
+  />
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useRouter } from '#app'
+import DatePickerModal from '~/components/Shared/DatePickerModal.vue'
 
 const location = ref('')
-const startDate = ref('')
-const endDate = ref('')
 const carType = ref('')
 
+const isDatePickerOpen = ref(false)
+const selectedStart = ref<Date | null>(null)
+const selectedEnd = ref<Date | null>(null)
+
+const formattedStart = computed(() => {
+  if (!selectedStart.value) return ''
+  const d = selectedStart.value
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`
+})
+
+const formattedEnd = computed(() => {
+  if (!selectedEnd.value) return ''
+  const d = selectedEnd.value
+  return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')} ${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}`
+})
+
+const handleApplyDates = (payload: any) => {
+  selectedStart.value = payload.start
+  selectedEnd.value = payload.end
+  isDatePickerOpen.value = false
+}
+
+const router = useRouter()
+
 const handleSearch = () => {
-  console.log('Searching for:', {
-    location: location.value,
-    startDate: startDate.value,
-    endDate: endDate.value,
-    carType: carType.value
+  router.push({
+    path: '/vehicle-list',
+    query: {
+      location: location.value || undefined,
+      startDate: selectedStart.value ? selectedStart.value.toISOString() : undefined,
+      endDate: selectedEnd.value ? selectedEnd.value.toISOString() : undefined,
+      carType: carType.value || undefined
+    }
   })
-  alert(`Tìm kiếm xe tại: ${location.value || 'Toàn quốc'}\nTừ: ${startDate.value || 'Chưa chọn'} đến ${endDate.value || 'Chưa chọn'}`)
 }
 </script>
 
