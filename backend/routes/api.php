@@ -4,6 +4,8 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\FavoriteController;
+
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
 // API URL: http://127.0.0.1:8000/api/
@@ -22,3 +24,9 @@ Route::group([
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
+
+Route::group(['middleware' => 'api'], function () {
+    Route::get('favorites', [FavoriteController::class, 'index']); 
+    Route::post('favorites', [FavoriteController::class, 'store']); 
+    Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']); 
+});
