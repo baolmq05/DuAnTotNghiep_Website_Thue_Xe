@@ -24,23 +24,48 @@
         <!-- Middle: Navigation (Desktop) -->
         <nav class="hidden md:flex items-center space-x-8">
           <NuxtLink v-for="item in navItems" :key="item.text" :to="item.to"
-            class="text-sm font-medium text-white/90 hover:text-brand-primary transition-colors duration-200 relative group py-2">
+            class="text-sm font-medium text-white/90 hover:text-brand-light transition-colors duration-200 relative group py-2">
             {{ item.text }}
             <span
-              class="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-primary transition-all duration-300 group-hover:w-full"></span>
+              class="absolute bottom-0 left-0 w-0 h-0.5 bg-brand-light transition-all duration-300 group-hover:w-full"></span>
           </NuxtLink>
         </nav>
 
         <!-- Right: Actions (Desktop) -->
         <div class="hidden md:flex items-center space-x-6">
-          <NuxtLink to="/register"
-            class="text-sm font-medium text-white/90 hover:text-brand-light transition-colors duration-200">
-            Đăng ký
-          </NuxtLink>
-          <NuxtLink to="/login"
-            class="text-sm font-medium text-white border border-white/30 rounded-xl px-5 py-2 hover:bg-white/10 hover:border-white transition-all duration-200 shadow-sm">
-            Đăng nhập
-          </NuxtLink>
+          <template v-if="isLoggedIn">
+            <!-- Icons: Bell & Message -->
+            <div class="flex items-center space-x-4 border-r border-white/20 pr-4">
+              <!-- Bell Icon -->
+              <button class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in" aria-label="Thông báo">
+                <Icon name="heroicons:bell" class="w-6 h-6" />
+                <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+              </button>
+              <!-- Message Icon -->
+              <button class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in" aria-label="Tin nhắn">
+                <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-6 h-6" />
+              </button>
+            </div>
+            
+            <!-- User Profile Link -->
+            <NuxtLink to="/profile" class="flex items-center space-x-3 text-white focus:outline-none group animate-fade-in">
+              <img :src="user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'" 
+                alt="User Avatar" 
+                class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm group-hover:scale-105 transition-transform duration-200" />
+              <span class="text-sm font-medium hover:text-brand-light transition-colors">{{ user.name }}</span>
+            </NuxtLink>
+          </template>
+          
+          <template v-else>
+            <button @click="openRegister"
+              class="text-sm font-medium text-white/90 hover:text-brand-light transition-colors duration-200 focus:outline-none">
+              Đăng ký
+            </button>
+            <button @click="openLogin"
+              class="text-sm font-medium text-white border border-white/30 rounded-xl px-5 py-2 hover:bg-white/10 hover:border-white transition-all duration-200 shadow-sm focus:outline-none">
+              Đăng nhập
+            </button>
+          </template>
         </div>
 
       </div>
@@ -49,11 +74,10 @@
 
   <!-- Bottom Navigation (Mobile Only, Google Material 3 style) -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#f8f0e8]/95 backdrop-blur-md border-t border-slate-200/40 h-[80px] flex items-center justify-around pb-safe px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
-    <NuxtLink 
+    <div 
       v-for="(item, idx) in bottomNavItems" 
       :key="item.text" 
-      to="/"
-      @click="activeTab = idx"
+      @click="handleBottomNavClick(item, idx)"
       class="flex flex-col items-center justify-center flex-grow py-1 select-none cursor-pointer focus:outline-none"
     >
       <!-- Icon Wrapper (Material 3 Pill active indicator) -->
@@ -103,12 +127,15 @@
       >
         {{ item.text }}
       </span>
-    </NuxtLink>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted } from 'vue'
+
+const { openLogin, openRegister } = useAuthModal()
+const { user, isLoggedIn } = useAuth()
 
 const isScrolled = ref(false)
 const activeTab = ref(0)
@@ -121,12 +148,25 @@ const navItems = [
 ]
 
 const bottomNavItems = [
-  { text: 'Trang chủ', icon: 'home' },
-  { text: 'Về Drivio', icon: 'info' },
-  { text: 'Bài viết', icon: 'blog' },
-  { text: 'Chủ xe', icon: 'host' },
+  { text: 'Trang chủ', icon: 'home', to: '/' },
+  { text: 'Về Drivio', icon: 'info', to: '/about' },
+  { text: 'Bài viết', icon: 'blog', to: '/blog' },
+  { text: 'Chủ xe', icon: 'host', to: '/become-host' },
   { text: 'Tài khoản', icon: 'account' }
 ]
+
+const handleBottomNavClick = (item: any, idx: number) => {
+  activeTab.value = idx
+  if (item.icon === 'account') {
+    if (isLoggedIn.value) {
+      navigateTo('/profile')
+    } else {
+      openLogin()
+    }
+  } else if (item.to) {
+    navigateTo(item.to)
+  }
+}
 
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 20

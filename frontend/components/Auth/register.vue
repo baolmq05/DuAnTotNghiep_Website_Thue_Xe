@@ -1,10 +1,10 @@
 <template>
-  <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
+  <div v-if="isRegisterOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeRegister"></div>
 
     <div class="relative bg-white w-full max-w-xl h-[600px] rounded-3xl overflow-hidden shadow-2xl z-10 animate-fade-in">
       
-      <button @click="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-20 transition-colors">
+      <button @click="closeRegister" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-20 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
         </svg>
@@ -19,13 +19,13 @@
         <form @submit.prevent="handleRegister" class="space-y-3.5">
           <div class="space-y-1">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Họ và tên</label>
-            <input type="text" placeholder="Nguyễn Văn A" required
+            <input v-model="name" type="text" placeholder="Nguyễn Văn A" required
                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
           </div>
 
           <div class="space-y-1">
-            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Email hoặc Số điện thoại</label>
-            <input type="text" placeholder="example@gmail.com" required
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Email</label>
+            <input v-model="email" type="email" placeholder="example@gmail.com" required
                    class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
           </div>
 
@@ -33,7 +33,7 @@
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Mật khẩu</label>
             
             <div class="relative w-full flex items-center">
-              <input :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
+              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
                      class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
               
               <button type="button" @click="togglePassword" 
@@ -67,7 +67,7 @@
 
         <div class="mt-6 text-center text-sm text-gray-600">
           Bạn đã có tài khoản rồi?
-          <button type="button" @click="$emit('switch-to-login')" class="text-[#286874] font-bold hover:underline ml-1 focus:outline-none">
+          <button type="button" @click="switchToLogin" class="text-[#286874] font-bold hover:underline ml-1 focus:outline-none">
             Đăng nhập tại đây
           </button>
         </div>
@@ -80,28 +80,40 @@
 <script setup>
 import { ref } from 'vue'
 
-const isOpen = ref(false)
-const emit = defineEmits(['switch-to-login'])
+const { isRegisterOpen, openRegister, closeRegister, switchToLogin } = useAuthModal()
+const { register } = useAuth()
+const { showToast } = useToast()
+const { openRegisterSuccess } = useRegisterSuccessModal()
+
+const name = ref('')
+const email = ref('')
+const password = ref('')
+
+const openModal = openRegister
+const closeModal = closeRegister
 
 const showPassword = ref(false)
 const togglePassword = () => {
   showPassword.value = !showPassword.value
 }
 
-const openModal = () => {
-  isOpen.value = true
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = 'hidden'
+const handleRegister = async () => {
+  const res = await register({
+    name: name.value,
+    email: email.value,
+    password: password.value
+  })
+
+  if (res.success) {
+    closeRegister()
+    openRegisterSuccess()
+    // Reset form
+    name.value = ''
+    email.value = ''
+    password.value = ''
+  } else {
+    showToast(res.message || "Đăng ký thất bại!", "error")
   }
-}
-const closeModal = () => {
-  isOpen.value = false
-  if (typeof document !== 'undefined') {
-    document.body.style.overflow = ''
-  }
-}
-const handleRegister = () => {
-  console.log('Xử lý đăng ký...')
 }
 
 defineExpose({ openModal, closeModal })

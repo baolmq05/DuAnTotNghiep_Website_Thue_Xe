@@ -12,6 +12,10 @@
     <main class="flex-1 flex flex-col min-h-0 pt-[80px] pb-[80px] md:pb-0  mt-4 overflow-hidden">
       <slot />
     </main>
+    <AuthLogin />
+    <AuthRegister />
+    <CommonToast />
+    <CommonRegisterSuccessModal />
   </div>
 </template>
 

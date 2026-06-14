@@ -1,10 +1,10 @@
 <template>
-    <div v-if="isOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
+    <div v-if="isLoginOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeLogin"></div>
 
         <div class="relative bg-white w-full max-w-xl h-[600px] rounded-3xl overflow-hidden shadow-2xl z-10 animate-fade-in">
 
-            <button @click="closeModal"
+            <button @click="closeLogin"
                 class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-20 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -20,8 +20,8 @@
 
                 <form @submit.prevent="handleLogin" class="space-y-4">
                     <div class="space-y-1.5">
-                        <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Email hoặc Số điện thoại</label>
-                        <input type="text" placeholder="example@gmail.com" required
+                        <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Email</label>
+                        <input v-model="email" type="email" placeholder="example@gmail.com" required
                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
                     </div>
 
@@ -32,7 +32,7 @@
                         </div>
                         
                         <div class="relative w-full flex items-center">
-                            <input :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
+                            <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••" required
                                 class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
 
                             <button type="button" @click="togglePassword" 
@@ -84,7 +84,7 @@
 
                 <div class="mt-8 text-center text-sm text-gray-600">
                     Bạn chưa có tài khoản?
-                    <button type="button" @click="$emit('switch-to-register')" class="text-[#286874] font-bold hover:underline ml-1 focus:outline-none">
+                    <button type="button" @click="switchToRegister" class="text-[#286874] font-bold hover:underline ml-1 focus:outline-none">
                         Đăng ký ngay
                     </button>
                 </div>
@@ -97,28 +97,36 @@
 <script setup>
 import { ref } from 'vue'
 
-const isOpen = ref(false)
-const emit = defineEmits(['switch-to-register'])
+const { isLoginOpen, openLogin, closeLogin, switchToRegister } = useAuthModal()
+const { login } = useAuth()
+const { showToast } = useToast()
+
+const email = ref('')
+const password = ref('')
+
+const openModal = openLogin
+const closeModal = closeLogin
 
 const showPassword = ref(false)
 const togglePassword = () => {
     showPassword.value = !showPassword.value
 }
 
-const openModal = () => {
-    isOpen.value = true
-    if (typeof document !== 'undefined') {
-        document.body.style.overflow = 'hidden'
+const handleLogin = async () => {
+    const res = await login({
+        email: email.value,
+        password: password.value
+    })
+    
+    if (res.success) {
+        showToast("Đăng nhập thành công!", "success")
+        closeLogin()
+        // Reset form
+        email.value = ''
+        password.value = ''
+    } else {
+        showToast(res.message || "Đăng nhập thất bại!", "error")
     }
-}
-const closeModal = () => {
-    isOpen.value = false
-    if (typeof document !== 'undefined') {
-        document.body.style.overflow = ''
-    }
-}
-const handleLogin = () => {
-    console.log('Xử lý đăng nhập...')
 }
 
 defineExpose({ openModal, closeModal })

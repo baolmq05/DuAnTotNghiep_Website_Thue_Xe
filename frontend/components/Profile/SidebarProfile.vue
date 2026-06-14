@@ -1,5 +1,6 @@
 <script setup lang="ts">
 const route = useRoute();
+const { logout: authLogout } = useAuth();
 
 const props = withDefaults(
   defineProps<{
@@ -76,11 +77,13 @@ const isActive = (path: string) => {
   return route.path === path;
 };
 
-const logout = () => {
-  console.log("logout");
+const logout = async () => {
+  await authLogout();
+  alert("Đăng xuất thành công!");
   if (props.mobile) {
     emit("close");
   }
+  navigateTo("/");
 };
 
 const onNavigate = () => {

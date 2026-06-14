@@ -50,7 +50,7 @@ export abstract class BaseService {
         try {
             const { method = "GET", body, useAuth = true } = options;
 
-            return await $fetch<T>(`${API_URL}/${url}`, {
+            return await $fetch<T>(`${API_URL}${url}`, {
                 method,
                 body,
                 headers: this.buildHeaders(useAuth)

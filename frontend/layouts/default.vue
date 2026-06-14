@@ -4,6 +4,10 @@
         <slot></slot>
     </main>
     <Footer></Footer>
+    <AuthLogin />
+    <AuthRegister />
+    <CommonToast />
+    <CommonRegisterSuccessModal />
 </template>
 
 <style>

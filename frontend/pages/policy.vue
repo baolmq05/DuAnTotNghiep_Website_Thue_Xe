@@ -3,7 +3,7 @@
     <!-- Hero Banner -->
     <div class="relative h-[420px] overflow-hidden">
       <img
-        src="../../images/about/policy.webp"
+        src="/images/about/policy.webp"
         alt="Drivio Policy"
         class="w-full h-full object-cover"
       />

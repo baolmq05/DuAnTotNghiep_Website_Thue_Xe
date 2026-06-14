@@ -47,6 +47,10 @@
     </main>
 
     <Footer />
+    <AuthLogin />
+    <AuthRegister />
+    <CommonToast />
+    <CommonRegisterSuccessModal />
   </div>
 </template>
 
