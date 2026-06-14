@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
             'name' => 'Admin',
             'email' => 'admin@example.com',
             'email_verified_at' => now(),
-            'password' => '12345678',
+            'password' => bcrypt('12345678'),
             'phone' => '0123456789',
             'avatar' => 'https://res.cloudinary.com/djbobb5oe/image/upload/v1764143352/tu1d4wbkkdshpsghluu2.jpg',
             'gender' => '0',
