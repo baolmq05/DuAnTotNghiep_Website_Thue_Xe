@@ -98,15 +98,32 @@
 
 <script lang="ts" setup>
 import { ref, computed } from 'vue'
-import { useRouter } from '#app'
+import { useRouter, useRoute } from '#app'
 import DatePickerModal from '~/components/Shared/DatePickerModal.vue'
 
-const location = ref('')
-const carType = ref('')
+const route = useRoute()
+const router = useRouter()
+
+const location = ref((route.query.location as string) || '')
+const carType = ref((route.query.carType as string) || '')
 
 const isDatePickerOpen = ref(false)
-const selectedStart = ref<Date | null>(null)
-const selectedEnd = ref<Date | null>(null)
+
+const formatDateString = (date: Date | null | undefined): string | undefined => {
+  if (!date) return undefined
+  const pad = (num: number) => String(num).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
+const parseDateString = (str: string | null | undefined): Date | null => {
+  if (!str) return null
+  const formattedStr = str.replace(' ', 'T')
+  const date = new Date(formattedStr)
+  return isNaN(date.getTime()) ? null : date
+}
+
+const selectedStart = ref<Date | null>(parseDateString(route.query.startDate as string))
+const selectedEnd = ref<Date | null>(parseDateString(route.query.endDate as string))
 
 const formattedStart = computed(() => {
   if (!selectedStart.value) return ''
@@ -126,15 +143,13 @@ const handleApplyDates = (payload: any) => {
   isDatePickerOpen.value = false
 }
 
-const router = useRouter()
-
 const handleSearch = () => {
   router.push({
     path: '/vehicle-list',
     query: {
       location: location.value || undefined,
-      startDate: selectedStart.value ? selectedStart.value.toISOString() : undefined,
-      endDate: selectedEnd.value ? selectedEnd.value.toISOString() : undefined,
+      startDate: formatDateString(selectedStart.value),
+      endDate: formatDateString(selectedEnd.value),
       carType: carType.value || undefined
     }
   })

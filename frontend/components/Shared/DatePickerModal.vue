@@ -38,40 +38,108 @@
 
           <!-- Body -->
           <div class="p-6 overflow-y-auto max-h-[70vh]">
-            <!-- Calendar -->
-            <div class="flex justify-center mb-6">
-              <ClientOnly>
-                <VDatePicker 
-                  v-model="range" 
-                  is-range 
-                  :columns="columns"
-                  :step="1"
-                  color="green"
-                  :min-date="new Date()"
-                  borderless
-                  expanded
-                  class="custom-calendar"
-                />
-              </ClientOnly>
+            <!-- THUÊ THEO NGÀY -->
+            <div v-if="activeTab === 'daily'">
+              <!-- Calendar -->
+              <div class="flex justify-center mb-6">
+                <ClientOnly>
+                  <VDatePicker 
+                    v-model="range" 
+                    is-range 
+                    :columns="columns"
+                    :step="1"
+                    color="green"
+                    :min-date="new Date()"
+                    borderless
+                    expanded
+                    class="custom-calendar"
+                  />
+                </ClientOnly>
+              </div>
+
+              <!-- Time Selectors -->
+              <div class="flex items-center gap-4">
+                <div class="flex-1 bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all relative cursor-pointer">
+                  <div class="min-w-0">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nhận xe</label>
+                    <div class="text-base font-bold text-slate-800">{{ startTime }}</div>
+                  </div>
+                  <select v-model="startTime" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
+                  </select>
+                </div>
+
+                <div class="flex-shrink-0 text-slate-400">
+                  <Icon name="lucide:arrow-right-circle" class="w-6 h-6" />
+                </div>
+
+                <div class="flex-1 bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all relative cursor-pointer">
+                  <div class="min-w-0">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Trả xe</label>
+                    <div class="text-base font-bold text-slate-800">{{ endTime }}</div>
+                  </div>
+                  <select v-model="endTime" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
-            <!-- Time Selectors -->
-            <div class="flex items-center gap-4">
-              <div class="flex-1 bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nhận xe</label>
-                <select v-model="startTime" class="w-full bg-transparent border-0 p-0 text-base font-bold text-slate-800 focus:ring-0 cursor-pointer outline-none">
-                  <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
-                </select>
+            <!-- THUÊ THEO GIỜ -->
+            <div v-else class="flex flex-col gap-4">
+              <!-- Row 1: Ngày bắt đầu & Giờ nhận xe -->
+              <div class="flex items-center gap-4">
+                <!-- Ngày bắt đầu -->
+                <div @click="isCalendarOpen = !isCalendarOpen" class="flex-1 bg-white border border-slate-200 rounded-xl p-3 hover:border-brand-primary transition-all cursor-pointer flex justify-between items-center relative">
+                  <div class="min-w-0">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Ngày bắt đầu</label>
+                    <div class="text-base font-bold text-slate-800">{{ formattedSingleDate }}</div>
+                  </div>
+                  <Icon name="lucide:chevron-down" class="w-5 h-5 text-slate-500 flex-shrink-0" />
+                </div>
+
+                <!-- Giờ nhận xe -->
+                <div class="flex-1 bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all flex justify-between items-center relative cursor-pointer">
+                  <div class="flex-grow min-w-0">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Giờ nhận xe</label>
+                    <div class="text-base font-bold text-slate-800">{{ startTime }}</div>
+                  </div>
+                  <Icon name="lucide:chevron-down" class="w-5 h-5 text-slate-500 flex-shrink-0" />
+                  <select v-model="startTime" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
+                  </select>
+                </div>
               </div>
 
-              <div class="flex-shrink-0 text-slate-400">
-                <Icon name="lucide:arrow-right-circle" class="w-6 h-6" />
+              <!-- Row 2: Calendar hiển thị khi click Ngày bắt đầu -->
+              <div v-if="isCalendarOpen" class="border border-slate-200 rounded-2xl p-4 bg-slate-50/50 flex justify-center transition-all duration-300">
+                <ClientOnly>
+                  <VDatePicker 
+                    v-model="singleDate" 
+                    :columns="columns"
+                    :step="1"
+                    color="green"
+                    :min-date="new Date()"
+                    borderless
+                    expanded
+                    class="custom-calendar"
+                  />
+                </ClientOnly>
               </div>
 
-              <div class="flex-1 bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all">
-                <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Trả xe</label>
-                <select v-model="endTime" class="w-full bg-transparent border-0 p-0 text-base font-bold text-slate-800 focus:ring-0 cursor-pointer outline-none">
-                  <option v-for="time in timeOptions" :key="time" :value="time">{{ time }}</option>
+              <!-- Row 3: Thời gian thuê -->
+              <div class="bg-white border border-slate-200 rounded-xl p-3 focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all flex justify-between items-center w-full relative cursor-pointer">
+                <div class="flex-grow min-w-0">
+                  <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Thời gian thuê</label>
+                  <div class="text-base font-bold text-slate-800">
+                    {{ rentDuration }} giờ <span class="text-xs font-normal text-slate-500">(kết thúc: {{ getEndTimeTextForDuration(rentDuration) }})</span>
+                  </div>
+                </div>
+                <Icon name="lucide:chevron-down" class="w-5 h-5 text-slate-500 flex-shrink-0" />
+                <select v-model="rentDuration" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                  <option v-for="hours in durationOptions" :key="hours" :value="hours">
+                    {{ hours }} giờ (kết thúc: {{ getEndTimeTextForDuration(hours) }})
+                  </option>
                 </select>
               </div>
             </div>
@@ -117,6 +185,24 @@ const range = ref({
 const startTime = ref('21:00')
 const endTime = ref('20:00')
 
+// Hourly mode state
+const singleDate = ref<Date | null>(props.initialStart || new Date())
+const rentDuration = ref<number>(4)
+const isCalendarOpen = ref(false)
+
+const formattedSingleDate = computed(() => {
+  if (!singleDate.value) return ''
+  const d = singleDate.value
+  return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()}`
+})
+
+const durationOptions = Array.from({ length: 24 }).map((_, i) => i + 1)
+
+// Close calendar when date is selected
+watch(singleDate, () => {
+  isCalendarOpen.value = false
+})
+
 // Responsive columns for VDatePicker
 const windowWidth = ref(1024)
 const columns = computed(() => windowWidth.value >= 768 ? 2 : 1)
@@ -140,73 +226,150 @@ const timeOptions = Array.from({ length: 48 }).map((_, i) => {
   return `${h}:${m}`
 })
 
+const getEndTimeTextForDuration = (hours: number) => {
+  if (!singleDate.value || !startTime.value) return ''
+  const start = new Date(singleDate.value)
+  const [sh, sm] = startTime.value.split(':').map(Number)
+  start.setHours(sh, sm, 0, 0)
+  
+  const end = new Date(start.getTime() + hours * 3600000)
+  const eh = end.getHours().toString().padStart(2, '0')
+  const em = end.getMinutes().toString().padStart(2, '0')
+  const ed = end.getDate().toString().padStart(2, '0')
+  const emonth = (end.getMonth() + 1).toString().padStart(2, '0')
+  const eyear = end.getFullYear()
+  return `${eh}:${em} ${ed}/${emonth}/${eyear}`
+}
+
 const close = () => {
   emit('close')
 }
 
 const apply = () => {
-  if (!range.value || !range.value.start || !range.value.end) {
-    alert("Vui lòng chọn ngày nhận và ngày trả")
-    return
-  }
-  
-  const start = new Date(range.value.start)
-  const [sh, sm] = startTime.value.split(':').map(Number)
-  start.setHours(sh, sm, 0, 0)
-  
-  const end = new Date(range.value.end)
-  const [eh, em] = endTime.value.split(':').map(Number)
-  end.setHours(eh, em, 0, 0)
+  if (activeTab.value === 'daily') {
+    if (!range.value || !range.value.start || !range.value.end) {
+      alert("Vui lòng chọn ngày nhận và ngày trả")
+      return
+    }
+    
+    const start = new Date(range.value.start)
+    const [sh, sm] = startTime.value.split(':').map(Number)
+    start.setHours(sh, sm, 0, 0)
+    
+    const end = new Date(range.value.end)
+    const [eh, em] = endTime.value.split(':').map(Number)
+    end.setHours(eh, em, 0, 0)
 
-  emit('apply', { start, end, activeTab: activeTab.value })
+    emit('apply', { start, end, activeTab: activeTab.value })
+  } else {
+    if (!singleDate.value) {
+      alert("Vui lòng chọn ngày bắt đầu")
+      return
+    }
+    
+    const start = new Date(singleDate.value)
+    const [sh, sm] = startTime.value.split(':').map(Number)
+    start.setHours(sh, sm, 0, 0)
+    
+    const end = new Date(start.getTime() + rentDuration.value * 3600000)
+    
+    emit('apply', { start, end, activeTab: activeTab.value })
+  }
 }
 
 const summaryText = computed(() => {
-  if (!range.value || !range.value.start || !range.value.end) return 'Vui lòng chọn ngày'
-  
-  const startDay = range.value.start.getDate().toString().padStart(2, '0')
-  const startMonth = (range.value.start.getMonth() + 1).toString().padStart(2, '0')
-  const startWeekday = range.value.start.getDay() === 0 ? 'CN' : `T${range.value.start.getDay() + 1}`
-  
-  const endDay = range.value.end.getDate().toString().padStart(2, '0')
-  const endMonth = (range.value.end.getMonth() + 1).toString().padStart(2, '0')
-  const endWeekday = range.value.end.getDay() === 0 ? 'CN' : `T${range.value.end.getDay() + 1}`
+  if (activeTab.value === 'daily') {
+    if (!range.value || !range.value.start || !range.value.end) return 'Vui lòng chọn ngày'
+    
+    const startDay = range.value.start.getDate().toString().padStart(2, '0')
+    const startMonth = (range.value.start.getMonth() + 1).toString().padStart(2, '0')
+    const startWeekday = range.value.start.getDay() === 0 ? 'CN' : `T${range.value.start.getDay() + 1}`
+    
+    const endDay = range.value.end.getDate().toString().padStart(2, '0')
+    const endMonth = (range.value.end.getMonth() + 1).toString().padStart(2, '0')
+    const endWeekday = range.value.end.getDay() === 0 ? 'CN' : `T${range.value.end.getDay() + 1}`
 
-  return `${startTime.value} ${startWeekday}, ${startDay}/${startMonth} - ${endTime.value} ${endWeekday}, ${endDay}/${endMonth}`
+    return `${startTime.value} ${startWeekday}, ${startDay}/${startMonth} - ${endTime.value} ${endWeekday}, ${endDay}/${endMonth}`
+  } else {
+    if (!singleDate.value) return 'Vui lòng chọn ngày'
+    
+    const start = new Date(singleDate.value)
+    const [sh, sm] = startTime.value.split(':').map(Number)
+    start.setHours(sh, sm, 0, 0)
+    
+    const end = new Date(start.getTime() + rentDuration.value * 3600000)
+    
+    const startDay = start.getDate().toString().padStart(2, '0')
+    const startMonth = (start.getMonth() + 1).toString().padStart(2, '0')
+    const startWeekday = start.getDay() === 0 ? 'CN' : `T${start.getDay() + 1}`
+    
+    const endDay = end.getDate().toString().padStart(2, '0')
+    const endMonth = (end.getMonth() + 1).toString().padStart(2, '0')
+    const endWeekday = end.getDay() === 0 ? 'CN' : `T${end.getDay() + 1}`
+    
+    const eh = end.getHours().toString().padStart(2, '0')
+    const em = end.getMinutes().toString().padStart(2, '0')
+    
+    return `${startTime.value} ${startWeekday}, ${startDay}/${startMonth} - ${eh}:${em} ${endWeekday}, ${endDay}/${endMonth}`
+  }
 })
 
 const durationText = computed(() => {
-  if (!range.value || !range.value.start || !range.value.end) return '0 ngày'
-  
-  const start = new Date(range.value.start)
-  const [sh, sm] = startTime.value.split(':').map(Number)
-  start.setHours(sh, sm, 0, 0)
-  
-  const end = new Date(range.value.end)
-  const [eh, em] = endTime.value.split(':').map(Number)
-  end.setHours(eh, em, 0, 0)
+  if (activeTab.value === 'daily') {
+    if (!range.value || !range.value.start || !range.value.end) return '0 ngày'
+    
+    const start = new Date(range.value.start)
+    const [sh, sm] = startTime.value.split(':').map(Number)
+    start.setHours(sh, sm, 0, 0)
+    
+    const end = new Date(range.value.end)
+    const [eh, em] = endTime.value.split(':').map(Number)
+    end.setHours(eh, em, 0, 0)
 
-  if (activeTab.value === 'hourly') {
-    const ms = end.getTime() - start.getTime()
-    const hours = Math.max(0, Math.ceil(ms / (1000 * 60 * 60)))
-    return `${hours} giờ`
-  } else {
-    // Thuê theo ngày thì tính theo ngày hoặc tròn ngày
     const ms = end.getTime() - start.getTime()
     const days = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)))
     return `${days} ngày`
+  } else {
+    return `${rentDuration.value} giờ`
   }
 })
 
 watch(() => props.isOpen, (val) => {
   if (val) {
     if (props.initialStart && props.initialEnd) {
-      range.value = {
-        start: new Date(props.initialStart),
-        end: new Date(props.initialEnd)
+      const start = new Date(props.initialStart)
+      const end = new Date(props.initialEnd)
+      
+      const isSameDay = start.getDate() === end.getDate() &&
+                        start.getMonth() === end.getMonth() &&
+                        start.getFullYear() === end.getFullYear()
+      
+      if (isSameDay) {
+        activeTab.value = 'hourly'
+        singleDate.value = start
+        startTime.value = `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`
+        const diffMs = end.getTime() - start.getTime()
+        const hours = Math.round(diffMs / (1000 * 60 * 60))
+        rentDuration.value = hours > 0 ? hours : 4
+      } else {
+        activeTab.value = 'daily'
+        range.value = {
+          start: start,
+          end: end
+        }
+        startTime.value = `${start.getHours().toString().padStart(2, '0')}:${start.getMinutes().toString().padStart(2, '0')}`
+        endTime.value = `${end.getHours().toString().padStart(2, '0')}:${end.getMinutes().toString().padStart(2, '0')}`
       }
-      startTime.value = `${props.initialStart.getHours().toString().padStart(2, '0')}:${props.initialStart.getMinutes().toString().padStart(2, '0')}`
-      endTime.value = `${props.initialEnd.getHours().toString().padStart(2, '0')}:${props.initialEnd.getMinutes().toString().padStart(2, '0')}`
+    } else {
+      singleDate.value = new Date()
+      startTime.value = '21:00'
+      rentDuration.value = 4
+      range.value = {
+        start: new Date(),
+        end: new Date(Date.now() + 86400000 * 2)
+      }
+      startTime.value = '21:00'
+      endTime.value = '20:00'
     }
   }
 })
