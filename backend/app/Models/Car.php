@@ -24,7 +24,9 @@ class Car extends Model
         'transmission',
         'user_id',
         'delivery_option_id',
-        'usage_limit_id'
+        'usage_limit_id',
+        'status'
+  
     ];
 
     public function carLocation()
