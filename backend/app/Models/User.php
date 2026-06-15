@@ -46,6 +46,21 @@ class User extends Authenticatable implements JWTSubject
         'driving_license_id'
     ];
 
+    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Role::class);
+    }
+
+    public function wallet(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Wallet::class);
+    }
+
+    public function drivingLicense(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(DrivingLicense::class, 'driving_license_id');
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
