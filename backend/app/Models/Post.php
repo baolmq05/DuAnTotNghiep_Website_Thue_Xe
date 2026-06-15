@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enum\PostStatus;
+use App\Models\PostCategory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    //
+    use SoftDeletes;
+
     protected $fillable = [
         'title',
         'slug',
@@ -19,4 +23,13 @@ class Post extends Model
         'type',
         'published_at',
     ];
+
+    protected $casts = [
+        'status' => PostStatus::class,
+    ];
+
+    public function category()
+    {
+        return $this->belongsTo(PostCategory::class, 'post_category_id');
+    }
 }
