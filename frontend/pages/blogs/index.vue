@@ -1,5 +1,7 @@
 <template>
     <div class="min-h-screen flex flex-col bg-white overflow-x-hidden">
+        <!-- Full-screen Loading Overlay -->
+        <CommonLoadingOverlay :loading="loading" text="Đang tải danh sách bài viết" />
 
         <!-- HERO -->
         <section
@@ -33,157 +35,62 @@
                     <h2 class="text-2xl font-black mb-6">Bài viết gần đây</h2>
 
                     <!-- List Blog — style giống HomePage/Blog.vue -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-[260px]">
-
-                        <!-- Card 1 -->
-                        <a href="#"
+                    <div v-if="!loading && posts.length === 0" class="flex flex-col items-center justify-center h-48 text-gray-500 lg:col-span-2">
+                        <Icon name="ri:article-line" size="48" class="mb-3 text-gray-400" />
+                        <p class="text-lg font-medium">Không tìm thấy bài viết nào</p>
+                    </div>
+                    <div v-else-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-[260px]">
+                        <NuxtLink v-for="post in posts" :key="post.id" :to="`/blogs/${post.id}`"
                             class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=80"
-                                alt="Hướng dẫn thuê xe"
+                            <img :src="getThumbnailUrl(post.thumbnail)"
+                                :alt="post.title"
                                 class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                             <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
                             </div>
                             <div class="z-10">
                                 <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Hướng
-                                    dẫn</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    5 bước đặt xe tự lái dễ dàng cho người mới
+                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">
+                                    {{ post.category?.name || 'Tin tức' }}
+                                </span>
+                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight line-clamp-2">
+                                    {{ post.title }}
                                 </h2>
                                 <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi Admin Drivio</p>
+                                <p class="text-sm text-slate-300 font-medium">bởi {{ post.user?.name || 'Admin' }}</p>
                             </div>
-                        </a>
-
-                        <!-- Card 2 -->
-                        <a href="#"
-                            class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80"
-                                alt="Mẹo thuê xe"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                            </div>
-                            <div class="z-10">
-                                <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Mẹo
-                                    & Thủ thuật</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    15 tỉnh thành đẹp nhất để khám phá bằng xe tự lái
-                                </h2>
-                                <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi Davey Jones</p>
-                            </div>
-                        </a>
-
-                        <!-- Card 3 -->
-                        <a href="#"
-                            class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=800&q=80"
-                                alt="Đánh giá xe"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                            </div>
-                            <div class="z-10">
-                                <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Đánh
-                                    giá xe</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    Review Toyota Innova — Lựa chọn gia đình số 1
-                                </h2>
-                                <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi Maria Gonzalez</p>
-                            </div>
-                        </a>
-
-                        <!-- Card 4 -->
-                        <a href="#"
-                            class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1527631746610-bca00a040d60?auto=format&fit=crop&w=800&q=80"
-                                alt="Khuyến mãi"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                            </div>
-                            <div class="z-10">
-                                <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Khuyến
-                                    mãi</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    Ưu đãi hè 2025 — Giảm 20% mọi chuyến đi nội thành
-                                </h2>
-                                <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi Davey Jones</p>
-                            </div>
-                        </a>
-
-                        <!-- Card 5 -->
-                        <a href="#"
-                            class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=800&q=80"
-                                alt="Hành trình"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                            </div>
-                            <div class="z-10">
-                                <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Hành
-                                    trình</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    Top 10 cung đường đẹp nhất miền Trung Việt Nam
-                                </h2>
-                                <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi Bruce Leeroy</p>
-                            </div>
-                        </a>
-
-                        <!-- Card 6 -->
-                        <a href="#"
-                            class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
-                            <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80"
-                                alt="Kinh nghiệm"
-                                class="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-                            </div>
-                            <div class="z-10">
-                                <span
-                                    class="inline-block text-xs font-bold uppercase tracking-widest text-teal-300 mb-2">Kinh
-                                    nghiệm</span>
-                                <h2 class="text-lg font-bold uppercase tracking-wide leading-tight">
-                                    Bí kíp chọn xe phù hợp cho chuyến road trip dài ngày
-                                </h2>
-                                <div class="w-10 h-0.5 bg-white my-3 opacity-60"></div>
-                                <p class="text-sm text-slate-300 font-medium">bởi BanneLee</p>
-                            </div>
-                        </a>
-
+                        </NuxtLink>
                     </div>
 
                     <!-- Pagination -->
-                    <div class="flex justify-center mt-8">
-                        <nav aria-label="Page navigation example">
+                    <div v-if="totalPages > 1" class="flex justify-center mt-8">
+                        <nav aria-label="Page navigation">
                             <ul class="list-style-none flex items-center gap-2">
                                 <li>
-                                    <a class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:bg-neutral-100 focus:text-primary-700 focus:outline-none focus:ring-0 active:bg-neutral-100 active:text-primary-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:focus:text-primary-500 dark:active:bg-neutral-700 dark:active:text-primary-500"
-                                        href="#">
+                                    <button 
+                                        @click="changePage(currentPage - 1)"
+                                        :disabled="currentPage === 1"
+                                        class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 disabled:opacity-50 disabled:hover:bg-transparent dark:text-white dark:hover:bg-neutral-700"
+                                    >
                                         <Icon name="ri:arrow-left-s-line" size="24" />
-                                    </a>
+                                    </button>
+                                </li>
+                                <li v-for="page in totalPages" :key="page">
+                                    <button 
+                                        @click="changePage(page)"
+                                        class="relative block rounded px-3 py-1.5 text-sm font-semibold transition duration-300 focus:outline-none"
+                                        :class="page === currentPage ? 'bg-teal-500 text-white shadow-sm' : 'bg-transparent text-neutral-700 hover:bg-neutral-100 dark:text-white dark:hover:bg-neutral-700'"
+                                    >
+                                        {{ page }}
+                                    </button>
                                 </li>
                                 <li>
-                                    <a class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:bg-neutral-100 focus:text-primary-700 focus:outline-none active:bg-neutral-100 active:text-primary-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:focus:text-primary-500 dark:active:bg-neutral-700 dark:active:text-primary-500"
-                                        href="#">1</a>
-                                </li>
-                                <li aria-current="page">
-                                    <a class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:bg-neutral-100 focus:text-primary-700 focus:outline-none active:bg-neutral-100 active:text-primary-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:focus:text-primary-500 dark:active:bg-neutral-700 dark:active:text-primary-500"
-                                        href="#">2</a>
-                                </li>
-                                <li>
-                                    <a class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:bg-neutral-100 focus:text-primary-700 focus:outline-none active:bg-neutral-100 active:text-primary-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:focus:text-primary-500 dark:active:bg-neutral-700 dark:active:text-primary-500"
-                                        href="#">3</a>
-                                </li>
-                                <li>
-                                    <a class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 focus:bg-neutral-100 focus:text-primary-700 focus:outline-none active:bg-neutral-100 active:text-primary-700 dark:text-white dark:hover:bg-neutral-700 dark:focus:bg-neutral-700 dark:focus:text-primary-500 dark:active:bg-neutral-700 dark:active:text-primary-500"
-                                        href="#">
+                                    <button 
+                                        @click="changePage(currentPage + 1)"
+                                        :disabled="currentPage === totalPages"
+                                        class="relative block rounded bg-transparent px-3 py-1.5 text-sm text-surface transition duration-300 hover:bg-neutral-100 disabled:opacity-50 disabled:hover:bg-transparent dark:text-white dark:hover:bg-neutral-700"
+                                    >
                                         <Icon name="ri:arrow-right-s-line" size="24" />
-                                    </a>
+                                    </button>
                                 </li>
                             </ul>
                         </nav>
@@ -194,11 +101,16 @@
                 <div class="order-1 lg:order-2">
                     <h3 class="text-xl font-bold">Danh mục</h3>
                     <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
+                    
                     <!-- SEARCH -->
                     <div class="mb-6 relative">
-                        <input type="text" placeholder="Tìm bài viết..."
-                            class="w-full pl-10 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
-
+                        <input 
+                            type="text" 
+                            :value="searchQuery"
+                            @input="handleSearchInput"
+                            placeholder="Tìm bài viết..."
+                            class="w-full pl-10 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" 
+                        />
                         <!-- ICON -->
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
                             stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -206,60 +118,51 @@
                                 d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
                         </svg>
                     </div>
-                    <!-- Category -->
 
+                    <!-- Category -->
                     <div class="flex flex-wrap gap-3">
-                        <!-- CATEGORY BUTTON -->
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
+                        <button 
+                            type="button"
+                            @click="filterByCategory('')"
+                            class="inline-flex items-center gap-2 rounded-full border-2 px-4 py-2 text-xs font-medium uppercase transition"
+                            :class="selectedCategoryId === '' ? 'border-teal-500 bg-teal-500 text-white hover:bg-teal-600' : 'border-teal-500 text-teal-600 hover:border-teal-600 hover:bg-teal-400/10 hover:text-teal-600'"
+                        >
                             Tất cả
                         </button>
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
-                            Hướng dẫn
-                        </button>
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
-                            Mẹo và Thủ thuật
-                        </button>
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
-                            Đánh giá xe
-                        </button>
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
-                            Khuyến mãi
-                        </button>
-                        <button type="button"
-                            class="inline-flex items-center gap-2 rounded-full border-2 border-blue-500 text-blue-500 hover:border-blue-600 hover:bg-blue-400 hover:bg-opacity-10 hover:text-blue-600 px-4 py-2 text-xs font-medium uppercase transition">
-                            Tất cả
+                        <button 
+                            v-for="cat in categories" 
+                            :key="cat.id"
+                            type="button"
+                            @click="filterByCategory(cat.id)"
+                            class="inline-flex items-center gap-2 rounded-full border-2 px-4 py-2 text-xs font-medium uppercase transition"
+                            :class="selectedCategoryId === cat.id ? 'border-teal-500 bg-teal-500 text-white hover:bg-teal-600' : 'border-teal-500 text-teal-600 hover:border-teal-600 hover:bg-teal-400/10 hover:text-teal-600'"
+                        >
+                            {{ cat.name }}
                         </button>
                     </div>
 
                     <!-- Popular Posts -->
                     <h3 class="mt-10 text-xl font-bold">Bài viết nổi bật</h3>
                     <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
-                    <div class="flex flex-col gap-3">
-
-                        <!-- Item -->
-                        <div class="flex gap-3">
-                            <div class="w-[30%] border rounded-md relative overflow-hidden">
-                                <img src="https://tecdn.b-cdn.net/img/new/standard/nature/184.jpg"
+                    <div class="flex flex-col gap-4">
+                        <div v-for="pop in popularPosts" :key="pop.id" class="flex gap-3 h-20">
+                            <NuxtLink :to="`/blogs/${pop.id}`" class="w-[30%] border rounded-md relative overflow-hidden flex-shrink-0">
+                                <img :src="getThumbnailUrl(pop.thumbnail)"
                                     class="w-full h-full object-cover" />
                                 <div class="absolute inset-0 bg-gradient-to-r from-[#1e4e57] to-[#286874] opacity-25">
                                 </div>
-                            </div>
-                            <div class="w-[70%] flex flex-col justify-center gap-2">
-                                <h5 class="flex items-center justify-start text-neutral-500 dark:text-neutral-300">
-                                    <span class="mr-2">
-                                        Category
-                                    </span>
-                                    <span
-                                        class="inline-block whitespace-nowrap rounded-[0.27rem] bg-blue-100 px-[0.65em] pb-[0.25em] pt-[0.35em] text-center align-baseline text-[0.75em] font-bold leading-none text-blue-700">
-                                        New
+                            </NuxtLink>
+                            <div class="w-[70%] flex flex-col justify-center">
+                                <h5 class="flex items-center justify-start text-neutral-500 text-xs mb-1">
+                                    <span class="mr-2 font-medium">
+                                        {{ pop.category?.name || 'Tin tức' }}
                                     </span>
                                 </h5>
-                                <h3 class="font-bold text-lg"><a href="#">Explore the hidden beauty</a></h3>
+                                <h3 class="font-bold text-sm leading-snug line-clamp-2">
+                                    <NuxtLink :to="`/blogs/${pop.id}`" class="hover:text-teal-600 transition">
+                                        {{ pop.title }}
+                                    </NuxtLink>
+                                </h3>
                             </div>
                         </div>
                     </div>
@@ -271,6 +174,10 @@
 </template>
 
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { postService, type Post, type PostCategory } from '~/services/post.service'
+import { BASE_URL } from '~/enviroment/enviroment'
+
 useSeoMeta({
     title: 'Blog Thuê Xe Ô Tô Tự Lái | Kinh Nghiệm, Mẹo & Đánh Giá Xe — Drivio',
     description:
@@ -280,5 +187,124 @@ useSeoMeta({
         'Mẹo chọn xe, kinh nghiệm đi đường dài, đánh giá xe và khuyến mãi thuê xe tự lái — tất cả tại Blog Drivio.',
     ogImage: '/images/about/aboutHero.jpg',
     twitterCard: 'summary_large_image',
+})
+
+const posts = ref<Post[]>([])
+const categories = ref<PostCategory[]>([])
+const popularPosts = ref<Post[]>([])
+const selectedCategoryId = ref<number | string>('')
+const searchQuery = ref('')
+const currentPage = ref(1)
+const totalPages = ref(1)
+const loading = ref(false)
+
+// Thao tác tìm kiếm với debounce đơn giản
+let searchTimeout: any = null
+const handleSearchInput = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    searchQuery.value = target.value
+    currentPage.value = 1
+    clearTimeout(searchTimeout)
+    searchTimeout = setTimeout(() => {
+        fetchPosts()
+    }, 400)
+}
+
+// Gọi API lấy bài viết
+const fetchPosts = async (useOverlay = true) => {
+    if (useOverlay) loading.value = true
+    try {
+        console.log('fetchPosts: Đang gọi API lấy danh sách bài viết...')
+        const res = await postService.getPostsApi({
+            page: currentPage.value,
+            category_id: selectedCategoryId.value,
+            search: searchQuery.value,
+            limit: 6
+        })
+        console.log('fetchPosts: Phản hồi từ API:', res)
+        if (res.success && res.data) {
+            posts.value = res.data.data
+            console.log('fetchPosts: Đã lưu danh sách bài viết:', posts.value)
+            totalPages.value = res.data.last_page
+        }
+    } catch (err) {
+        console.error('Lỗi khi lấy danh sách bài viết:', err)
+    } finally {
+        if (useOverlay) loading.value = false
+    }
+}
+
+// Gọi API danh mục bài viết
+const fetchCategories = async () => {
+    try {
+        console.log('fetchCategories: Đang gọi API lấy danh mục...')
+        const res = await postService.getCategoriesApi()
+        console.log('fetchCategories: Phản hồi danh mục từ API:', res)
+        if (res.success && res.data) {
+            categories.value = res.data
+            console.log('fetchCategories: Đã lưu danh mục:', categories.value)
+        }
+    } catch (err) {
+        console.error('Lỗi khi lấy danh mục bài viết:', err)
+    }
+}
+
+// Lấy 3 bài viết nổi bật (mới nhất)
+const fetchPopularPosts = async () => {
+    try {
+        console.log('fetchPopularPosts: Đang gọi API bài viết nổi bật...')
+        const res = await postService.getPostsApi({ limit: 3 })
+        console.log('fetchPopularPosts: Phản hồi nổi bật từ API:', res)
+        if (res.success && res.data) {
+            popularPosts.value = res.data.data
+            console.log('fetchPopularPosts: Đã lưu nổi bật:', popularPosts.value)
+        }
+    } catch (err) {
+        console.error('Lỗi khi lấy bài viết nổi bật:', err)
+    }
+}
+
+// Lọc theo danh mục
+const filterByCategory = (catId: number | string) => {
+    selectedCategoryId.value = catId
+    currentPage.value = 1
+    fetchPosts()
+}
+
+// Chuyển trang
+const changePage = (page: number) => {
+    if (page < 1 || page > totalPages.value) return
+    currentPage.value = page
+    fetchPosts()
+    // Cuộn lên đầu phần nội dung
+    if (process.client) {
+        window.scrollTo({ top: 400, behavior: 'smooth' })
+    }
+}
+
+// Hàm format hình ảnh thumbnail
+const getThumbnailUrl = (thumbnail: string | null) => {
+    if (!thumbnail) {
+        return 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80'
+    }
+    if (thumbnail.startsWith('http') || thumbnail.startsWith('/')) {
+        return thumbnail
+    }
+    return `${BASE_URL}storage/${thumbnail}`
+}
+
+onMounted(async () => {
+    loading.value = true
+    try {
+        await Promise.all([
+            fetchPosts(false),
+            fetchCategories(),
+            fetchPopularPosts()
+        ])
+    } catch (err) {
+        console.error('Lỗi khi khởi tạo dữ liệu trang blog:', err)
+    } finally {
+        loading.value = false
+    }
 })
 </script>

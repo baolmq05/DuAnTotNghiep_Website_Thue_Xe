@@ -143,14 +143,14 @@ const activeTab = ref(0)
 const navItems = [
   { text: 'Trang chủ', to: '/' },
   { text: 'Về Drivio', to: '/about' },
-  { text: 'Bài viết', to: '/blog' },
+  { text: 'Bài viết', to: '/blogs' },
   { text: 'Trở thành chủ xe', to: '/become-host' }
 ]
 
 const bottomNavItems = [
   { text: 'Trang chủ', icon: 'home', to: '/' },
   { text: 'Về Drivio', icon: 'info', to: '/about' },
-  { text: 'Bài viết', icon: 'blog', to: '/blog' },
+  { text: 'Bài viết', icon: 'blog', to: '/blogs' },
   { text: 'Chủ xe', icon: 'host', to: '/become-host' },
   { text: 'Tài khoản', icon: 'account' }
 ]

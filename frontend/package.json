@@ -20,6 +20,7 @@
     "vue-router": "^5.1.0"
   },
   "devDependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.1.1"
+    "@rolldown/binding-win32-x64-msvc": "^1.1.1",
+    "@types/node": "^25.9.3"
   }
 }

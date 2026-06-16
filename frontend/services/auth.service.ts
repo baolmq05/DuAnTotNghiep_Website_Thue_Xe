@@ -1,5 +1,6 @@
 import { BaseService } from "./base.service";
 
+// console.log("BaseService =", BaseService);
 export class AuthService extends BaseService {
   constructor() {
     super("auth");

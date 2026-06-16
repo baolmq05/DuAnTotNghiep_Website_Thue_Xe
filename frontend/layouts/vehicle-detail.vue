@@ -21,7 +21,6 @@
 </template>
 
 <script lang="ts" setup>
-import { F } from 'vue-router/dist/index-BQLwgiyK.js';
 import HeaderProfile from '~/components/Profile/HeaderProfile.vue'
 import Footer from '~/components/footer.vue'
 </script>
