@@ -38,6 +38,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
+                \App\Filament\Widgets\StatsOverview::class,
+                \App\Filament\Widgets\Dashboard\RevenueChart::class,
+                \App\Filament\Widgets\Dashboard\StatusDoughnutChart::class,
                 AccountWidget::class,
                 FilamentInfoWidget::class,
             ])
