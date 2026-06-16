@@ -61,6 +61,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(DrivingLicense::class, 'driving_license_id');
     }
 
+    public function addresses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Address::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
