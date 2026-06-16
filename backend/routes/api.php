@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\CarController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FavoriteController;
+use App\Http\Controllers\Api\PromotionController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -29,4 +30,14 @@ Route::group(['middleware' => 'api'], function () {
     Route::get('favorites', [FavoriteController::class, 'index']); 
     Route::post('favorites', [FavoriteController::class, 'store']); 
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']); 
+});
+// Các route cho khuyến mãi
+Route::get('promotions', [PromotionController::class, 'index']);
+Route::get('promotions/{id}', [PromotionController::class, 'show']);
+
+// Route cần đăng nhập (admin/user có quyền)
+Route::group(['middleware' => 'api'], function () {
+    Route::post('promotions', [PromotionController::class, 'store']);
+    Route::put('promotions/{id}', [PromotionController::class, 'update']);
+    Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 });
