@@ -34,10 +34,20 @@
                 <div class="lg:col-span-2 order-2 lg:order-1">
                     <h2 class="text-2xl font-black mb-6">Bài viết gần đây</h2>
 
-                    <!-- List Blog — style giống HomePage/Blog.vue -->
-                    <div v-if="!loading && posts.length === 0" class="flex flex-col items-center justify-center h-48 text-gray-500 lg:col-span-2">
-                        <Icon name="ri:article-line" size="48" class="mb-3 text-gray-400" />
-                        <p class="text-lg font-medium">Không tìm thấy bài viết nào</p>
+                    <div v-if="!loading && posts.length === 0" class="w-full py-16 px-4 flex flex-col items-center justify-center text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200 lg:col-span-2">
+                        <div class="relative mb-6">
+                            <div class="w-20 h-20 bg-teal-50 rounded-full flex items-center justify-center text-teal-600 animate-pulse">
+                                <Icon name="ri:article-line" size="40" />
+                            </div>
+                            <div class="absolute -bottom-1 -right-1 w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center text-white border-2 border-white shadow-sm">
+                                <Icon name="ri:compass-discover-line" size="12" />
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-xl font-bold text-gray-800 mb-2">Không tìm thấy bài viết</h3>
+                        <p class="text-gray-500 max-w-md mb-6 text-sm md:text-base leading-relaxed">
+                            Chúng tôi không tìm thấy bài viết nào phù hợp với danh mục hoặc từ khóa tìm kiếm của bạn. Hãy thử tìm kiếm với từ khóa khác nhé!
+                        </p>
                     </div>
                     <div v-else-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-[260px]">
                         <NuxtLink v-for="post in posts" :key="post.id" :to="`/blogs/${post.id}`"
@@ -142,27 +152,29 @@
                     </div>
 
                     <!-- Popular Posts -->
-                    <h3 class="mt-10 text-xl font-bold">Bài viết nổi bật</h3>
-                    <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
-                    <div class="flex flex-col gap-4">
-                        <div v-for="pop in popularPosts" :key="pop.id" class="flex gap-3 h-20">
-                            <NuxtLink :to="`/blogs/${pop.id}`" class="w-[30%] border rounded-md relative overflow-hidden flex-shrink-0">
-                                <img :src="getThumbnailUrl(pop.thumbnail)"
-                                    class="w-full h-full object-cover" />
-                                <div class="absolute inset-0 bg-gradient-to-r from-[#1e4e57] to-[#286874] opacity-25">
+                    <div v-if="popularPosts.length > 0">
+                        <h3 class="mt-10 text-xl font-bold">Bài viết nổi bật</h3>
+                        <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
+                        <div class="flex flex-col gap-4">
+                            <div v-for="pop in popularPosts" :key="pop.id" class="flex gap-3 h-20">
+                                <NuxtLink :to="`/blogs/${pop.id}`" class="w-[30%] border rounded-md relative overflow-hidden flex-shrink-0">
+                                    <img :src="getThumbnailUrl(pop.thumbnail)"
+                                        class="w-full h-full object-cover" />
+                                    <div class="absolute inset-0 bg-gradient-to-r from-[#1e4e57] to-[#286874] opacity-25">
+                                    </div>
+                                </NuxtLink>
+                                <div class="w-[70%] flex flex-col justify-center">
+                                    <h5 class="flex items-center justify-start text-neutral-500 text-xs mb-1">
+                                        <span class="mr-2 font-medium">
+                                            {{ pop.category?.name || 'Tin tức' }}
+                                        </span>
+                                    </h5>
+                                    <h3 class="font-bold text-sm leading-snug line-clamp-2">
+                                        <NuxtLink :to="`/blogs/${pop.id}`" class="hover:text-teal-600 transition">
+                                            {{ pop.title }}
+                                        </NuxtLink>
+                                    </h3>
                                 </div>
-                            </NuxtLink>
-                            <div class="w-[70%] flex flex-col justify-center">
-                                <h5 class="flex items-center justify-start text-neutral-500 text-xs mb-1">
-                                    <span class="mr-2 font-medium">
-                                        {{ pop.category?.name || 'Tin tức' }}
-                                    </span>
-                                </h5>
-                                <h3 class="font-bold text-sm leading-snug line-clamp-2">
-                                    <NuxtLink :to="`/blogs/${pop.id}`" class="hover:text-teal-600 transition">
-                                        {{ pop.title }}
-                                    </NuxtLink>
-                                </h3>
                             </div>
                         </div>
                     </div>
