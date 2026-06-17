@@ -46,7 +46,7 @@ class CarController extends Controller
         }
 
         // Khởi tạo query
-        $query = Car::query();
+        $query = Car::query()->where('status', 1);
 
         // 1. Lọc xe rảnh lịch trong khoảng thời gian [startDate, endDate]
         if ($request->has('startDate') && $request->has('endDate')) {
