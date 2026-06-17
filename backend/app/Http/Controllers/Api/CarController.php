@@ -95,6 +95,16 @@ class CarController extends Controller
             $query->where('unit_price', '<=', $request->max_price);
         }
 
+        // Lọc theo chủ sở hữu (user_id)
+        if ($request->has('user_id')) {
+            $query->where('user_id', $request->user_id);
+        }
+
+        // Lọc theo trạng thái xe (status)
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
         // Eager load các quan hệ & tính toán rating trung bình, tổng số chuyến đi
         $query->with(['carLocation', 'carBrand', 'carType', 'images'])
             ->withAvg('reviews', 'rating')

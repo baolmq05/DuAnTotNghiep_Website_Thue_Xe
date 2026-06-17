@@ -215,12 +215,86 @@
         </div>
       </div>
 
-      <div
-        class="h-[220px] md:h-[300px] flex flex-col justify-center items-center text-gray-500"
-      >
-        <Icon name="ic:outline-directions-car" size="80" />
+      <!-- Loading State -->
+      <div v-if="loadingCars" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+        <div v-for="i in 3" :key="i" class="animate-pulse bg-slate-50 border border-slate-100 rounded-2xl h-[280px] p-4 flex flex-col justify-between">
+          <div class="bg-slate-200 h-36 w-full rounded-xl mb-3"></div>
+          <div class="h-4 bg-slate-200 rounded w-1/3 mb-2"></div>
+          <div class="h-6 bg-slate-200 rounded w-3/4 mb-2"></div>
+          <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+        </div>
+      </div>
 
-        <p class="mt-4 text-center">Không tìm thấy xe nào.</p>
+      <!-- Empty State -->
+      <div
+        v-else-if="userCars.length === 0"
+        class="h-[220px] md:h-[300px] flex flex-col justify-center items-center text-gray-500 mt-6 border border-dashed border-slate-100 rounded-2xl bg-slate-50/55 w-full"
+      >
+        <Icon name="ic:outline-directions-car" size="80" class="text-slate-300" />
+        <p class="mt-4 text-center text-slate-500 font-medium">Bạn chưa đăng ký xe tự lái nào.</p>
+        <NuxtLink to="/car-register" class="mt-4 px-5 py-2 bg-brand-primary text-white text-xs font-semibold rounded-xl hover:bg-brand-dark transition-all duration-300 shadow-sm focus:outline-none">
+          Đăng ký xe ngay
+        </NuxtLink>
+      </div>
+
+      <!-- Car Grid -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mt-6 w-full">
+        <NuxtLink
+          v-for="car in userCars"
+          :key="car.id"
+          :to="'/vehicles/' + car.id"
+          class="group bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 flex flex-col"
+        >
+          <!-- Thumbnail -->
+          <div class="relative overflow-hidden aspect-[16/10.5] shrink-0">
+            <img 
+              :src="getThumbnailUrl(car.images)" 
+              :alt="car.name"
+              class="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500" 
+            />
+            <div class="absolute top-2.5 left-2.5">
+              <span v-if="car.status === 1" class="text-[9px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2 py-0.5 rounded-md uppercase">
+                Hoạt động
+              </span>
+              <span v-else-if="car.status === 2" class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded-md uppercase">
+                Chờ duyệt
+              </span>
+              <span v-else-if="car.status === 3" class="text-[9px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded-md uppercase">
+                Từ chối
+              </span>
+              <span v-else class="text-[9px] font-bold text-slate-600 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md uppercase">
+                Tạm dừng
+              </span>
+            </div>
+            <div class="absolute bottom-2 right-2 bg-slate-900/60 backdrop-blur-sm text-white px-2 py-0.5 rounded text-[10px] font-mono">
+              {{ car.license_plate }}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="p-3.5 flex flex-col justify-between flex-grow">
+            <div>
+              <h4 class="font-bold text-sm text-slate-800 line-clamp-1 group-hover:text-brand-primary transition-colors">
+                {{ car.name }}
+              </h4>
+              <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+                <Icon name="lucide:map-pin" class="shrink-0" />
+                <span class="truncate">{{ car.car_location ? `${car.car_location.district}, ${car.car_location.city}` : 'Chưa cập nhật' }}</span>
+              </p>
+            </div>
+
+            <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
+              <div class="text-[10px] text-slate-400 flex items-center gap-1">
+                <span>{{ car.seat_count }} chỗ</span>
+                <span>•</span>
+                <span>{{ car.transmission }}</span>
+              </div>
+              <div class="text-xs font-bold text-brand-primary">
+                {{ formatPrice(car.unit_price) }}<span class="text-[9px] font-normal text-slate-400">/ngày</span>
+              </div>
+            </div>
+          </div>
+        </NuxtLink>
       </div>
     </div>
     <!-- Edit Profile Modal -->
@@ -287,6 +361,8 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
+import { myCarService, type Car } from '~/services/my_car.service'
+import { BASE_URL } from '~/enviroment/enviroment'
 
 definePageMeta({
   layout: 'profile',
@@ -296,6 +372,8 @@ const { user, updateProfile } = useAuth()
 const { showToast } = useToast()
 
 const isEditModalOpen = ref(false)
+const loadingCars = ref(true)
+const userCars = ref<Car[]>([])
 
 const editForm = reactive({
   name: '',
@@ -334,9 +412,39 @@ const handleUpdateProfile = async () => {
   }
 }
 
-onMounted(() => {
+// Helpers
+const getThumbnailUrl = (images: any[] | undefined) => {
+  const defaultImg = 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600';
+  if (!images || images.length === 0) {
+    return defaultImg;
+  }
+  const primaryImg = images.find(img => img.is_thumbnail === 1) || images[0];
+  const imgUrl = primaryImg.image_url || '';
+  if (imgUrl.startsWith('http') || imgUrl.startsWith('/')) {
+    return imgUrl;
+  }
+  return `${BASE_URL}storage/${imgUrl}`;
+}
+
+const formatPrice = (val: number) => {
+  return val.toLocaleString('vi-VN') + 'đ';
+};
+
+onMounted(async () => {
   if (!user.value) {
     navigateTo('/')
+    return
+  }
+
+  try {
+    const res = await myCarService.getCars({ user_id: user.value.id })
+    if (res.success && res.data) {
+      userCars.value = res.data
+    }
+  } catch (err) {
+    console.error('Lỗi khi tải danh sách xe trong hồ sơ:', err)
+  } finally {
+    loadingCars.value = false
   }
 })
 </script>

@@ -50,7 +50,7 @@ class CarSeeder extends Seeder
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
             'status' => 1,
-            'user_id' => 1,
+            'user_id' => 4,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
         ]);
@@ -70,7 +70,7 @@ class CarSeeder extends Seeder
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
             'status' => 2,
-            'user_id' => 1,
+            'user_id' => 4,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
         ]);
@@ -90,7 +90,7 @@ class CarSeeder extends Seeder
             'fuel_type' => 'Xăng',
             'transmission' => 'Tự động',
             'status' => 0,
-            'user_id' => 1,
+            'user_id' => 4,
             'delivery_option_id' => 1,
             'usage_limit_id' => 1
         ]);

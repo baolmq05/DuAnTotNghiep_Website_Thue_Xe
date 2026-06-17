@@ -30,7 +30,21 @@
       </div>
     </div>
 
-    <div v-if="filteredCars.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Loading State -->
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="i in 3" :key="i" class="animate-pulse bg-slate-100 rounded-2xl h-[420px] border border-slate-100 p-4 flex flex-col justify-between">
+        <div class="bg-slate-200 h-48 w-full rounded-xl mb-4"></div>
+        <div class="space-y-3 flex-grow">
+          <div class="h-4 bg-slate-200 rounded w-1/4"></div>
+          <div class="h-6 bg-slate-200 rounded w-3/4"></div>
+          <div class="h-4 bg-slate-200 rounded w-1/2"></div>
+        </div>
+        <div class="h-10 bg-slate-200 rounded-xl w-full mt-4"></div>
+      </div>
+    </div>
+
+    <!-- Loaded Cars -->
+    <div v-else-if="filteredCars.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div 
         v-for="car in filteredCars" 
         :key="car.licensePlate"
@@ -165,100 +179,22 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { myCarService, type Car } from '~/services/my_car.service';
+import { BASE_URL } from '~/enviroment/enviroment';
 
 definePageMeta({
   layout: "my-cars",
 });
 
+const { user } = useAuth();
+const loading = ref(true);
+const userCars = ref<Car[]>([]);
+
 // State lưu trạng thái bộ lọc đang được chọn (Mặc định hiển thị "Tất cả")
 const selectedStatus = ref<string>('all');
 
-// 1. Dữ liệu thô - Bổ sung trường "status" khớp 100% với kiểu số nguyên từ Migration mới của Sếp
-const rawCarsFromSeeder = [
-  {
-    name: 'Toyota Camry',
-    license_plate: '30A-12345',
-    fuel_consumption: 8.5,
-    unit_price: 1000000,
-    discount_value: 100000,
-    description: 'Xe sang trọng, tiện nghi, phù hợp cho các chuyến đi dài ngày.',
-    rental_terms: 'Không hút thuốc, không chở vật nuôi, trả xe đúng giờ.',
-    car_location_id: 1,
-    car_brand_id: 1,
-    car_type_id: 1,
-    seat_count: 5,
-    manufacture_year: '2020-01-01',
-    fuel_type: 'Xăng',
-    transmission: 'Tự động',
-    user_id: 1,
-    delivery_option_id: 1,
-    usage_limit_id: 1,
-    status: 1 // 1: Đang hoạt động
-  },
-  {
-    name: 'Honda Civic',
-    license_plate: '30B-54321',
-    fuel_consumption: 7.2,
-    unit_price: 900000,
-    discount_value: 50000,
-    description: 'Xe thể thao, năng động, phù hợp cho các chuyến đi trong thành phố.',
-    rental_terms: 'Không hút thuốc, không chở vật nuôi, trả xe đúng giờ.',
-    car_location_id: 1,
-    car_brand_id: 2,
-    car_type_id: 1,
-    seat_count: 5,
-    manufacture_year: '2019-01-01',
-    fuel_type: 'Xăng',
-    transmission: 'Tự động',
-    user_id: 1,
-    delivery_option_id: 1,
-    usage_limit_id: 1,
-    status: 2 // 2: Chờ duyệt (Trạng thái mặc định hệ thống)
-  },
-  {
-    name: 'Toyota Wigo',
-    license_plate: '30C-67890',
-    fuel_consumption: 6.0,
-    unit_price: 700000,
-    discount_value: 30000,
-    description: 'Xe nhỏ gọn, tiết kiệm nhiên liệu, phù hợp cho các chuyến đi trong thành phố.',
-    rental_terms: 'Không hút thuốc, không chở vật nuôi, trả xe đúng giờ.',
-    car_location_id: 1,
-    car_brand_id: 1,
-    car_type_id: 2,
-    seat_count: 5,
-    manufacture_year: '2021-01-01',
-    fuel_type: 'Xăng',
-    transmission: 'Tự động',
-    user_id: 1,
-    delivery_option_id: 1,
-    usage_limit_id: 1,
-    status: 0 // 0: Dừng hoạt động
-  },
-  {
-    name: 'Toyota Corolla Cross',
-    license_plate: '30D-98765',
-    fuel_consumption: 7.8,
-    unit_price: 800000,
-    discount_value: 40000,
-    description: 'Xe SUV, rộng rãi, phù hợp cho các chuyến đi gia đình hoặc nhóm bạn.',
-    rental_terms: 'Không hút thuốc, không chở vật nuôi, trả xe đúng giờ.',
-    car_location_id: 1,
-    car_brand_id: 1,
-    car_type_id: 3,
-    seat_count: 5,
-    manufacture_year: '2022-01-01',
-    fuel_type: 'Xăng',
-    transmission: 'Tự động',
-    user_id: 1,
-    delivery_option_id: 1,
-    usage_limit_id: 1,
-    status: 3 // 3: Bị từ chối
-  }
-];
-
-// 2. Định dạng dữ liệu và giả lập báo cáo kinh doanh cho Chủ xe
+// Định dạng dữ liệu và giả lập báo cáo kinh doanh cho Chủ xe
 const formattedCars = computed(() => {
   const sampleImages = [
     'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?w=600',
@@ -267,24 +203,36 @@ const formattedCars = computed(() => {
     'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=600'
   ];
 
-  return rawCarsFromSeeder.map((car, index) => {
+  return userCars.value.map((car, index) => {
     // Đặt số ngày thuê giả lập theo trạng thái thực tế
     let simulatedActiveDays = 0;
-    if (car.status === 1) simulatedActiveDays = 18 + index; // Xe đang chạy mới phát sinh doanh thu
+    if (car.status === 1) simulatedActiveDays = 18 + (index % 10); // Xe đang chạy mới phát sinh doanh thu
     if (car.status === 2) simulatedActiveDays = 0; // Xe chờ duyệt chưa thể cho thuê
 
     const computedRevenue = (car.unit_price - car.discount_value) * simulatedActiveDays;
 
+    // Lấy ảnh đại diện
+    let carImage = sampleImages[index % 4];
+    if (car.images && car.images.length > 0) {
+      const primaryImg = car.images.find(img => img.is_thumbnail === 1) || car.images[0];
+      const imgPath = primaryImg.image_url || '';
+      if (imgPath.startsWith('http') || imgPath.startsWith('/')) {
+        carImage = imgPath;
+      } else if (imgPath) {
+        carImage = `${BASE_URL}storage/${imgPath}`;
+      }
+    }
+
     return {
       name: car.name,
       licensePlate: car.license_plate,
-      image: sampleImages[index] || sampleImages[0],
-      location: 'Quận 1, TP. Hồ Chí Minh',
+      image: carImage,
+      location: car.car_location ? `${car.car_location.district}, ${car.car_location.city}` : 'Chưa cập nhật',
       seats: Number(car.seat_count),
       transmission: car.transmission,
       fuel: car.fuel_type,
       fuelConsumption: car.fuel_consumption,
-      manufactureYear: car.manufacture_year.split('-')[0],
+      manufactureYear: car.manufacture_year ? car.manufacture_year.split('-')[0] : '2020',
       status: car.status, // Giữ nguyên giá trị số (0, 1, 2, 3) để hiển thị và lọc
       rentalType: 'Xe tự lái',
       revenue: computedRevenue,
@@ -293,7 +241,7 @@ const formattedCars = computed(() => {
   });
 });
 
-// 3. Xử lý logic lọc xe thời gian thực dựa vào giá trị v-model của <select>
+// Xử lý logic lọc xe thời gian thực dựa vào giá trị v-model của <select>
 const filteredCars = computed(() => {
   if (selectedStatus.value === 'all') {
     return formattedCars.value;
@@ -305,4 +253,22 @@ const filteredCars = computed(() => {
 const formatPrice = (val: number) => {
   return val.toLocaleString('vi-VN') + 'đ';
 };
+
+onMounted(async () => {
+  if (!user.value) {
+    navigateTo('/');
+    return;
+  }
+
+  try {
+    const res = await myCarService.getCars({ user_id: user.value.id });
+    if (res.success && res.data) {
+      userCars.value = res.data;
+    }
+  } catch (err) {
+    console.error('Lỗi khi tải danh sách xe của tôi:', err);
+  } finally {
+    loading.value = false;
+  }
+});
 </script>

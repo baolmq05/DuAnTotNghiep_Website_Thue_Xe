@@ -13,7 +13,7 @@ class PostSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        
         Post::create([
             'title' => 'Bài viết mẫu',
             'slug' => 'bai-viet-mau',
@@ -50,5 +50,18 @@ class PostSeeder extends Seeder
             'type' => 'post',
             'published_at' => now(),
         ]);
+        Post::create([
+            'title' => 'Bài viết hướng dẫn',
+            'slug' => 'bai-viet-huong-dan',
+            'excerpt' => 'Đây là mô tả ngắn của bài viết hướng dẫn.',
+            'content' => 'Đây là nội dung chi tiết của bài viết hướng dẫn.  Bạn có thể thêm nhiều thông tin hơn ở đây.',
+            'thumbnail' => null,
+            'user_id' => 1, // Giả sử user_id 1 tồn tại
+            'post_category_id' => 3, // Giả sử post_category_id 3 tồn tại
+            'status' => 1,
+            'type' => 'post',
+            'published_at' => now(),
+        ]);
+
     }
 }
