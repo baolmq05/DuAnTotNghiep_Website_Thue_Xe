@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PromotionController;
+use App\Http\Controllers\Api\GoogleAuthController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -23,6 +24,8 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('profile', [AuthController::class, 'getProfile']);
     Route::put('profile', [AuthController::class, 'updateProfile']);
+
+    Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
     //api addresses
     Route::get('addresses', [AddressController::class, 'index']);
     Route::post('addresses', [AddressController::class, 'store']);

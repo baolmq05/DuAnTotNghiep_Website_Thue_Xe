@@ -4,6 +4,17 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@nuxtjs/tailwindcss', '@nuxt/fonts', '@nuxt/icon'],
   css: ['~/assets/css/tailwind.css'],
+  app:{
+    head: {
+      script: [
+        {
+          src: 'https://accounts.google.com/gsi/client',
+          async: true,
+          defer: true
+        }
+      ]
+    }
+  },
   fonts: {
     families: [
       {
