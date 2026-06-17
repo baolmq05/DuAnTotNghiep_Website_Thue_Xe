@@ -18,6 +18,7 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Filament\Support\Facades\FilamentView;
 
 use Slimani\MediaManager\MediaManagerPlugin;
 
@@ -44,8 +45,8 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\StatsOverview::class,
                 \App\Filament\Widgets\Dashboard\RevenueChart::class,
                 \App\Filament\Widgets\Dashboard\StatusDoughnutChart::class,
-                AccountWidget::class,
-                FilamentInfoWidget::class,
+                // AccountWidget::class,
+                // FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,
@@ -63,5 +64,11 @@ class AdminPanelProvider extends PanelProvider
             ]);
     }
 
-
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            'panels::sidebar.footer',
+            fn() => view('filament.components.logout-button')
+        );
+    }
 }
