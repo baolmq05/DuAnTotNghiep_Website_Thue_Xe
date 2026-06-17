@@ -65,7 +65,7 @@
                                     <h3 class="text-lg font-bold text-slate-900">Biển số xe</h3>
                                     <p class="text-sm text-red-500/90">Lưu ý: Biển số sẽ không thể thay đổi sau khi đăng ký.</p>
                                 </div>
-                                <input type="text" placeholder="Nhập biển số xe (VD: 51H-123.45)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 sm:w-1/2">
+                                <input type="text" v-model="licensePlate" placeholder="Nhập biển số xe (VD: 51H-123.45)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 sm:w-1/2">
                             </section>
                                 <div class="mb-4">
                                     <h3 class="text-lg font-bold text-slate-900">Thông tin cơ bản</h3>
@@ -73,52 +73,49 @@
                                 </div>
 
                                 <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Hãng xe</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>Chọn hãng xe</option>
-                                            <option>Toyota</option>
-                                            <option>Honda</option>
-                                            <option>Mazda</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Mẫu xe</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>Chọn dòng xe trước</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Số ghế</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>4</option>
-                                            <option>5</option>
-                                            <option>7</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Năm sản xuất</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>2026</option>
-                                            <option>2025</option>
-                                            <option>2024</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Truyền động</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>Số tự động</option>
-                                            <option>Số sàn</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="mb-1 block text-sm font-medium text-slate-700">Nhiên liệu</label>
-                                        <select class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                            <option>Xăng</option>
-                                            <option>Dầu Diesel</option>
-                                            <option>Điện</option>
-                                        </select>
-                                    </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Hãng xe</label>
+                                         <select v-model="selectedBrandId" @change="onBrandChange" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option :value="null">Chọn hãng xe</option>
+                                             <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{ brand.brand_name }}</option>
+                                         </select>
+                                     </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Mẫu xe</label>
+                                         <select v-model="selectedTypeId" :disabled="!selectedBrandId" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option :value="null">{{ selectedBrandId ? 'Chọn mẫu xe' : 'Chọn dòng xe trước' }}</option>
+                                             <option v-for="type in carTypes" :key="type.id" :value="type.id">{{ type.type_name }}</option>
+                                         </select>
+                                     </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Số ghế</label>
+                                         <select v-model="selectedSeatCount" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option :value="4">4</option>
+                                             <option :value="5">5</option>
+                                             <option :value="7">7</option>
+                                         </select>
+                                     </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Năm sản xuất</label>
+                                         <select v-model="selectedManufactureYear" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option v-for="year in manufactureYears" :key="year" :value="year">{{ year }}</option>
+                                         </select>
+                                     </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Truyền động</label>
+                                         <select v-model="selectedTransmission" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option value="Số tự động">Số tự động</option>
+                                             <option value="Số sàn">Số sàn</option>
+                                         </select>
+                                     </div>
+                                     <div>
+                                         <label class="mb-1 block text-sm font-medium text-slate-700">Nhiên liệu</label>
+                                         <select v-model="selectedFuelType" class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                             <option value="Xăng">Xăng</option>
+                                             <option value="Dầu Diesel">Dầu Diesel</option>
+                                             <option value="Điện">Điện</option>
+                                         </select>
+                                     </div>
                                 </div>
                         
                             <section>
@@ -127,7 +124,7 @@
                                     <p class="text-sm text-slate-500">Số lít nhiên liệu cho quãng đường 100km.</p>
                                 </div>
                                 <div class="relative w-full sm:w-1/3">
-                                    <input type="number" value="10" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                    <input type="number" v-model="fuelConsumption" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                 </div>
                             </section>
                                                         <section>
@@ -135,7 +132,7 @@
                                     <h3 class="text-lg font-bold text-slate-900">Mô tả</h3>
                                     <p class="text-sm text-slate-500">Mô tả ngắn gọn về chiếc xe và điểm mạnh của nó.</p>
                                 </div>
-                                <textarea rows="5" placeholder="Huyndai Elantra số tự động đăng ký tháng 09/2018. Xe gia đình mới đẹp, nội thất nguyên bản, sạch sẽ, bảo dưỡng thường xuyên, rửa xe miễn phí cho khách. Xe rộng rãi, an toàn, tiện nghi, phù hợp cho gia đình du lịch..." class="w-full resize-y rounded-2xl border border-slate-300 p-4 leading-relaxed outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10"></textarea>
+                                <textarea v-model="description" rows="5" placeholder="Huyndai Elantra số tự động đăng ký tháng 09/2018. Xe gia đình mới đẹp, nội thất nguyên bản, sạch sẽ, bảo dưỡng thường xuyên, rửa xe miễn phí cho khách. Xe rộng rãi, an toàn, tiện nghi, phù hợp cho gia đình du lịch..." class="w-full resize-y rounded-2xl border border-slate-300 p-4 leading-relaxed outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10"></textarea>
                             </section>
 
                             <section>
@@ -192,7 +189,7 @@
                                         <input
                                             type="number"
                                             id="base-price"
-                                            value="350"
+                                            v-model="basePrice"
                                             class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-10 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                         >
                                         <span class="absolute right-4 font-bold text-slate-400">K</span>
@@ -279,13 +276,30 @@
                                 <div class="relative">
                                     <input
                                         type="text"
+                                        v-model="address"
+                                        @input="searchPlace"
                                         placeholder="Nhập địa chỉ mốc giao nhận xe..."
                                         class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-12 outline-none transition text-sm text-slate-700 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10"
                                     >
                                     <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400">
                                         <i class="fa-solid fa-location-dot text-lg hover:text-[#1e4e57] cursor-pointer transition-colors"></i>
                                     </div>
+                                    
+                                    <!-- Suggestions Dropdown -->
+                                    <div v-if="suggestions.length" class="absolute z-[100] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-2xl shadow-xl max-h-60 overflow-y-auto divide-y divide-slate-100">
+                                        <div 
+                                            v-for="item in suggestions" 
+                                            :key="item.place_id"
+                                            class="p-4 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 transition-colors" 
+                                            @click="selectPlace(item)"
+                                        >
+                                            {{ item.description }}
+                                        </div>
+                                    </div>
                                 </div>
+                                
+                                <!-- Map Container -->
+                                <div id="map" class="w-full rounded-3xl overflow-hidden border border-slate-200 shadow-inner mt-4" style="height: 350px;"></div>
                             </section>
 
                             <hr class="border-slate-100">
@@ -394,8 +408,9 @@
                                 </div>
                                 <textarea
                                     rows="4"
+                                    v-model="rentalTerms"
                                     class="w-full resize-y rounded-2xl border border-slate-300 p-4 outline-none transition text-slate-700 leading-relaxed text-sm bg-slate-50/60 hover:bg-white focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10"
-                                >Không sử dụng xe vào mục đích phi pháp. Lái xe cẩn thận, giữ xe sạch sẽ, trả xe đúng giờ. Phụ thu 500k nếu hút thuốc lá trong xe.</textarea>
+                                ></textarea>
                             </section>
 
                         </div>
@@ -511,12 +526,6 @@
                                         <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
                                             <i class="fa-solid fa-check text-[10px]"></i>
                                         </span>
-                                        <span class="text-slate-700">Thông tin xe và giá thuê đã điền đầy đủ</span>
-                                    </li>
-                                    <li class="flex items-center gap-3">
-                                        <span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
-                                            <i class="fa-solid fa-check text-[10px]"></i>
-                                        </span>
                                         <span class="text-slate-700">Điều khoản thuê xe đã được thiết lập</span>
                                     </li>
                                 </ul>
@@ -524,15 +533,16 @@
                         </div>
 
                         <div class="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <button type="button" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 sm:w-auto" :disabled="activeStep === 1" :class="activeStep === 1 ? 'cursor-not-allowed opacity-50' : ''" @click="activeStep = Math.max(1, activeStep - 1)">
+                            <button type="button" class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 sm:w-auto" :disabled="activeStep === 1" :class="activeStep === 1 ? 'cursor-not-allowed opacity-50' : ''" @click="prevStep">
                                 Quay lại
                             </button>
 
-                            <button v-if="activeStep < 3" type="button" class="inline-flex w-full items-center justify-center rounded-2xl bg-[#1e4e57] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#1e4e57]/20 transition hover:bg-[#286874] sm:w-auto" @click="activeStep = Math.min(3, activeStep + 1)">
+                            <button v-if="activeStep < 3" type="button" class="inline-flex w-full items-center justify-center rounded-2xl bg-[#1e4e57] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#1e4e57]/20 transition hover:bg-[#286874] sm:w-auto" @click="nextStep">
                                 Kế tiếp
                             </button>
-                            <button v-else type="button" class="inline-flex w-full items-center justify-center rounded-2xl bg-[#1e4e57] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#1e4e57]/20 transition hover:bg-[#286874] sm:w-auto">
-                                Hoàn tất đăng ký
+                            <button v-else type="button" @click="onSubmit" :disabled="submitting" class="inline-flex w-full items-center justify-center rounded-2xl bg-[#1e4e57] px-6 py-4 text-sm font-bold text-white shadow-lg shadow-[#1e4e57]/20 transition hover:bg-[#286874] sm:w-auto disabled:opacity-50">
+                                <span v-if="submitting">Đang đăng ký...</span>
+                                <span v-else>Hoàn tất đăng ký</span>
                             </button>
                         </div>
                     </div>
@@ -543,9 +553,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
+import { carService } from '~/services/car.service'
+import { useAuth } from '~/composables/useAuth'
+import { useToast } from '~/composables/useToast'
+
+const { showToast } = useToast()
+
+let maplibregl: any = null
+
+// Goong Map Consts & Refs
+const MAP_KEY = '8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex'
+const API_KEY = 'xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V'
+
+const suggestions = ref<any[]>([])
+const mapRef = ref<any>(null)
+const currentMarker = ref<any>(null)
+const selectedCoords = ref<{ lat: number; lng: number } | null>(null)
 
 const activeStep = ref(1)
+
+// New registration form refs
+const licensePlate = ref('')
+const selectedBrandId = ref<number | null>(null)
+const selectedTypeId = ref<number | null>(null)
+const selectedSeatCount = ref(4)
+const selectedManufactureYear = ref(new Date().getFullYear())
+const selectedTransmission = ref('Số tự động')
+const selectedFuelType = ref('Xăng')
+const fuelConsumption = ref(10)
+const description = ref('')
+const basePrice = ref(350)
+const address = ref('')
+const rentalTerms = ref('Không sử dụng xe vào mục đích phi pháp. Lái xe cẩn thận, giữ xe sạch sẽ, trả xe đúng giờ. Phụ thu 500k nếu hút thuốc lá trong xe.')
+
+const brands = ref<any[]>([])
+const carTypes = ref<any[]>([])
+const manufactureYears = ref<number[]>([])
+const submitting = ref(false)
+
+const currentYear = new Date().getFullYear()
+for (let y = currentYear + 1; y >= 2005; y--) {
+    manufactureYears.value.push(y)
+}
 
 const steps = [
     {
@@ -589,98 +639,7 @@ const buildFeatureIcon = (label: string, background: string) => {
     return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`
 }
 
-const featureItems = ref([
-    {
-        name: 'Bản đồ',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781056273/map-v2_tcaq37.png'
-    },
-    {
-        name: 'Bluetooth',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073780/bluetooth-v2_m9z2wh.png'
-    },
-    {
-        name: 'Camera 360',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073780/360_camera-v2_nbtyux.png'
-    },
-    {
-        name: 'Camera cập lề',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073782/parking_camera-v2_gbpz4n.png'
-    },
-    {
-        name: 'Camera hành trình',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/dash_camera-v2_llqrns.png'
-    },
-    {
-        name: 'Camera lùi',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073782/reverse_camera-v2_yanwh4.png'
-    },
-    {
-        name: 'Cảm biến lốp',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073783/tpms-v2_kgsvg4.png'
-    },
-    {
-        name: 'Cảm biến va chạm',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/impact_sensor-v2_iotcwq.png'
-    },
-    {
-        name: 'Cảnh báo tốc độ',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/head_up-v2_fxa7mn.png'
-    },
-    {
-        name: 'Cửa sổ trời',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073782/sunroof-v2_kyo2mt.png'
-    },
-    {
-        name: 'Định vị GPS',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/gps-v2_cjy1dg.png'
-    },
-    {
-        name: 'Ghế trẻ em',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/babyseat-v2_d1gmcr.png'
-    },
-    {
-        name: 'Khe cắm USB',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073782/usb-v2_vvx1vt.png'
-    },
-    {
-        name: 'Lốp dự phòng',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073782/spare_tire-v2_ildbl1.png'
-    },
-    {
-        name: 'Màn hình DVD',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781074389/dvd-v2_1_uxfubm.png'
-    },
-    {
-        name: 'Nắp thùng xe bán tải',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073781/bonnet-v2_zirugz.png'
-    },
-    {
-        name: 'ETC',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781074484/etc-v2_vepgxt.png'
-    },
-    {
-        name: 'Túi khí',
-        checked: false,
-        icon: 'https://res.cloudinary.com/dfmoftnpw/image/upload/v1781073780/airbags-v2_gtkgpl.png'
-    }
-])
+const featureItems = ref<any[]>([])
 
 const toggleFeature = (name: string) => {
     const item = featureItems.value.find((f) => f.name === name)
@@ -730,6 +689,310 @@ const removeImage = (index: number) => {
         thumbnailIndex.value = Math.max(0, uploadedImages.value.length - 1)
     }
 }
+
+const { isLoggedIn } = useAuth()
+const { openLogin } = useAuthModal()
+
+const loadBrands = async () => {
+    try {
+        const res = await carService.getBrands();
+        if (res && res.success) {
+            brands.value = res.data;
+        }
+    } catch (e) {
+        console.error('Không tải được danh sách hãng xe:', e);
+    }
+}
+
+const onBrandChange = async () => {
+    selectedTypeId.value = null;
+    carTypes.value = [];
+    if (!selectedBrandId.value) return;
+    try {
+        const res = await carService.getTypes(selectedBrandId.value);
+        if (res && res.success) {
+            carTypes.value = res.data;
+        }
+    } catch (e) {
+        console.error('Không tải được danh sách mẫu xe:', e);
+    }
+}
+
+const loadFeatures = async () => {
+    try {
+        const res = await carService.getFeatures();
+        if (res && res.success && res.data.length > 0) {
+            featureItems.value = res.data.map((item: any) => ({
+                id: item.id,
+                name: item.feature_name,
+                checked: false,
+                icon: item.icon
+            }));
+        }
+    } catch (e) {
+        console.error('Không tải được danh sách tính năng:', e);
+    }
+}
+
+const onSubmit = async () => {
+    if (!licensePlate.value) {
+        showToast('Vui lòng nhập biển số xe.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+    if (!selectedBrandId.value) {
+        showToast('Vui lòng chọn hãng xe.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+    if (!selectedTypeId.value) {
+        showToast('Vui lòng chọn mẫu xe.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+    if (!address.value) {
+        showToast('Vui lòng nhập địa chỉ xe.', 'error');
+        activeStep.value = 2;
+        return;
+    }
+    if (uploadedImages.value.length === 0) {
+        showToast('Vui lòng tải lên ít nhất 1 hình ảnh của xe.', 'error');
+        activeStep.value = 3;
+        return;
+    }
+
+    submitting.value = true;
+    try {
+        const formData = new FormData();
+        formData.append('license_plate', licensePlate.value);
+        formData.append('car_brand_id', selectedBrandId.value.toString());
+        formData.append('car_type_id', selectedTypeId.value.toString());
+        formData.append('seat_count', selectedSeatCount.value.toString());
+        formData.append('manufacture_year', selectedManufactureYear.value.toString());
+        formData.append('transmission', selectedTransmission.value);
+        formData.append('fuel_type', selectedFuelType.value);
+        formData.append('fuel_consumption', fuelConsumption.value.toString());
+        formData.append('description', description.value);
+        
+        // Price (basePrice in thousands -> absolute)
+        const unitPriceVal = basePrice.value * 1000;
+        formData.append('unit_price', unitPriceVal.toString());
+
+        // Discount value
+        let discountValue = 0;
+        if (discountEnabled.value) {
+            discountValue = Math.round(unitPriceVal * (discountVal.value / 100));
+        }
+        formData.append('discount_value', discountValue.toString());
+        
+        // Location address
+        formData.append('street_name', address.value);
+        formData.append('province_id', '1');
+        formData.append('ward_code', '1');
+        
+        // Delivery options
+        formData.append('delivery_enabled', deliveryEnabled.value ? '1' : '0');
+        formData.append('delivery_max_distance', maxDistVal.value.toString());
+        formData.append('delivery_fee', (feeVal.value * 1000).toString());
+        
+        // Usage limits
+        formData.append('km_limit_enabled', kmLimitEnabled.value ? '1' : '0');
+        formData.append('km_limit_val', kmLimitVal.value.toString());
+        formData.append('over_fee_val', (overFeeVal.value * 1000).toString());
+        
+        // Rental terms
+        formData.append('rental_terms', rentalTerms.value);
+        
+        // Features
+        const selectedFeatureIds = featureItems.value
+            .filter((f: any) => f.checked)
+            .map((f: any) => f.id || null)
+            .filter((id: any) => id !== null);
+        formData.append('features', JSON.stringify(selectedFeatureIds));
+        
+        // Images
+        uploadedImages.value.forEach((img) => {
+            formData.append('images[]', img.file);
+        });
+        formData.append('thumbnail_index', thumbnailIndex.value.toString());
+
+        const res = await carService.registerCar(formData);
+        if (res && res.success) {
+            showToast('Đăng ký xe thành công! Xe của bạn đang chờ kiểm duyệt.', 'success');
+            navigateTo('/my-cars');
+        } else {
+            showToast(res.message || 'Đăng ký xe thất bại.', 'error');
+        }
+    } catch (e: any) {
+        console.error('Đăng ký xe thất bại:', e);
+        const errMsg = e.response?._data?.message || 'Có lỗi xảy ra khi kết nối máy chủ.';
+        showToast(errMsg, 'error');
+    } finally {
+        submitting.value = false;
+    }
+}
+
+const generateMap = async () => {
+    await nextTick();
+    const container = document.getElementById('map');
+    if (!container) return;
+
+    // Destroy old map instance if it exists to bind to the new DOM container
+    if (mapRef.value) {
+        try {
+            mapRef.value.remove();
+        } catch (e) {
+            console.error('Lỗi khi hủy bản đồ cũ:', e);
+        }
+        mapRef.value = null;
+        currentMarker.value = null;
+    }
+
+    const map = new maplibregl.Map({
+        container: 'map',
+        style: `https://tiles.goong.io/assets/goong_map_web.json?api_key=${MAP_KEY}`,
+        center: selectedCoords.value ? [selectedCoords.value.lng, selectedCoords.value.lat] : [106.660172, 10.762622], // use selected or fallback center
+        zoom: selectedCoords.value ? 16 : 13
+    });
+
+    map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    map.on('load', () => {
+        if (selectedCoords.value) {
+            const { lat, lng } = selectedCoords.value;
+            const popup = new maplibregl.Popup({
+                offset: 25
+            }).setText(address.value);
+
+            currentMarker.value = new maplibregl.Marker({ color: 'red' })
+                .setLngLat([lng, lat])
+                .setPopup(popup)
+                .addTo(map)
+                .togglePopup();
+        } else {
+            navigator.geolocation.getCurrentPosition((position) => {
+                const lat = position.coords.latitude;
+                const lng = position.coords.longitude;
+
+                map.setCenter([lng, lat]);
+
+                if (currentMarker.value) currentMarker.value.remove();
+                
+                currentMarker.value = new maplibregl.Marker({
+                    color: 'red',
+                }).setLngLat([lng, lat]).addTo(map);
+            }, () => {
+                if (currentMarker.value) currentMarker.value.remove();
+
+                currentMarker.value = new maplibregl.Marker({
+                    color: 'red',
+                }).setLngLat([106.660172, 10.762622]).addTo(map);
+            });
+        }
+
+        setTimeout(() => {
+            map.resize();
+        }, 200);
+    });
+
+    mapRef.value = map;
+};
+
+const searchPlace = async () => {
+    if (!address.value) {
+        suggestions.value = [];
+        return;
+    }
+
+    try {
+        const res = await fetch(
+            `https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${encodeURIComponent(address.value)}`
+        );
+        const data = await res.json();
+        suggestions.value = data.predictions || [];
+    } catch (error) {
+        console.error('Lỗi khi gọi API AutoComplete:', error);
+    }
+};
+
+const selectPlace = async (item: any) => {
+    address.value = item.description;
+    suggestions.value = [];
+
+    try {
+        const res = await fetch(
+            `https://rsapi.goong.io/Place/Detail?place_id=${item.place_id}&api_key=${API_KEY}`
+        );
+        const data = await res.json();
+        if (data.result && data.result.geometry) {
+            const location = data.result.geometry.location;
+            const lat = location.lat;
+            const lng = location.lng;
+
+            selectedCoords.value = { lat, lng };
+
+            if (mapRef.value) {
+                mapRef.value.setCenter([lng, lat]);
+                mapRef.value.setZoom(16);
+
+                const popup = new maplibregl.Popup({
+                    offset: 25
+                }).setText(item.description);
+
+                if (currentMarker.value) {
+                    currentMarker.value.remove();
+                }
+
+                currentMarker.value = new maplibregl.Marker({ color: 'red' })
+                    .setLngLat([lng, lat])
+                    .setPopup(popup)
+                    .addTo(mapRef.value)
+                    .togglePopup();
+            }
+        }
+    } catch (error) {
+        console.error('Lỗi khi lấy thông tin chi tiết địa điểm:', error);
+    }
+};
+
+const nextStep = () => {
+    activeStep.value = Math.min(3, activeStep.value + 1);
+    if (activeStep.value === 2) {
+        nextTick(() => {
+            generateMap();
+        });
+    }
+};
+
+const prevStep = () => {
+    activeStep.value = Math.max(1, activeStep.value - 1);
+    if (activeStep.value === 2) {
+        nextTick(() => {
+            generateMap();
+        });
+    }
+};
+
+onMounted(async () => {
+    if (!isLoggedIn.value) {
+        showToast('Vui lòng đăng nhập trước khi đăng ký xe.', 'error');
+        openLogin();
+        navigateTo('/');
+        return;
+    }
+    // Load maplibre-gl dynamically on client side to avoid SSR errors
+    if (process.client) {
+        try {
+            const module = await import('maplibre-gl');
+            maplibregl = module.default;
+            await import('maplibre-gl/dist/maplibre-gl.css');
+        } catch (e) {
+            console.error('Không tải được thư viện bản đồ:', e);
+        }
+    }
+    await loadBrands();
+    await loadFeatures();
+})
 
 useHead({
     title: 'Đăng ký xe | DRIVIO'

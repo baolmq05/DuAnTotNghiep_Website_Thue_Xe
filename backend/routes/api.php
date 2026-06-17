@@ -32,6 +32,9 @@ Route::group([
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
+Route::get('car-brands', [CarController::class, 'getBrands']);
+Route::get('car-brands/{id}/types', [CarController::class, 'getTypes']);
+Route::get('car-features', [CarController::class, 'getFeatures']);
 
 Route::get('posts', [PostController::class, 'index']);
 Route::get('posts/{id}', [PostController::class, 'show']);
@@ -41,6 +44,7 @@ Route::group(['middleware' => 'api'], function () {
     Route::get('favorites', [FavoriteController::class, 'index']); 
     Route::post('favorites', [FavoriteController::class, 'store']); 
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']); 
+    Route::post('cars', [CarController::class, 'store']);
 });
 // Các route cho khuyến mãi
 Route::get('promotions', [PromotionController::class, 'index']);
