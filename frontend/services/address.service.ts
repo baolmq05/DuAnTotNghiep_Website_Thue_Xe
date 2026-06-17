@@ -68,10 +68,11 @@ export class AddressService {
     }
 
     /**
-     * Lấy danh sách địa chỉ của người dùng
+     * Lấy danh sách địa chỉ của người dùng theo user_id
      */
-    async getAddresses(): Promise<AddressResponse<Address[]>> {
-        return this.request<AddressResponse<Address[]>>(this.endpoint, {
+    async getAddresses(userId?: number | string): Promise<AddressResponse<Address[]>> {
+        const url = userId ? `${this.endpoint}?user_id=${userId}` : this.endpoint;
+        return this.request<AddressResponse<Address[]>>(url, {
             method: "GET",
             useAuth: true,
         });

@@ -25,7 +25,13 @@ class AddressController extends Controller
                 ], 404);
             }
 
-            $addresses = $user->addresses()->get();
+            $userId = $request->query('user_id');
+            if ($userId) {
+                $addresses = Address::where('user_id', $userId)->get();
+            } else {
+                $addresses = $user->addresses()->get();
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Lấy danh sách địa chỉ thành công',
