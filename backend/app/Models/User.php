@@ -23,6 +23,15 @@ class User extends Authenticatable implements JWTSubject
      *
      * @return array<string, string>
      */
+    protected static function booted()
+    {
+        static::creating(function ($user) {
+            if (empty($user->role_id)) {
+                $user->role_id = 1; // Mặc định là Admin khi không truyền (ví dụ: chạy lệnh make:filament-user)
+            }
+        });
+    }
+
     protected function casts(): array
     {
         return [
