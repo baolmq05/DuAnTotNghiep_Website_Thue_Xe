@@ -139,18 +139,14 @@
                   </svg>
                 </button>
                 <button
-                  class="p-2.5 rounded-xl border border-slate-200 hover:border-rose-200 hover:text-rose-600 text-slate-500 hover:bg-rose-50 transition-all duration-200"
+                  class="p-2.5 rounded-xl border transition-all duration-200"
+                  :class="isFavorite ? 'border-rose-200 text-rose-600 bg-rose-50' : 'border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50'"
+                  @click="handleToggleFavorite"
                 >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
+                  <Icon 
+                    :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'" 
                     class="w-5 h-5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54z"
-                    />
-                  </svg>
+                  />
                 </button>
               </div>
             </div>
@@ -774,15 +770,20 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute } from "#app";
 import { carService } from "~/services/car.service";
+import { favoriteService } from "~/services/favorite.service";
 
 definePageMeta({ layout: "vehicle-detail" });
 
 const route = useRoute();
 const carId = route.params.id as string;
+const { user } = useAuth();
+const { showToast } = useToast();
+const { openLogin } = useAuthModal();
 
 const car = ref<any>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
+const isFavorite = ref(false);
 
 const showFullDesc = ref(false);
 const activeIndex = ref(0);
@@ -816,6 +817,51 @@ const normalizeFuel = (fuel: string) => {
   return fuel;
 }
 
+const checkFavoriteStatus = async (id: string) => {
+  if (!user.value) {
+    isFavorite.value = false;
+    return;
+  }
+  try {
+    const res = await favoriteService.getFavorites();
+    if (res.success && res.data) {
+      isFavorite.value = res.data.some((fav) => fav.car_id === parseInt(id));
+    }
+  } catch (error) {
+    console.error("Lỗi khi kiểm tra trạng thái yêu thích:", error);
+  }
+};
+
+const handleToggleFavorite = async () => {
+  if (!user.value) {
+    showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "warning");
+    openLogin();
+    return;
+  }
+
+  const currentCarId = car.value?.id;
+  if (!currentCarId) return;
+
+  try {
+    if (isFavorite.value) {
+      const res = await favoriteService.removeFavorite(currentCarId);
+      if (res.success) {
+        isFavorite.value = false;
+        showToast("Đã xóa khỏi danh sách yêu thích!", "success");
+      }
+    } else {
+      const res = await favoriteService.addFavorite(currentCarId);
+      if (res.success) {
+        isFavorite.value = true;
+        showToast("Đã thêm vào danh sách yêu thích!", "success");
+      }
+    }
+  } catch (error) {
+    console.error("Lỗi khi thay đổi trạng thái yêu thích:", error);
+    showToast("Đã có lỗi xảy ra!", "error");
+  }
+};
+
 const loadCarDetails = async (id: string) => {
   loading.value = true;
   error.value = null;
@@ -824,6 +870,9 @@ const loadCarDetails = async (id: string) => {
     const response = await carService.getCarById(id);
     if (response.success && response.data) {
       car.value = response.data;
+      
+      // Kiểm tra xem xe này có nằm trong danh sách yêu thích hay không
+      await checkFavoriteStatus(id);
 
       // Tải các xe liên quan cùng hãng
       let similarData: any[] = [];

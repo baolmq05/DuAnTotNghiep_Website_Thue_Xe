@@ -19,8 +19,12 @@
 
             <!-- GÓC TRÊN PHẢI: Nút yêu thích TRẦN (Bỏ vòng tròn) -->
             <button @click.stop="$emit('toggle-favorite')"
-                class="absolute top-3 right-3 z-10 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] hover:text-rose-500 transition-colors duration-200 active:scale-90">
-                <Icon name="heroicons:heart" class="w-6 h-6" />
+                class="absolute top-3 right-3 z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] hover:scale-110 transition-transform duration-200 active:scale-90">
+                <Icon 
+                    :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'" 
+                    class="w-6 h-6 transition-colors duration-200" 
+                    :class="isFavorite ? 'text-rose-500' : 'text-white'"
+                />
             </button>
 
             <!-- GÓC DƯỚI PHẢI TRÊN ẢNH: Avatar chủ xe -->
@@ -123,6 +127,7 @@ defineProps({
     rating: { type: Number, default: 5.0 },
     trips: { type: Number, default: 0 },
     discount: { type: Number, default: 0 },
+    isFavorite: { type: Boolean, default: false },
 
     // Thông tin chủ xe hiển thị góc dưới ảnh
     ownerName: { type: String, default: 'Chủ xe' },

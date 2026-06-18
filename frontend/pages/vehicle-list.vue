@@ -28,11 +28,11 @@
 
                     <div class="w-full">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            <NuxtLink
+                            <div
                                 v-for="car in paginatedCarList"
                                 :key="car.id"
-                                :to="`/vehicles/${car.id}`"
-                                class="block h-full"
+                                class="block h-full cursor-pointer"
+                                @click="goToDetail(car.id)"
                             >
                                 <vehicleCard
                                     :name="car.name"
@@ -48,8 +48,10 @@
                                     :is-delivery="car.isDelivery"
                                     :no-deposit="car.noDeposit"
                                     :discount="car.discount"
+                                    :isFavorite="isCarFavorited(car.id)"
+                                    @toggle-favorite="handleToggleFavorite(car.id)"
                                 />
-                            </NuxtLink>
+                            </div>
                         </div>
                     </div>
 
@@ -66,11 +68,17 @@ import { useRoute } from '#app'
 import SearchBar from '~/components/Vehicle/SearchBar.vue'
 import FilterBar from '~/components/Vehicle/FilterBar.vue'
 import vehicleCard from '~/components/Vehicle/VehicleCard.vue'
+import { favoriteService } from '~/services/favorite.service'
 
 const route = useRoute()
+const router = useRouter()
+const { user } = useAuth()
+const { showToast } = useToast()
+const { openLogin } = useAuthModal()
 
 const activeFilters = ref<any>({})
 const visibleCount = ref(8)
+const favoriteCarIds = ref<number[]>([])
 
 const handleFilterChange = (filters: any) => {
     activeFilters.value = filters
@@ -80,6 +88,53 @@ const handleFilterChange = (filters: any) => {
 import { carService } from '~/services/car.service'
 
 const rawApiCars = ref<any[]>([])
+
+const goToDetail = (carId: number) => {
+    router.push(`/vehicles/${carId}`)
+}
+
+const fetchFavoriteCarIds = async () => {
+    if (!user.value) return
+    try {
+        const res = await favoriteService.getFavorites()
+        if (res.success && res.data) {
+            favoriteCarIds.value = res.data.map(fav => fav.car_id)
+        }
+    } catch (error) {
+        console.error("Lỗi khi lấy ID xe yêu thích:", error)
+    }
+}
+
+const isCarFavorited = (carId: number) => {
+    return favoriteCarIds.value.includes(carId)
+}
+
+const handleToggleFavorite = async (carId: number) => {
+    if (!user.value) {
+        showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "warning")
+        openLogin()
+        return
+    }
+
+    try {
+        if (isCarFavorited(carId)) {
+            const res = await favoriteService.removeFavorite(carId)
+            if (res.success) {
+                favoriteCarIds.value = favoriteCarIds.value.filter(id => id !== carId)
+                showToast("Đã xóa khỏi danh sách yêu thích!", "success")
+            }
+        } else {
+            const res = await favoriteService.addFavorite(carId)
+            if (res.success) {
+                favoriteCarIds.value.push(carId)
+                showToast("Đã thêm vào danh sách yêu thích!", "success")
+            }
+        }
+    } catch (error) {
+        console.error("Lỗi khi thay đổi trạng thái yêu thích:", error)
+        showToast("Đã có lỗi xảy ra!", "error")
+    }
+}
 
 // Normalization Helpers
 const normalizeTransmission = (trans: string) => {
@@ -114,6 +169,9 @@ onMounted(async () => {
         const response = await carService.getCars()
         if (response.success && response.data) {
             rawApiCars.value = response.data
+        }
+        if (user.value) {
+            await fetchFavoriteCarIds()
         }
     } catch (error) {
         console.error("Lỗi khi lấy danh sách xe từ API:", error)

@@ -8,6 +8,8 @@ class FavoriteItem extends Model
 {
     use HasFactory;
 
+    protected $table = 'driving_favorite_items';
+
     protected $fillable = ['favorite_id', 'car_id'];
 
     public function car()

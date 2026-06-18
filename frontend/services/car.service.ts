@@ -81,6 +81,13 @@ export interface Car {
     images?: CarImage[];
     reviews_avg_rating?: string | number | null;
     trips_count?: number;
+    owner?: {
+        id: number;
+        name: string;
+        avatar?: string;
+        phone?: string;
+        gender?: number;
+    };
 }
 
 export interface CarResponse<T> {
