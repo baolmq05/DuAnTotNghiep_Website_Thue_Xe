@@ -106,17 +106,7 @@ class PromotionsTable
                     }),
             ])
             ->recordActions([
-                ViewAction::make()
-                    ->label('')
-                    ->tooltip('Xem chi tiết')
-                    ->icon('heroicon-o-eye')
-                    ->color('info'),
-
                 EditAction::make()
-                    ->label('')
-                    ->tooltip('Chỉnh sửa')
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('warning'),
             ])
             ->recordActionsColumnLabel('Hành động')
             ->toolbarActions([

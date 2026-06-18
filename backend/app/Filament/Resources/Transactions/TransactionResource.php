@@ -17,13 +17,11 @@ use Filament\Tables\Table;
 class TransactionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::Banknotes;
     protected static ?string $navigationLabel = 'Giao dịch';
-    protected static ?string $modelLabel = 'Giao dịch';
-    protected static ?string $pluralModelLabel = 'Giao dịch';
-
+    protected static ?string $modelLabel = 'giao dịch';
+    protected static ?string $pluralModelLabel = 'giao dịch';
     protected static ?string $recordTitleAttribute = 'transaction_code';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Vận hành';
 
     public static function form(Schema $schema): Schema
     {
@@ -46,7 +44,6 @@ class TransactionResource extends Resource
     {
         return [
             'index' => ListTransactions::route('/'),
-            'create' => CreateTransaction::route('/create'),
             'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }

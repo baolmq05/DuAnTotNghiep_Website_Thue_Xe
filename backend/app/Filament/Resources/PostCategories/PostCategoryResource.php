@@ -18,12 +18,9 @@ class PostCategoryResource extends Resource
 {
     protected static ?string $model = PostCategory::class;
     protected static ?string $navigationLabel = 'Danh mục bài viết';
-
-    protected static ?string $modelLabel = 'Danh mục bài viết';
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::BookmarkSquare;
-
+    protected static ?string $modelLabel = 'danh mục';
     protected static ?string $recordTitleAttribute = 'name';
+    protected static \UnitEnum|string|null $navigationGroup = 'Truyền thông';
 
     public static function form(Schema $schema): Schema
     {
@@ -41,6 +38,7 @@ class PostCategoryResource extends Resource
             //
         ];
     }
+    
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();

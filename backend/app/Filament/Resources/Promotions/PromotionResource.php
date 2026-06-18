@@ -19,10 +19,11 @@ use Filament\Tables\Table;
 class PromotionResource extends Resource
 {
     protected static ?string $model = Promotion::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
     protected static ?string $recordTitleAttribute = 'name';
+    protected static ?string $navigationLabel = 'Mã giảm giá';
+    protected static ?string $modelLabel = 'mã giảm giá';
+    protected static ?string $pluralModelLabel = 'mã giảm giá';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Vận hành';
 
     public static function form(Schema $schema): Schema
     {
@@ -51,7 +52,6 @@ class PromotionResource extends Resource
         return [
             'index' => ListPromotions::route('/'),
             'create' => CreatePromotion::route('/create'),
-            'view' => ViewPromotion::route('/{record}'),
             'edit' => EditPromotion::route('/{record}/edit'),
         ];
     }

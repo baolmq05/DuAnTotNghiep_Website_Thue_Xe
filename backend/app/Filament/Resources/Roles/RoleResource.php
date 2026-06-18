@@ -17,13 +17,11 @@ use Filament\Tables\Table;
 class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::ShieldCheck;
     protected static ?string $navigationLabel = 'Vai trò';
-    protected static ?string $modelLabel = 'Vai trò';
-    protected static ?string $pluralModelLabel = 'Vai trò';
-
+    protected static ?string $modelLabel = 'vai trò';
+    protected static ?string $pluralModelLabel = 'vai trò';
     protected static ?string $recordTitleAttribute = 'name';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Người dùng';
 
     public static function form(Schema $schema): Schema
     {

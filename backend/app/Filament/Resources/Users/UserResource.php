@@ -17,16 +17,11 @@ use Filament\Tables\Table;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-
     protected static ?string $navigationLabel = 'Quản lý người dùng';
-
     protected static ?string $modelLabel = 'người dùng';
-
     protected static ?string $pluralModelLabel = 'người dùng';
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::User;
-
     protected static ?string $recordTitleAttribute = 'name';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Người dùng';
 
     public static function form(Schema $schema): Schema
     {

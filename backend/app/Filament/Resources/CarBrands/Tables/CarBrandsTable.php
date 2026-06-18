@@ -6,6 +6,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
@@ -16,17 +17,12 @@ class CarBrandsTable
     {
         return $table
             ->columns([
-                TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
-
                 TextColumn::make('brand_name')
                     ->label('Tên thương hiệu')
                     ->searchable()
                     ->sortable()
                     ->weight('bold')
-                    ->icon('heroicon-o-building-office-2')
-                    ->color('primary'),
+                    ->icon(Heroicon::Truck),
                 TextColumn::make('car_types_count')
                     ->label('Số loại xe')
                     ->counts('carTypes')
@@ -45,17 +41,7 @@ class CarBrandsTable
             ])
 
             ->recordActions([
-                ViewAction::make()
-                    ->label('')
-                    ->tooltip('Xem chi tiết')
-                    ->icon('heroicon-o-eye')
-                    ->color('info'),
-
-                EditAction::make()
-                    ->label('')
-                    ->tooltip('Chỉnh sửa')
-                    ->icon('heroicon-o-pencil-square')
-                    ->color('warning'),
+                EditAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

@@ -19,10 +19,11 @@ use App\Filament\Resources\CarBrands\RelationManagers\CarTypesRelationManager;
 class CarBrandResource extends Resource
 {
     protected static ?string $model = CarBrand::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
     protected static ?string $recordTitleAttribute = 'brand_name';
+    protected static ?string $navigationLabel = 'Thương hiệu xe';
+    protected static ?string $modelLabel = 'thương hiệu xe';
+    protected static ?string $pluralModelLabel = 'Thương hiệu xe';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Phương tiện';
 
     public static function form(Schema $schema): Schema
     {
@@ -50,10 +51,7 @@ class CarBrandResource extends Resource
     {
         return [
             'index' => ListCarBrands::route('/'),
-            'create' => CreateCarBrand::route('/create'),
-            'view' => ViewCarBrand::route('/{record}'),
             'edit' => EditCarBrand::route('/{record}/edit'),
-
         ];
     }
 }

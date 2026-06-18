@@ -15,6 +15,7 @@ class CarBrandForm
                     ->required()
                     // Kiểm tra trùng lặp
                     ->unique(table: 'car_brands', column: 'brand_name', ignoreRecord: true)
+                    ->columnSpanFull()
                     ->validationMessages([
                         'unique' => 'Thương hiệu này đã tồn tại trong hệ thống!',
                     ]),

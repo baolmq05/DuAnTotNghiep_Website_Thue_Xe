@@ -19,13 +19,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class PostResource extends Resource
 {
     protected static ?string $model = Post::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::DocumentText;
     protected static ?string $navigationLabel = 'Bài viết';
-    protected static ?string $modelLabel = 'Bài viết';
-
-
+    protected static ?string $modelLabel = 'bài viết';
+    protected static ?string $pluralModelLabel = 'Quản lý bài viết';
     protected static ?string $recordTitleAttribute = 'title';
+    protected static \UnitEnum|string|null $navigationGroup = 'Truyền thông';
 
     public static function form(Schema $schema): Schema
     {

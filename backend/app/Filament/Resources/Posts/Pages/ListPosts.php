@@ -29,7 +29,7 @@ class ListPosts extends ListRecords
             'draft' => Tab::make('Bản nháp')
                 ->modifyQueryUsing(fn (Builder $query) => $query->withoutTrashed()->where('status', PostStatus::Inactive))
                 ->badge(static::getResource()::getModel()::query()->withoutTrashed()->where('status', PostStatus::Inactive)->count()),
-            'deleted' => Tab::make('Đã xóa')
+            'deleted' => Tab::make('Thùng rác')
                 ->modifyQueryUsing(fn (Builder $query) => $query->onlyTrashed())
                 ->badge(static::getResource()::getModel()::query()->onlyTrashed()->count()),
         ];

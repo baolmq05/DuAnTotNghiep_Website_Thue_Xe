@@ -10,8 +10,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -19,8 +18,9 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Facades\FilamentView;
+use Filament\Navigation\NavigationGroup;
 
-use Slimani\MediaManager\MediaManagerPlugin;
+// use Slimani\MediaManager\MediaManagerPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -34,7 +34,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(MediaManagerPlugin::make())
+            // ->plugin(MediaManagerPlugin::make())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -45,8 +45,24 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\StatsOverview::class,
                 \App\Filament\Widgets\Dashboard\RevenueChart::class,
                 \App\Filament\Widgets\Dashboard\StatusDoughnutChart::class,
-                // AccountWidget::class,
-                // FilamentInfoWidget::class,
+            ])
+            ->navigationGroups([
+                NavigationGroup::make()
+                    ->label('Quản lý Phương tiện')
+                    ->icon('heroicon-o-truck'),
+
+                NavigationGroup::make()
+                    ->label('Truyền thông')
+                    ->icon('heroicon-o-document-text'),
+
+                    NavigationGroup::make()
+                    ->label('Quản lý Vận hành')
+                    ->icon(Heroicon::Cog),
+
+                NavigationGroup::make()
+                    ->label('Quản lý Người dùng')
+                    ->icon('heroicon-o-users')
+                    ->collapsible(true),
             ])
             ->middleware([
                 EncryptCookies::class,

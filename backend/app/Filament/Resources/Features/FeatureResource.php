@@ -17,13 +17,11 @@ use Filament\Tables\Table;
 class FeatureResource extends Resource
 {
     protected static ?string $model = Feature::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::Sparkles;
     protected static ?string $navigationLabel = 'Tính năng xe';
-    protected static ?string $modelLabel = 'Tính năng xe';
-    protected static ?string $pluralModelLabel = 'Tính năng xe';
-
+    protected static ?string $modelLabel = 'tính năng xe';
+    protected static ?string $pluralModelLabel = 'tính năng xe';
     protected static ?string $recordTitleAttribute = 'feature_name';
+    protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Phương tiện';
 
     public static function form(Schema $schema): Schema
     {
