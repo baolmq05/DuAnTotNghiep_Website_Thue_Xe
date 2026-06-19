@@ -24,6 +24,7 @@ Route::group([
     Route::post('refresh', [AuthController::class, 'refresh']);
     Route::get('profile', [AuthController::class, 'getProfile']);
     Route::put('profile', [AuthController::class, 'updateProfile']);
+    Route::post('change-password', [AuthController::class, 'changePassword']);
 
     Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
     //api addresses

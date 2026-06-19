@@ -195,6 +195,61 @@ class AuthController extends Controller
     }
 
     /**
+     * Change the authenticated user's password.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changePassword(Request $request)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => 'required|string',
+            'new_password' => 'required|string|min:6|max:16|different:current_password',
+            'new_password_confirmation' => 'required|string|same:new_password',
+        ], [
+            'current_password.required' => 'Mật khẩu hiện tại không được để trống.',
+            'new_password.required' => 'Mật khẩu mới không được để trống.',
+            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
+            'new_password.max' => 'Mật khẩu mới tối đa là 16 ký tự.',
+            'new_password.different' => 'Mật khẩu mới phải khác mật khẩu hiện tại.',
+            'new_password_confirmation.required' => 'Xác nhận mật khẩu mới không được để trống.',
+            'new_password_confirmation.same' => 'Mật khẩu xác nhận không khớp.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Kiểm tra mật khẩu hiện tại
+        if (!\Illuminate\Support\Facades\Hash::check($request->input('current_password'), $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mật khẩu hiện tại không chính xác.'
+            ], 400);
+        }
+
+        // Cập nhật mật khẩu mới
+        $user->update([
+            'password' => bcrypt($request->input('new_password'))
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đổi mật khẩu thành công.'
+        ]);
+    }
+
+    /**
      * Get the token array structure.
      *
      * @param  string $token

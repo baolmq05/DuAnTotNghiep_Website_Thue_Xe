@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Trips\Schemas;
 
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -20,13 +21,9 @@ class TripForm
                     ->preload()
                     ->required()
                     ->disabled(fn (string $operation): bool => $operation === 'edit'),
-                    Select::make('owner_id')
+                Placeholder::make('owner_name')
                     ->label('Chủ xe')
-                    ->relationship('owner', 'name')
-                    ->searchable()
-                    ->preload()
-                    ->required()
-                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
+                    ->content(fn ($record) => $record?->car?->owner?->name ?? 'N/A'),
                 Select::make('user_id')
                     ->label('Khách hàng')
                     ->relationship('user', 'name')

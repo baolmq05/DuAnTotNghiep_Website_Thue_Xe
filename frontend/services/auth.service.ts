@@ -43,6 +43,14 @@ export class AuthService extends BaseService {
       useAuth: true
     });
   }
+
+  async changePasswordApi(payload: any): Promise<any> {
+    return this.request<any>("auth/change-password", {
+      method: "POST",
+      body: payload,
+      useAuth: true
+    });
+  }
 }
 
 export const authService = new AuthService();

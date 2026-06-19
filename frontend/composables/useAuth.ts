@@ -67,6 +67,20 @@ export const useAuth = () => {
     }
   };
 
+  const changePassword = async (passwordData: any) => {
+    try {
+      const res: any = await authService.changePasswordApi(passwordData);
+      if (res && res.success) {
+        return { success: true, message: res.message };
+      }
+      return { success: false, message: "Đổi mật khẩu thất bại." };
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.response?._data?.message || "Đổi mật khẩu thất bại.";
+      return { success: false, message: errMsg, errors: err.response?._data?.errors };
+    }
+  };
+
   const logout = async () => {
     try {
       if (token.value) {
@@ -92,6 +106,7 @@ export const useAuth = () => {
     login,
     register,
     updateProfile,
+    changePassword,
     logout,
     isLoggedIn
   };
