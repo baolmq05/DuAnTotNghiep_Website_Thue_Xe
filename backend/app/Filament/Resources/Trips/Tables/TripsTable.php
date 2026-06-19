@@ -18,6 +18,10 @@ class TripsTable
                     ->label('Xe thuê')
                     ->searchable()
                     ->sortable(),
+                TextColumn::make('car.owner.name')
+                    ->label('Chủ xe')
+                    ->searchable()
+                    ->sortable(),
                 TextColumn::make('user.name')
                     ->label('Khách hàng')
                     ->searchable()

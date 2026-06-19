@@ -20,6 +20,13 @@ class TripForm
                     ->preload()
                     ->required()
                     ->disabled(fn (string $operation): bool => $operation === 'edit'),
+                    Select::make('owner_id')
+                    ->label('Chủ xe')
+                    ->relationship('owner', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->required()
+                    ->disabled(fn (string $operation): bool => $operation === 'edit'),
                 Select::make('user_id')
                     ->label('Khách hàng')
                     ->relationship('user', 'name')
