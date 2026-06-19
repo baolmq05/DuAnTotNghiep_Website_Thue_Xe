@@ -1,6 +1,5 @@
 import { BaseService } from "./base.service";
 
-// console.log("BaseService =", BaseService);
 export class AuthService extends BaseService {
   constructor() {
     super("auth");
@@ -49,6 +48,22 @@ export class AuthService extends BaseService {
       method: "POST",
       body: payload,
       useAuth: true
+    });
+  }
+
+  async loginWithGoogleApi(token: string): Promise<any> {
+    return this.request<any>("auth/google", {
+      method: "POST",
+      body: { token },
+      useAuth: false
+    });
+  }
+
+  async loginWithFacebookApi(accessToken: string): Promise<any> {
+    return this.request<any>("auth/facebook", {
+      method: "POST",
+      body: { accessToken },
+      useAuth: false
     });
   }
 }

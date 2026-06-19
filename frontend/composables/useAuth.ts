@@ -98,6 +98,50 @@ export const useAuth = () => {
     }
   };
 
+  const loginWithGoogle = async (googleToken: string) => {
+    try {
+      const res: any = await authService.loginWithGoogleApi(googleToken);
+      if (res && res.access_token) {
+        token.value = res.access_token;
+        user.value = res.user || null;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_TOKEN", res.access_token);
+          if (res.user) {
+            localStorage.setItem("USER_INFO", JSON.stringify(res.user));
+          }
+        }
+        return { success: true, user: res.user };
+      }
+      return { success: false, message: "Không nhận được access token từ Google." };
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.response?._data?.message || err.response?._data?.error || "Đăng nhập Google thất bại.";
+      return { success: false, message: errMsg };
+    }
+  };
+
+  const loginWithFacebook = async (fbAccessToken: string) => {
+    try {
+      const res: any = await authService.loginWithFacebookApi(fbAccessToken);
+      if (res && res.access_token) {
+        token.value = res.access_token;
+        user.value = res.user || null;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_TOKEN", res.access_token);
+          if (res.user) {
+            localStorage.setItem("USER_INFO", JSON.stringify(res.user));
+          }
+        }
+        return { success: true, user: res.user };
+      }
+      return { success: false, message: "Không nhận được access token từ Facebook." };
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.response?._data?.message || err.response?._data?.error || "Đăng nhập Facebook thất bại.";
+      return { success: false, message: errMsg };
+    }
+  };
+
   const isLoggedIn = computed(() => !!token.value && !!user.value);
 
   return {
@@ -108,6 +152,8 @@ export const useAuth = () => {
     updateProfile,
     changePassword,
     logout,
+    loginWithGoogle,
+    loginWithFacebook,
     isLoggedIn
   };
 };

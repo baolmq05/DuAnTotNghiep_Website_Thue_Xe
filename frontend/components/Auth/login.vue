@@ -92,7 +92,7 @@
                                 <div id="googleButtonContainer"></div>
                             </div>
 
-                            <button type="button"
+                            <button type="button" @click="loginWithFacebook"
                                 class="flex items-center justify-center gap-2 h-[44px] w-full border border-slate-200 rounded-full text-sm font-medium hover:bg-slate-50 transition-colors focus:outline-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-5 h-5">
                                     <path fill="#3b5998"
@@ -120,23 +120,51 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 
+// =====================================================================================
+// 1. STATE & MODAL MANAGEMENT
+// =====================================================================================
 const { isLoginOpen, openLogin, closeLogin, switchToRegister } = useAuthModal()
-const { login } = useAuth()
+const { login, loginWithGoogle: loginWithGoogleService, loginWithFacebook: loginWithFacebookService } = useAuth()
 const { showToast } = useToast()
-const isGoogleLoading = ref(false)
 
 const email = ref('')
 const password = ref('')
+const showPassword = ref(false)
+const isGoogleLoading = ref(false)
 
 const openModal = openLogin
 const closeModal = closeLogin
 
-const showPassword = ref(false)
 const togglePassword = () => {
     showPassword.value = !showPassword.value
 }
 
-// hàm giải mã JWT token lấy từ Google
+// =====================================================================================
+// 2. TRADITIONAL LOGIN
+// =====================================================================================
+const handleLogin = async () => {
+    const res = await login({
+        email: email.value,
+        password: password.value
+    })
+
+    if (res.success) {
+        showToast("Đăng nhập thành công!", "success")
+        closeLogin()
+        email.value = ''
+        password.value = ''
+        setTimeout(() => {
+            window.location.reload()
+        }, 500)
+    } else {
+        showToast(res.message || "Đăng nhập thất bại!", "error")
+    }
+}
+
+// =====================================================================================
+// 3. GOOGLE SIGN-IN LOGIN
+// =====================================================================================
+// Hàm giải mã JWT token lấy từ Google
 function decodeJWT(token) {
     let base64Url = token.split(".")[1];
     let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
@@ -151,57 +179,41 @@ function decodeJWT(token) {
     return JSON.parse(jsonPayload);
 }
 
-// hàm callback xử lý dữ liệu sau khi đăng nhập Google thành công
+// Hàm callback xử lý dữ liệu sau khi đăng nhập Google thành công
 const handleCredentialResponse = async (response) => {
-    isGoogleLoading.value = true // 🌟 Bật loading ngay để ẩn form cũ đi
+    isGoogleLoading.value = true // Bật trạng thái loading để ẩn Form đăng nhập cũ đi
     console.log("Encoded JWT ID token: " + response.credential);
 
     const responsePayload = decodeJWT(response.credential);
     console.log("Decoded JWT Fields:", responsePayload);
 
     try {
-        // Gửi token sang Laravel Backend xử lý lưu database và sinh token hệ thống
-        const res = await $fetch('http://127.0.0.1:8000/api/auth/google', {
-            method: 'POST',
-            body: {
-                token: response.credential
-            }
-        })
+        // Sử dụng service từ useAuth để thực hiện đăng nhập Google
+        const res = await loginWithGoogleService(response.credential);
 
         if (res.success) {
             showToast(`Xin chào ${responsePayload.name}! Đăng nhập thành công.`, "success")
-
-            // lưu token và thông tin người dùng vào LocalStorage và Cookie để duy trì phiên đăng nhập
-            if (typeof window !== 'undefined') {
-                localStorage.setItem("USER_TOKEN", res.access_token);
-                document.cookie = `USER_TOKEN=${res.access_token}; path=/; max-age=${60 * 60 * 24 * 7};`;
-
-                localStorage.setItem("USER_INFO", JSON.stringify(res.user));
-                document.cookie = `USER_INFO=${encodeURIComponent(JSON.stringify(res.user))}; path=/; max-age=${60 * 60 * 24 * 7};`;
-            }
-
-            // đóng modal đăng nhập
+            // Tải lại trang để đồng bộ phiên làm việc mới
             setTimeout(() => {
                 window.location.reload()
-            }, 300) // 
-
+            }, 300)
         } else {
-            isGoogleLoading.value = false // Tắt loading nếu thất bại
+            isGoogleLoading.value = false
             showToast(res.message || "Đăng nhập Google thất bại!", "error")
         }
     } catch (error) {
-        isGoogleLoading.value = false // Tắt loading nếu lỗi kết nối
+        isGoogleLoading.value = false
         console.error(error)
         showToast("Không thể kết nối đến máy chủ hoặc lỗi ghi Database!", "error")
     }
 }
 
-// gắn callback riêng của màn hình Login lên window toàn cục để Google GIS có thể gọi khi người dùng nhấn nút Google
+// Gắn callback Google toàn cục lên window
 if (typeof window !== 'undefined') {
     window.handleCredentialResponse = handleCredentialResponse
 }
 
-// hàm vẽ nút Google chính chủ riêng cho Form Đăng nhập
+// Hàm khởi tạo và hiển thị nút Google Sign-In chính chủ
 const initGoogleSignIn = () => {
     if (typeof window !== 'undefined' && window.google) {
         window.google.accounts.id.initialize({
@@ -225,9 +237,8 @@ const initGoogleSignIn = () => {
     }
 }
 
-// lắng nghe trạng thái đóng/mở của Modal thông qua Watcher
+// Lắng nghe đóng mở Modal để dựng lại nút Google
 watch(() => isLoginOpen.value, async (isOpen) => {
-    // Khi modal mở ra và Google GIS Script đã sẵn sàng, thì khởi tạo nút Google
     if (isOpen && !isGoogleLoading.value) {
         await nextTick();
         setTimeout(() => {
@@ -238,23 +249,36 @@ watch(() => isLoginOpen.value, async (isOpen) => {
     immediate: true
 });
 
-// hàm xử lý đăng nhập bằng email/password truyền thống
-const handleLogin = async () => {
-    const res = await login({
-        email: email.value,
-        password: password.value
-    })
-
-    if (res.success) {
-        showToast("Đăng nhập thành công!", "success")
-        closeLogin()
-        email.value = ''
-        password.value = ''
-        setTimeout(() => {
-            window.location.reload()
-        }, 500)
+// =====================================================================================
+// 4. FACEBOOK SIGN-IN LOGIN (Tích hợp đăng nhập Facebook)
+// =====================================================================================
+function loginWithFacebook() {
+    if (process.client && window.FB) {
+        window.FB.login(function (response) {
+            if (response.authResponse) {
+                const accessToken = response.authResponse.accessToken;
+                loginWithFacebookService(accessToken)
+                    .then((loginRes) => {
+                        if (loginRes.success) {
+                            showToast(`Xin chào ${loginRes.user?.name || ''}! Đăng nhập Facebook thành công.`, "success");
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 300);
+                        } else {
+                            showToast(loginRes.message || "Đăng nhập Facebook thất bại!", "error");
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        showToast("Đăng nhập bằng Facebook thất bại!", "error");
+                    });
+            } else {
+                console.log("User cancelled login or did not fully authorize.");
+                showToast("Người dùng đã hủy hoặc không cấp quyền đăng nhập.", "error");
+            }
+        }, { scope: 'public_profile,email' });
     } else {
-        showToast(res.message || "Đăng nhập thất bại!", "error")
+        showToast("Facebook SDK chưa sẵn sàng. Vui lòng thử lại sau!", "error");
     }
 }
 

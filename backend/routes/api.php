@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\FacebookAuthController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -28,6 +29,7 @@ Route::group([
     Route::post('change-password', [AuthController::class, 'changePassword']);
 
     Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
+    Route::post('facebook', [FacebookAuthController::class, 'loginWithFacebook']);
     //api addresses
     Route::get('addresses', [AddressController::class, 'index']);
     Route::post('addresses', [AddressController::class, 'store']);

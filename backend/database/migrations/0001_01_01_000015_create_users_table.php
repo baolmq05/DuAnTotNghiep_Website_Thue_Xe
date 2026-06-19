@@ -15,10 +15,10 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->id();
             $table->text('name')->comment('Tên người dùng');
-            $table->string('email')->unique()->comment('Địa chỉ email');
+            $table->string('email')->unique()->comment('Địa chỉ email')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->comment('Mật khẩu');
-            $table->string('phone')->unique()->comment('Số điện thoại');
+            $table->string('phone')->unique()->comment('Số điện thoại')->nullable();
             $table->text('avatar')->nullable();
             $table->TinyInteger('gender')->nullable()->comment('Giới tính 0: nữ, 1: nam, 2: khác');
             $table->date('DOB')->nullable()->comment('Ngày sinh');

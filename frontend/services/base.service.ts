@@ -7,9 +7,6 @@ export abstract class BaseService {
         this.endpoint = endpoint;
     }
 
-    /**
-     * Lấy token (override được nếu cần custom)
-     */
     protected getToken(): string | null {
         if (localStorage.getItem("USER_TOKEN")) {
             return localStorage.getItem("USER_TOKEN");
@@ -18,9 +15,6 @@ export abstract class BaseService {
         return null;
     }
 
-    /**
-     * Build headers (có thể bật/tắt auth)
-     */
     protected buildHeaders(useAuth: boolean = true): HeadersInit {
         const headers: HeadersInit = {
             "Content-Type": "application/json"
@@ -36,9 +30,6 @@ export abstract class BaseService {
         return headers;
     }
 
-    /**
-     * Core request method (dùng chung cho mọi API)
-     */
     protected async request<T>(
         url: string,
         options: {
@@ -60,8 +51,6 @@ export abstract class BaseService {
             throw err;
         }
     }
-
-    // ================= COMMON METHODS =================
 
     async getAll<T>(useAuth: boolean = true): Promise<T[]> {
         return this.request<T[]>(this.endpoint, { useAuth });
