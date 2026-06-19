@@ -1,41 +1,7 @@
 <template>
     <div class="bg-white min-h-screen font-sans antialiased text-gray-900">
 
-        <section
-            class="relative overflow-hidden bg-gradient-to-b from-brand-dark via-brand-primary to-brand-light/35 min-h-[600px] flex items-center">
-            <div class="absolute inset-0 z-0">
-                <img :key="heroImageKey" :src="heroImageSrc" alt="Hành trình khám phá" loading="eager"
-                    fetchpriority="high" decoding="async" class="hero-visual w-full h-full object-cover opacity-30" />
-                <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/65 via-brand-primary/35 to-transparent" />
-            </div>
-
-            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-                <div class="max-w-4xl mx-auto text-center">
-                    <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black text-white leading-tight tracking-tight">
-                        Giải pháp thuê xe cho mọi <span
-                            class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 to-teal-300">hành
-                            trình</span>
-                    </h1>
-
-                    <p class="mt-6 text-lg text-gray-200/90 leading-relaxed max-w-3xl mx-auto">
-                        Chúng tôi kết nối khách hàng với hàng trăm dòng xe chất lượng, mang đến trải nghiệm thuê xe
-                        nhanh chóng, an toàn và tiện lợi cho mọi nhu cầu di chuyển
-                    </p>
-
-                    <div class="flex flex-wrap gap-4 mt-10 justify-center">
-                        <NuxtLink to="/"
-                            class="px-8 py-4 bg-white text-[#286874] rounded-xl font-bold shadow-lg shadow-black/10 hover:shadow-xl hover:bg-cyan-50 hover:-translate-y-0.5 transition-all duration-200">
-                            Thuê Xe Ngay
-                        </NuxtLink>
-
-                        <NuxtLink to="/"
-                            class="px-8 py-4 border border-white/40 text-white rounded-xl font-semibold backdrop-blur-sm hover:bg-white/10 hover:border-white hover:-translate-y-0.5 transition-all duration-200">
-                            Liên Hệ
-                        </NuxtLink>
-                    </div>
-                </div>
-            </div>
-        </section>
+        <AboutBanner />
 
         <section class="section-padding bg-slate-50 border-b border-slate-100">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -315,31 +281,68 @@
             </div>
         </section>
 
-        <section class=" section-padding bg-[#286874] relative overflow-hidden ">
-            <div class="absolute inset-y-0 left-0 w-1/4 hidden xl:block opacity-40">
-                <img src="/images/about/about13.jpg" alt="Cung đường ven biển trái"
-                    class="w-full h-full object-cover mask-image-linear-right" />
-            </div>
-            <div class="absolute inset-y-0 right-0 w-1/4 hidden xl:block opacity-40">
-                <img src="/images/about/about14.jpg" alt="Góc nhìn vô lăng phải"
-                    class="w-full h-full object-cover mask-image-linear-left" />
-            </div>
+        <section class="section-padding bg-slate-50 border-t border-slate-100">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                    <!-- Left: Contact Details -->
+                    <div class="lg:col-span-5 space-y-6">
+                        <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] text-[#286874]">
+                            Văn Phòng Cần Thơ
+                        </span>
+                        <h2 class="text-3xl sm:text-4xl font-black text-gray-900 leading-tight">
+                            Gặp gỡ chúng tôi trực tiếp
+                        </h2>
+                        <p class="text-gray-600 leading-relaxed text-sm md:text-base">
+                            Văn phòng của Drivio được đặt tại trung tâm thành phố Cần Thơ, sẵn sàng tiếp đón và hỗ trợ
+                            giải đáp mọi thắc mắc của bạn về dịch vụ thuê xe.
+                        </p>
 
-            <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center text-white">
-                <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight">
-                    Sẵn sàng cho chuyến đi tiếp theo?
-                </h2>
+                        <div class="space-y-4 pt-2">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 flex-shrink-0">
+                                    <Icon name="ri:map-pin-line" size="20" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-sm">Địa chỉ</h4>
+                                    <p class="text-gray-600 text-sm mt-0.5">Trường Cao đẳng FPT Polytechnic, Q. Ninh
+                                        Kiều, TP. Cần Thơ</p>
+                                </div>
+                            </div>
 
-                <p class="mt-6 max-w-xl mx-auto text-base sm:text-lg text-cyan-50/90 leading-relaxed">
-                    Hàng trăm mẫu xe đời mới, an toàn đã sẵn sàng phục vụ <br />Đặt xe ngay hôm nay để nhận nhiều ưu
-                    đại độc quyền từ chúng tôi
-                </p>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 flex-shrink-0">
+                                    <Icon name="ri:phone-line" size="20" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-sm">Hotline hỗ trợ</h4>
+                                    <p class="text-gray-600 text-sm mt-0.5">1900 1234 (Hỗ trợ 24/7)</p>
+                                </div>
+                            </div>
 
-                <div class="mt-10">
-                    <NuxtLink to="/"
-                        class="inline-block px-10 py-4 bg-white text-[#286874] font-bold rounded-xl shadow-lg hover:scale-105 hover:bg-cyan-50 transition-all duration-200">
-                        Khám Phá Xe Ngay
-                    </NuxtLink>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-teal-50 rounded-xl flex items-center justify-center text-teal-600 flex-shrink-0">
+                                    <Icon name="ri:mail-send-line" size="20" />
+                                </div>
+                                <div>
+                                    <h4 class="font-bold text-gray-900 text-sm">Email liên hệ</h4>
+                                    <p class="text-gray-600 text-sm mt-0.5">support@drivio.com</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Google Map Iframe -->
+                    <div
+                        class="lg:col-span-7 w-full h-[450px] rounded-3xl overflow-hidden shadow-xl shadow-teal-900/5 border border-slate-100 relative group">
+                        <iframe
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3929.420494742025!2d105.75565247484555!3d9.982081490122408!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31a08906415c355f%3A0x416815a99ebd841e!2zVHLGsOG7nW5nIENhbyDEkeG6s25nIEZQVCBQb2x5dGVjaG5pYw!5e0!3m2!1svi!2suk!4v1781856274234!5m2!1svi!2suk"
+                            width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"
+                            referrerpolicy="no-referrer-when-downgrade"
+                            class="w-full h-full grayscale-[15%] group-hover:grayscale-0 transition-all duration-300"></iframe>
+                    </div>
                 </div>
             </div>
         </section>
@@ -349,6 +352,15 @@
 
 <script setup>
 import { ref, onMounted, onActivated } from 'vue'
+import AboutBanner from '~/components/Banner/AboutBanner.vue'
+
+useSeoMeta({
+    title: 'Giới Thiệu Về Chúng Tôi | DRIVIO — Trải Nghiệm Thuê Xe Khác Biệt',
+    description: 'Tìm hiểu về Drivio, nền tảng kết nối và chia sẻ xe tự lái uy tín hàng đầu. Cam kết đa dạng dòng xe, bảo hiểm đầy đủ, hỗ trợ 24/7.',
+    ogTitle: 'Giới Thiệu Về Drivio',
+    ogDescription: 'Nền tảng chia sẻ xe ô tô tự lái uy tín hàng đầu Việt Nam.',
+    ogImage: '/images/about/aboutHero.jpg',
+})
 
 const heroImageSrc = '/images/about/aboutHero.jpg'
 const heroImageKey = ref(0)

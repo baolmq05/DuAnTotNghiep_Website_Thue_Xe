@@ -1,26 +1,7 @@
 <template>
   <section class="bg-gray-50 min-h-screen">
     <!-- Hero Banner -->
-    <div class="relative h-[420px] overflow-hidden">
-      <img
-        src="/images/about/policy.webp"
-        alt="Drivio Policy"
-        class="w-full h-full object-cover"
-      />
-      <div class="absolute inset-0 bg-black/60"></div>
-      <div class="absolute inset-0 flex flex-col justify-center items-center text-center px-6">
-        <span class="uppercase tracking-[6px] text-gray-300 text-sm mb-5">
-          DRIVIO
-        </span>
-        <h1 class="text-5xl md:text-6xl font-bold text-white mb-5">
-          Chính Sách & Quy Định
-        </h1>
-        <p class="max-w-2xl text-gray-200 text-lg">
-          Điều khoản, chính sách và quy định áp dụng cho người dùng
-          trên nền tảng thuê xe DRIVIO.
-        </p>
-      </div>
-    </div>
+    <PolicyBanner />
 
     <!-- Content -->
     <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16">
@@ -128,8 +109,14 @@
 </template>
 
 <script setup lang="ts">
-useHead({
-  title: 'Chính Sách & Quy Định | DRIVIO'
+import PolicyBanner from '~/components/Banner/PolicyBanner.vue'
+
+useSeoMeta({
+  title: 'Chính Sách & Quy Định | DRIVIO — Trải Nghiệm Thuê Xe Khác Biệt',
+  description: 'Các điều khoản sử dụng dịch vụ, chính sách bảo mật thông tin và quy định hủy chuyến trên nền tảng thuê xe tự lái Drivio.',
+  ogTitle: 'Chính Sách & Quy Định | Drivio',
+  ogDescription: 'Thông tin chi tiết về các điều khoản, quyền lợi và nghĩa vụ của khách thuê và chủ xe trên Drivio.',
+  ogImage: '/images/about/policy.webp',
 })
 </script>
 
