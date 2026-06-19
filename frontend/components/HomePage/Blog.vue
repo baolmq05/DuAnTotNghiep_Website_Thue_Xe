@@ -1,9 +1,9 @@
 <template>
 	<!-- Blog -->
-	<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+	<section class="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 		<h2 class="text-3xl font-extrabold text-center mb-12 text-black tracking-tight">Blog Drivio</h2>
 
-		<div class="container mx-auto p-4">
+		<div class="w-full">
 			<!-- Loading skeleton state -->
 			<div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[250px]">
 				<div v-for="i in 5" :key="i" :class="[

@@ -11,44 +11,71 @@
     <div class="relative">
 
       <!-- LEFT -->
-      <button @click="scrollLeft"
-        class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow p-2 rounded-full">
-        ◀
+      <button 
+        @click="scrollLeft"
+        :disabled="currentIndex === 0"
+        class="hidden md:flex absolute left-2 xl:-left-6 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-lg rounded-full text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none disabled:scale-100"
+        aria-label="Previous page"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+        </svg>
       </button>
 
       <!-- VIEWPORT -->
-      <div ref="slider" class="overflow-hidden">
+      <div 
+        ref="slider" 
+        class="overflow-hidden"
+        @touchstart="handleTouchStart"
+        @touchend="handleTouchEnd"
+      >
         <!-- TRACK -->
-        <div class="flex gap-4 transition-transform duration-500"
-          :style="{ transform: `translateX(-${currentIndex * 100}%)` }">
-
-          <!-- PAGE -->
-          <div v-for="(page, i) in pages" :key="i"
-            class="w-full flex-shrink-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- ITEM -->
-            <div v-for="promo in page" :key="promo.id" class="cursor-pointer group" @click="openModal(promo)">
-              <div class="relative h-[180px] md:h-[220px] rounded-2xl overflow-hidden">
-
-                <!-- IMAGE -->
-                <img :src="promo.banner"
-                  class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
-
-                <!-- OVERLAY -->
-                <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition"></div>
-
-              </div>
+        <div 
+          class="flex -mx-2 transition-transform duration-500 ease-out"
+          :style="{ transform: `translateX(-${currentIndex * (100 / itemsPerView)}%)` }"
+        >
+          <!-- ITEM -->
+          <div 
+            v-for="promo in promotions" 
+            :key="promo.id" 
+            class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-2 cursor-pointer group" 
+            @click="openModal(promo)"
+          >
+            <div class="relative h-[180px] md:h-[220px] rounded-2xl overflow-hidden">
+              <!-- IMAGE -->
+              <img :src="promo.banner"
+                class="w-full h-full object-cover group-hover:scale-105 transition duration-500" />
+              <!-- OVERLAY -->
+              <div class="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition"></div>
             </div>
-
           </div>
         </div>
       </div>
 
       <!-- RIGHT -->
-      <button @click="scrollRight"
-        class="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow p-2 rounded-full">
-        ▶
+      <button 
+        @click="scrollRight"
+        :disabled="currentIndex >= promotions.length - itemsPerView"
+        class="hidden md:flex absolute right-2 xl:-right-6 top-1/2 -translate-y-1/2 z-10 w-11 h-11 items-center justify-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-md hover:shadow-lg rounded-full text-slate-700 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed disabled:pointer-events-none disabled:scale-100"
+        aria-label="Next page"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+        </svg>
       </button>
 
+    </div>
+
+    <!-- INDICATORS -->
+    <div class="flex justify-center gap-2 mt-6">
+      <button 
+        v-for="index in promotions.length - itemsPerView + 1" 
+        :key="index"
+        @click="currentIndex = index - 1"
+        class="w-2 h-2 rounded-full transition-all duration-300"
+        :class="currentIndex === index - 1 ? 'bg-blue-600 w-5' : 'bg-slate-300 dark:bg-slate-700 hover:bg-slate-400'"
+        :aria-label="`Go to item ${index}`"
+      ></button>
     </div>
 
     <!-- MODAL -->
@@ -78,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const promotions = [
   { id: 1, banner: 'https://images.unsplash.com/photo-1605559424843-9e4c228bf1c2', title: 'Promo 1', description: 'Giảm 120K', code: 'A1' },
@@ -89,22 +116,40 @@ const promotions = [
   { id: 6, banner: 'https://images.unsplash.com/photo-1504215680853-026ed2a45def', title: 'Promo 6', description: 'Giảm 120K', code: 'A6' }
 ]
 
-/* CHIA TRANG: 3 ITEM / PAGE */
-const pages = computed(() => {
-  const chunk = 3
-  const result = []
+const currentIndex = ref(0)
+const itemsPerView = ref(3)
 
-  for (let i = 0; i < promotions.length; i += chunk) {
-    result.push(promotions.slice(i, i + chunk))
+const updateItemsPerView = () => {
+  if (typeof window === 'undefined') return
+  if (window.innerWidth >= 1024) {
+    itemsPerView.value = 3
+  } else if (window.innerWidth >= 640) {
+    itemsPerView.value = 2
+  } else {
+    itemsPerView.value = 1
   }
 
-  return result
+  // Keep currentIndex in bounds
+  const maxIndex = promotions.length - itemsPerView.value
+  if (currentIndex.value > maxIndex) {
+    currentIndex.value = Math.max(0, maxIndex)
+  }
+}
+
+onMounted(() => {
+  updateItemsPerView()
+  window.addEventListener('resize', updateItemsPerView)
 })
 
-const currentIndex = ref(0)
+onUnmounted(() => {
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('resize', updateItemsPerView)
+  }
+})
 
 const scrollRight = () => {
-  if (currentIndex.value < pages.value.length - 1) {
+  const maxIndex = promotions.length - itemsPerView.value
+  if (currentIndex.value < maxIndex) {
     currentIndex.value++
   }
 }
@@ -112,6 +157,31 @@ const scrollRight = () => {
 const scrollLeft = () => {
   if (currentIndex.value > 0) {
     currentIndex.value--
+  }
+}
+
+/* TOUCH SWIPE EVENT HANDLERS FOR MOBILE */
+const touchStartX = ref(0)
+const touchEndX = ref(0)
+
+const handleTouchStart = (e: TouchEvent) => {
+  touchStartX.value = e.touches[0].clientX
+}
+
+const handleTouchEnd = (e: TouchEvent) => {
+  touchEndX.value = e.changedTouches[0].clientX
+  handleSwipe()
+}
+
+const handleSwipe = () => {
+  const swipeThreshold = 50
+  const diffX = touchStartX.value - touchEndX.value
+  if (Math.abs(diffX) > swipeThreshold) {
+    if (diffX > 0) {
+      scrollRight()
+    } else {
+      scrollLeft()
+    }
   }
 }
 

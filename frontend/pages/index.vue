@@ -9,9 +9,6 @@
 		<!-- Promotions -->
 		<HomePagePromotionCarousel />
 
-		<!-- Featured Locations -->
-		<HomePageFeaturedLocations />
-
 		<!-- Insurance -->
 		<HomePageInsurance />
 

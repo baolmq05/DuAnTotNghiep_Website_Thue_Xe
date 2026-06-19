@@ -68,8 +68,6 @@
           <option value="4">Xe 4 chỗ</option>
           <option value="7">Xe 7 chỗ</option>
           <option value="ev">Xe điện</option>
-          <option value="pickup">Xe bán tải</option>
-          <option value="luxury">Xe hạng sang</option>
         </select>
       </div>
     </div>
