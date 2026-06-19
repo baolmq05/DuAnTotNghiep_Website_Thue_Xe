@@ -113,20 +113,31 @@
                     <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
                     
                     <!-- SEARCH -->
-                    <div class="mb-6 relative">
-                        <input 
-                            type="text" 
-                            :value="searchQuery"
-                            @input="handleSearchInput"
-                            placeholder="Tìm bài viết..."
-                            class="w-full pl-10 pr-4 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-teal-500" 
-                        />
-                        <!-- ICON -->
-                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
-                            stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
-                        </svg>
+                    <div class="mb-6 relative flex items-center">
+                        <div class="relative w-full">
+                            <input 
+                                type="text" 
+                                v-model="tempSearchQuery"
+                                @keyup.enter="handleSearch"
+                                placeholder="Tìm bài viết..."
+                                class="w-full pl-10 pr-24 py-2 border border-slate-200 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all shadow-sm" 
+                            />
+                            <!-- ICON -->
+                            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none"
+                                stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M21 21l-4.35-4.35M16 10a6 6 0 11-12 0 6 6 0 0112 0z" />
+                            </svg>
+                            <!-- SEARCH BUTTON -->
+                            <button 
+                                @click="handleSearch"
+                                type="button"
+                                class="absolute right-1 top-1/2 -translate-y-1/2 px-4 py-1.5 bg-teal-500 hover:bg-teal-600 active:scale-95 text-white text-xs font-bold rounded-full transition-all shadow-sm flex items-center gap-1"
+                            >
+                                <Icon name="ri:search-2-line" size="14" />
+                                Tìm
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Category -->
@@ -210,16 +221,12 @@ const currentPage = ref(1)
 const totalPages = ref(1)
 const loading = ref(false)
 
-// Thao tác tìm kiếm với debounce đơn giản
-let searchTimeout: any = null
-const handleSearchInput = (e: Event) => {
-    const target = e.target as HTMLInputElement
-    searchQuery.value = target.value
+const tempSearchQuery = ref('')
+
+const handleSearch = () => {
+    searchQuery.value = tempSearchQuery.value.trim()
     currentPage.value = 1
-    clearTimeout(searchTimeout)
-    searchTimeout = setTimeout(() => {
-        fetchPosts()
-    }, 400)
+    fetchPosts()
 }
 
 // Gọi API lấy bài viết
@@ -280,6 +287,7 @@ const fetchPopularPosts = async () => {
 const filterByCategory = (catId: number | string) => {
     selectedCategoryId.value = catId
     currentPage.value = 1
+    searchQuery.value = tempSearchQuery.value.trim()
     fetchPosts()
 }
 
