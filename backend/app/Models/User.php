@@ -75,6 +75,11 @@ class User extends Authenticatable implements JWTSubject
         return $this->hasMany(Address::class);
     }
 
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
     public function getJWTIdentifier()
     {
         return $this->getKey();

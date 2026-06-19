@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\GoogleAuthController;
+use App\Http\Controllers\Api\NotificationController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -32,6 +33,13 @@ Route::group([
     Route::post('addresses', [AddressController::class, 'store']);
     Route::put('addresses/{id}', [AddressController::class, 'update']);
     Route::delete('addresses/{id}', [AddressController::class, 'destroy']);
+
+    //api notifications
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::post('notifications', [NotificationController::class, 'store']);
+    Route::put('notifications/read-all', [NotificationController::class, 'readAll']);
+    Route::put('notifications/{id}', [NotificationController::class, 'update']);
+    Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
 });
 
 Route::get('cars', [CarController::class, 'index']);

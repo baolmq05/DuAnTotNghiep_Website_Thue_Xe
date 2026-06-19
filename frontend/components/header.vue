@@ -38,9 +38,9 @@
             <!-- Icons: Bell & Message -->
             <div class="flex items-center space-x-4 border-r border-white/20 pr-4">
               <!-- Bell Icon -->
-              <button class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in" aria-label="Thông báo">
+              <button @click="openNotificationModal" class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in" aria-label="Thông báo">
                 <Icon name="heroicons:bell" class="w-6 h-6" />
-                <span class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full"></span>
+                <span v-if="unreadCount > 0" class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
               </button>
               <!-- Message Icon -->
               <button class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in" aria-label="Tin nhắn">
@@ -72,6 +72,10 @@
       </div>
     </div>
   </header>
+  <CommonNotificationModal
+      :show="showNotificationModal"
+      @close="closeNotificationModal"
+  />
 
   <!-- Bottom Navigation (Mobile Only, Google Material 3 style) -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#f8f0e8]/95 backdrop-blur-md border-t border-slate-200/40 h-[80px] flex items-center justify-around pb-safe px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
@@ -133,10 +137,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 
 const { openLogin, openRegister } = useAuthModal()
 const { user, isLoggedIn } = useAuth()
+const { unreadCount, fetchNotifications } = useNotifications()
 
 const isScrolled = ref(false)
 const activeTab = ref(0)
@@ -157,6 +162,23 @@ const bottomNavItems = [
   { text: 'Tài khoản', icon: 'account' },
   { text: 'Chính Sách', icon: 'policy', to: '/policy' },
 ]
+// mở modal
+const showNotificationModal = ref(false);
+const route = useRoute();
+
+watch(() => route.path, (newPath) => {
+  if (newPath === '/notifications') {
+    showNotificationModal.value = false;
+  }
+});
+
+const openNotificationModal = () => {
+  showNotificationModal.value = !showNotificationModal.value;
+};
+
+const closeNotificationModal = () => {
+  showNotificationModal.value = false;
+};
 
 const handleBottomNavClick = (item: any, idx: number) => {
   activeTab.value = idx
@@ -177,6 +199,15 @@ const handleScroll = () => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  if (isLoggedIn.value) {
+    fetchNotifications()
+  }
+})
+
+watch(isLoggedIn, (newVal) => {
+  if (newVal) {
+    fetchNotifications()
+  }
 })
 
 onUnmounted(() => {
