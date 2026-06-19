@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Cars;
 use App\Filament\Resources\Cars\Pages\CreateCar;
 use App\Filament\Resources\Cars\Pages\EditCar;
 use App\Filament\Resources\Cars\Pages\ListCars;
+use App\Filament\Resources\Cars\Pages\ViewCar;
 use App\Filament\Resources\Cars\Schemas\CarForm;
 use App\Filament\Resources\Cars\Schemas\CarInfolist;
 use App\Filament\Resources\Cars\Tables\CarsTable;
@@ -51,6 +52,7 @@ class CarResource extends Resource
     {
         return [
             'index' => ListCars::route('/'),
+            'view' => ViewCar::route('/{record}'),
         ];
     }
 }

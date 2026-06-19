@@ -22,8 +22,11 @@ class CarsTable
         return $table
             ->columns([
                 ImageColumn::make('images.image_url')
-                    ->label('Ảnh đại diện')
+                    ->label(new \Illuminate\Support\HtmlString('Ảnh đại diện<style>.hover-zoom-image:hover { transform: scale(4.5); z-index: 99999 !important; position: relative !important; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3); cursor: zoom-in; } .hover-zoom-image { transition: all 0.2s ease-in-out; } td:has(.hover-zoom-image:hover), td:has(.hover-zoom-image:hover) * { overflow: visible !important; z-index: 9999 !important; }</style>'))
                     ->circular()
+                    ->extraImgAttributes([
+                        'class' => 'hover-zoom-image',
+                    ])
                     ->limit(1),
                 TextColumn::make('owner.name')
                     ->label('Chủ sở hữu')
@@ -79,36 +82,10 @@ class CarsTable
                     ])
             ])
             ->recordActions([
-                ViewAction::make('xem_chi_tiet')
+                ViewAction::make()
                     ->label('Xem chi tiết')
                     ->icon('heroicon-o-eye')
-                    ->color('info')
-                    ->modalHeading('Thông tin chi tiết xe')
-                    ->modalSubmitAction(false)
-                    ->modalCancelActionLabel('Đóng')
-                    ->modalActions([
-                        Action::make('approve')
-                            ->label('Duyệt xe')
-                            ->icon('heroicon-o-check-circle')
-                            ->color('success')
-                            ->requiresConfirmation()
-                            ->action(function ($record, $livewire) {
-                                $record->update(['status' => 1]);
-                                $livewire->dispatch('refresh'); 
-                            })
-                            ->visible(fn ($record) => $record->status == 2),
-            
-                        Action::make('reject')
-                            ->label('Từ chối')
-                            ->icon('heroicon-o-x-circle')
-                            ->color('danger')
-                            ->requiresConfirmation()
-                            ->action(function ($record, $livewire) {
-                                $record->update(['status' => 3]);
-                                $livewire->dispatch('refresh'); 
-                            })
-                            ->visible(fn ($record) => $record->status == 2),
-                    ]),
+                    ->color('info'),
             ])                
             ->toolbarActions([
                 BulkActionGroup::make([
