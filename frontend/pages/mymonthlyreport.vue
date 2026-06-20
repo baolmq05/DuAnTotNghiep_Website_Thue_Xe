@@ -17,10 +17,12 @@
             </div>
         </section>
 
-        <section class="pb-6 mt-3 ">
+        <section class="pb-6 mt-3">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-start w-full">                    <button
-                        class="flex items-center gap-1 text-black hover:text-black transition text-sm font-medium focus:outline-none pt-2">
+                <div class="flex justify-between items-start w-full">
+                    <button
+                        @click="goBack"
+                        class="flex items-center gap-1 text-slate-500 hover:text-black transition text-sm font-medium focus:outline-none pt-2">
                         <Icon name="lucide:chevron-left" class="w-4 h-4" />
                         Quay lại
                     </button>
@@ -32,14 +34,16 @@
                             <tbody>
                                 <tr>
                                     <td class="w-20 text-slate-500 font-bold">Chủ xe</td>
-                                    <td class="bg-slate-50 px-3 py-1.5 text-slate-800 font-semibold rounded-lg">xuanbac
-                                        pham</td>
+                                    <td class="bg-slate-50 px-3 py-1.5 text-slate-800 font-semibold rounded-lg">
+                                        {{ userName }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="text-slate-500 font-bold">Mã số</td>
                                     <td
                                         class="bg-slate-50 px-3 py-1.5 text-slate-800 font-mono font-semibold rounded-lg">
-                                        UK8U32</td>
+                                        {{ userCode }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -52,6 +56,7 @@
         <section class="py-6 space-y-10">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
 
+                <!-- 1. CHUYẾN ĐI HOÀN THÀNH -->
                 <div class="space-y-3">
                     <h2 class="text-base font-bold text-slate-900 px-1">Chuyến đi hoàn thành trong kì</h2>
                     <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
@@ -61,8 +66,7 @@
                                     <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                                         <th colspan="2" class="py-2.5 border-r border-slate-200"></th>
                                         <th colspan="3" class="py-2.5 border-r border-slate-200">Thời gian</th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi
-                                        </th>
+                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi</th>
                                         <th colspan="2" class="py-2.5 border-r border-slate-200">Thanh toán</th>
                                         <th colspan="4" class="py-2.5"></th>
                                     </tr>
@@ -75,25 +79,72 @@
                                         <th class="py-3 px-1 border-r border-gray-200">Khách hàng</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Xe thuê</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Đơn giá</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Thanh toán giữ chỗ tại Mioto</th>
+                                        <th class="py-3 px-1 border-r border-gray-200">Thanh toán giữ chỗ</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Thanh toán chủ xe</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Mioto KM</th>
+                                        <th class="py-3 px-1 border-r border-gray-200">Giảm giá KM</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Phí dịch vụ</th>
-                                        <th
-                                            class="py-3 px-1 border-r border-gray-200 flex items-center justify-center gap-0.5 whitespace-nowrap">
-                                            Thuế kinh doanh
-                                            <span
-                                                class="inline-flex items-center justify-center w-3 h-3 rounded-full border border-slate-400 text-[9px] font-bold">?</span>
-                                        </th>
+                                        <th class="py-3 px-1 border-r border-gray-200">Thuế khấu trừ</th>
                                         <th class="py-3 px-1">Thay đổi số dư</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="border-t border-slate-200 bg-white">
+                                    <template v-if="completedTrips.length > 0">
+                                        <tr v-for="item in completedTrips" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-slate-800">
+                                                TRIP{{ item.trip.id }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-semibold">
+                                                {{ item.trip.car?.license_plate || 'N/A' }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.trip.start_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.trip.end_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.trip.created_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-medium">
+                                                {{ item.trip.customer_name }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
+                                                {{ item.trip.car?.name || 'N/A' }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono">
+                                                {{ formatCurrency(item.trip.car?.unit_price || 0) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-emerald-600">
+                                                {{ formatCurrency(item.prepay) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-blue-600">
+                                                {{ formatCurrency(item.trip.cost) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-rose-500">
+                                                {{ formatCurrency(item.trip.discount_amount) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-slate-400">
+                                                {{ formatCurrency(item.trip.service_fee || 0) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-orange-500">
+                                                {{ formatCurrency(item.trip.tax_deducted || 0) }}
+                                            </td>
+                                            <td class="py-3 px-1 font-mono font-bold text-emerald-600">
+                                                +{{ formatCurrency(item.amount) }}
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else>
+                                        <td colspan="14" class="py-8 text-slate-400 text-center font-medium bg-white">
+                                            Không có chuyến đi hoàn thành trong kỳ.
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-slate-200 bg-slate-50/50">
                                         <td colspan="13"
-                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay
-                                            đổi - Chuyến đi hoàn thành</td>
-                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">0đ</td>
+                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay đổi - Chuyến đi hoàn thành</td>
+                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
+                                            {{ formatCurrency(summary.completed_trips_change) }}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -101,28 +152,47 @@
                     </div>
                 </div>
 
+                <!-- 2. RÚT NỘP TIỀN -->
                 <div class="space-y-3 max-w-xl">
                     <h2 class="text-base font-bold text-slate-900 px-1">Giao dịch rút/nộp tiền trong kì</h2>
                     <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
                         <table class="w-full text-center text-[11px] border-collapse">
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
-                                    <th class="py-3 border-r border-slate-200">Ngày giao dịch</th>
-                                    <th class="py-3 border-r border-slate-200">Nội dung</th>
-                                    <th class="py-3">Thay đổi số dư</th>
+                                    <th class="py-3 border-r border-slate-200 w-1/3">Ngày giao dịch</th>
+                                    <th class="py-3 border-r border-slate-200 w-1/3">Nội dung</th>
+                                    <th class="py-3 w-1/3">Thay đổi số dư</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr class="border-t border-slate-200 bg-white">
-                                    <td colspan="2" class="text-left pl-6 py-3.5 font-bold text-slate-900 text-xs">Tổng
-                                        thay đổi - Giao dịch rút/nộp tiền</td>
-                                    <td class="py-3.5 font-bold text-slate-900 text-xs text-center">0đ</td>
+                                <template v-if="depositWithdrawals.length > 0">
+                                    <tr v-for="item in depositWithdrawals" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
+                                        <td class="py-3.5 border-r border-slate-100 font-mono text-slate-500">{{ item.created_at }}</td>
+                                        <td class="py-3.5 border-r border-slate-100 font-medium text-slate-800 text-left pl-6">
+                                            Giao dịch {{ item.amount > 0 ? 'Nạp tiền' : 'Rút tiền' }} (Mã GD: {{ item.transaction_code }})
+                                        </td>
+                                        <td class="py-3.5 font-mono font-bold" :class="item.amount > 0 ? 'text-emerald-600' : 'text-rose-600'">
+                                            {{ item.amount > 0 ? '+' : '' }}{{ formatCurrency(item.amount) }}
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr v-else>
+                                    <td colspan="3" class="py-6 text-slate-400 text-center font-medium bg-white">
+                                        Không có giao dịch rút/nộp tiền trong kỳ.
+                                    </td>
+                                </tr>
+                                <tr class="border-t border-slate-200 bg-slate-50/50">
+                                    <td colspan="2" class="text-left pl-6 py-3.5 font-bold text-slate-900 text-xs">Tổng thay đổi - Giao dịch rút/nộp tiền</td>
+                                    <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
+                                        {{ formatCurrency(summary.deposit_withdrawal_change) }}
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
                 </div>
 
+                <!-- 3. HỦY CHUYẾN -->
                 <div class="space-y-3">
                     <h2 class="text-base font-bold text-slate-900 px-1">Giao dịch hủy chuyến trong kì</h2>
                     <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
@@ -132,8 +202,7 @@
                                     <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
                                         <th colspan="2" class="py-2.5 border-r border-slate-200"></th>
                                         <th colspan="3" class="py-2.5 border-r border-slate-200">Thời gian</th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi
-                                        </th>
+                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi</th>
                                         <th colspan="2" class="py-2.5 border-r border-slate-200">Thanh toán</th>
                                         <th colspan="2" class="py-2.5"></th>
                                     </tr>
@@ -146,19 +215,64 @@
                                         <th class="py-3 px-1 border-r border-slate-200">Khách hàng</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Xe thuê</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Đơn giá</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Thanh toán giữ chỗ tại Mioto
-                                        </th>
+                                        <th class="py-3 px-1 border-r border-slate-200">Thanh toán giữ chỗ</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Thanh toán chủ xe</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Nội dung hủy chuyến</th>
                                         <th class="py-3 px-1">Thay đổi số dư</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr class="border-t border-slate-200 bg-white">
+                                    <template v-if="cancelledTrips.length > 0">
+                                        <tr v-for="item in cancelledTrips" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-slate-800">
+                                                TRIP{{ item.trip.id }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-semibold">
+                                                {{ item.trip.car?.license_plate || 'N/A' }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.trip.start_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.trip.end_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
+                                                {{ item.created_at }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-medium">
+                                                {{ item.trip.customer_name }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
+                                                {{ item.trip.car?.name || 'N/A' }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono">
+                                                {{ formatCurrency(item.trip.car?.unit_price || 0) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-slate-400">
+                                                {{ formatCurrency(item.prepay) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-slate-400">
+                                                {{ formatCurrency(item.trip.cost) }}
+                                            </td>
+                                            <td class="py-3 px-1 border-r border-slate-100 font-medium text-rose-500 text-left pl-2">
+                                                Hủy chuyến (Khấu trừ hoàn cọc)
+                                            </td>
+                                            <td class="py-3 px-1 font-mono font-bold text-rose-600">
+                                                {{ formatCurrency(item.amount) }}
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else>
+                                        <td colspan="12" class="py-8 text-slate-400 text-center font-medium bg-white">
+                                            Không có giao dịch hủy chuyến trong kỳ.
+                                        </td>
+                                    </tr>
+                                    <tr class="border-t border-slate-200 bg-slate-50/50">
                                         <td colspan="11"
-                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay
-                                            đổi - Giao dịch hủy chuyến</td>
-                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">0đ</td>
+                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay đổi - Giao dịch hủy chuyến</td>
+                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
+                                            {{ formatCurrency(summary.cancelled_trips_change) }}
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -166,28 +280,29 @@
                     </div>
                 </div>
 
+                <!-- BẢNG TỔNG HỢP TIỀN -->
                 <div
                     class="rounded-2xl border border-slate-200/60 bg-white text-xs font-medium text-slate-700 divide-y divide-slate-100 shadow-sm overflow-hidden">
                     <div class="p-6 space-y-3 bg-white">
                         <div class="flex justify-between font-bold text-slate-400 text-[11px] tracking-wider uppercase">
                             <span>TỔNG CỘNG THAY ĐỔI TRONG KÌ</span>
-                            <span class="text-slate-800">0đ</span>
+                            <span class="text-slate-800">{{ formatCurrency(summary.total_change) }}</span>
                         </div>
                         <div class="flex justify-between font-normal text-slate-700">
                             <span>TIỀN ĐẦU KÌ</span>
-                            <span class="text-slate-800">0đ</span>
+                            <span class="text-slate-800">{{ formatCurrency(summary.start_balance) }}</span>
                         </div>
                         <div class="flex justify-between font-bold text-[#286874]">
                             <span>TIỀN CUỐI KÌ</span>
-                            <span>0đ</span>
+                            <span>{{ formatCurrency(summary.end_balance) }}</span>
                         </div>
                         <div class="flex justify-between font-semibold text-[#e05638]">
                             <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ</span>
-                            <span>(0đ)</span>
+                            <span>({{ formatCurrency(summary.tax_deducted) }})</span>
                         </div>
                         <div class="flex justify-between font-bold text-[#2f80ed]">
                             <span>THU NHẬP CHỦ XE</span>
-                            <span>0đ</span>
+                            <span>{{ formatCurrency(summary.owner_income) }}</span>
                         </div>
                     </div>
                 </div>
@@ -204,7 +319,75 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { walletService } from '~/services/wallet.service'
+import { authService } from '~/services/auth.service'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
+
+const transactions = ref<any[]>([])
+const userName = ref('')
+const userCode = ref('')
+const balance = ref(0)
+
+const summary = ref({
+    completed_trips_change: 0,
+    deposit_withdrawal_change: 0,
+    cancelled_trips_change: 0,
+    total_change: 0,
+    start_balance: 0,
+    end_balance: 0,
+    tax_deducted: 0,
+    owner_income: 0
+})
+
+const completedTrips = computed(() => {
+    return transactions.value.filter(t => t.trip && t.trip.status !== 3 && t.trip.status !== 4)
+})
+
+const depositWithdrawals = computed(() => {
+    return transactions.value.filter(t => !t.trip)
+})
+
+const cancelledTrips = computed(() => {
+    return transactions.value.filter(t => t.trip && (t.trip.status === 3 || t.trip.status === 4))
+})
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+}
+
+const intval = (value: number) => {
+    return Math.floor(value)
+}
+
+const loadData = async () => {
+    try {
+        const walletRes = await walletService.getWalletDetails()
+        if (walletRes.success && walletRes.data) {
+            transactions.value = walletRes.data.transactions
+            balance.value = walletRes.data.balance
+            summary.value = walletRes.data.summary
+        }
+
+        const profileRes = await authService.getProfileApi()
+        if (profileRes) {
+            userName.value = profileRes.name || 'Khách hàng'
+            userCode.value = profileRes.national_number || 'DRV' + (profileRes.id || '001')
+        }
+    } catch (error) {
+        console.error('Error loading report details:', error)
+    }
+}
+
+onMounted(() => {
+    loadData()
+})
+
+const goBack = () => {
+    router.back()
+}
 </script>
 
 <style scoped>

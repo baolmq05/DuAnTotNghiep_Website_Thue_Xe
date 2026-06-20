@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FacebookAuthController;
+use App\Http\Controllers\Api\WalletController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -43,6 +44,7 @@ Route::group([
     Route::put('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::put('notifications/{id}', [NotificationController::class, 'update']);
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
+    Route::get('wallet', [WalletController::class, 'getWalletDetails']);
 });
 
 Route::get('cars', [CarController::class, 'index']);
