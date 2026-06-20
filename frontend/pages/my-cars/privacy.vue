@@ -106,6 +106,8 @@ definePageMeta({
   layout: "my-cars", // Đồng bộ với layout tab-bar của sếp
 });
 
+const { showToast } = useToast();
+
 // Trạng thái tích chọn của 2 ô Checkbox
 const agreements = reactive({
   location: false,
@@ -122,6 +124,6 @@ const handleConfirm = () => {
   if (!isAllChecked.value) return;
   
   console.log('Chủ xe đã chấp thuận các điều khoản bảo mật của Drivo.');
-  alert('Hệ thống Drivo đã ghi nhận xác nhận bảo mật dữ liệu của sếp thành công!');
+  showToast('Hệ thống Drivo đã ghi nhận xác nhận bảo mật dữ liệu của sếp thành công!', 'success');
 };
 </script>

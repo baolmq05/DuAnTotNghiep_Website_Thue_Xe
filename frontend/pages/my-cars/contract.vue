@@ -82,9 +82,11 @@ definePageMeta({
   layout: "my-cars",
 });
 
+const { showToast } = useToast();
+
 // Hàm xử lý khi bấm xem hoặc tải file hợp đồng mẫu
 const viewContract = (type: string) => {
   console.log(`Đang yêu cầu xem tài liệu mẫu loại: ${type}`);
-  alert(`Hệ thống đang chuẩn bị tệp tài liệu: [${type === 'lease' ? 'Hợp đồng cho thuê' : 'Biên bản bàn giao xe'}].`);
+  showToast(`Hệ thống đang chuẩn bị tệp tài liệu: [${type === 'lease' ? 'Hợp đồng cho thuê' : 'Biên bản bàn giao xe'}].`, 'info');
 };
 </script>

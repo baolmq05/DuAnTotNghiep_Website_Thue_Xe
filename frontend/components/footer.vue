@@ -146,11 +146,12 @@
 import { ref } from 'vue'
 
 const emailInput = ref('')
+const { showToast } = useToast()
 
 const handleSubscribe = () => {
   // Logic xử lý khi người dùng đăng ký nhận ưu đãi
   console.log('Đăng ký email:', emailInput.value)
-  alert(`Đã ghi nhận bản tin gửi tới: ${emailInput.value}`)
+  showToast(`Đã ghi nhận bản tin gửi tới: ${emailInput.value}`, 'success')
   emailInput.value = ''
 }
 </script>

@@ -477,6 +477,12 @@ import { BASE_URL } from '~/enviroment/enviroment'
 definePageMeta({
   layout: 'profile',
 })
+useHead({
+	title: 'DRIVIO - Thông tin tài khoản',
+	meta: [
+		{ name: 'description', content: 'Thông tin tài khoản cá nhân, quản lý thông tin cá nhân' }
+	]
+})
 
 const { user, updateProfile, submitDrivingLicense } = useAuth()
 const { showToast } = useToast()

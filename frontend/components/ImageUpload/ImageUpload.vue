@@ -9,15 +9,17 @@ const form = ref({
 
 const imageUploadRef = ref<any>(null);
 
+const { showToast } = useToast();
+
 const submit = async () => {
   if (imageUploadRef.value) {
     try {
       const urls = await imageUploadRef.value.upload();
       console.log("Danh sách ảnh đã upload thành công:", urls);
-      alert("Upload thành công! Xem log để biết chi tiết các link ảnh.");
+      showToast("Upload thành công! Xem log để biết chi tiết các link ảnh.", "success");
     } catch (error) {
       console.error("Upload thất bại:", error);
-      alert("Đã xảy ra lỗi khi upload hình ảnh.");
+      showToast("Đã xảy ra lỗi khi upload hình ảnh.", "error");
     }
   }
 };
@@ -181,6 +183,8 @@ const submit = async () => {
 <script setup lang="ts">
 import { ref, watch } from "vue";
 
+const { showToast } = useToast();
+
 interface UploadImage {
     url: string;
     uploading: boolean;
@@ -245,7 +249,7 @@ const emitImages = () => {
  */
 const openFilePicker = () => {
     if (images.value.length >= props.maxFiles) {
-        alert(`Chỉ được tải tối đa ${props.maxFiles} ảnh.`);
+        showToast(`Chỉ được tải tối đa ${props.maxFiles} ảnh.`, "error");
         return;
     }
 
@@ -283,7 +287,7 @@ const addFiles = (files: File[]) => {
     const imageFiles = files.filter((file) => file.type.startsWith("image/"));
 
     if (images.value.length + imageFiles.length > props.maxFiles) {
-        alert(`Bạn chỉ được upload tối đa ${props.maxFiles} ảnh.`);
+        showToast(`Bạn chỉ được upload tối đa ${props.maxFiles} ảnh.`, "error");
         return;
     }
 

@@ -245,10 +245,12 @@ const close = () => {
   emit('close')
 }
 
+const { showToast } = useToast()
+
 const apply = () => {
   if (activeTab.value === 'daily') {
     if (!range.value || !range.value.start || !range.value.end) {
-      alert("Vui lòng chọn ngày nhận và ngày trả")
+      showToast("Vui lòng chọn ngày nhận và ngày trả", "error")
       return
     }
     
@@ -263,7 +265,7 @@ const apply = () => {
     emit('apply', { start, end, activeTab: activeTab.value })
   } else {
     if (!singleDate.value) {
-      alert("Vui lòng chọn ngày bắt đầu")
+      showToast("Vui lòng chọn ngày bắt đầu", "error")
       return
     }
     

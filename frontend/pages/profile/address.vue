@@ -61,7 +61,7 @@
               <Icon name="lucide:edit" class="text-2xl cursor-pointer" />
             </button>
 
-            <button @click="handleDeleteAddress(address.id)" class="text-red-500 hover:text-red-700">
+            <button @click="confirmDeleteAddress(address.id)" class="text-red-500 hover:text-red-700">
               <Icon name="lucide:trash-2" class="text-2xl cursor-pointer" />
             </button>
           </div>
@@ -106,6 +106,17 @@
   </div>
 </form>
     </div>
+
+    <CommonConfirmModal
+      :show="showDeleteConfirm"
+      title="Xóa địa chỉ"
+      message="Bạn có chắc chắn muốn xóa địa chỉ này khỏi danh sách đã lưu không?"
+      confirmText="Xóa"
+      cancelText="Hủy"
+      type="danger"
+      @confirm="handleDeleteAddress"
+      @close="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
@@ -242,11 +253,19 @@ const handleFormSubmit = async () => {
   }
 };
 
-const handleDeleteAddress = async (id: number) => {
-  if (!confirm("Bạn có chắc chắn muốn xóa địa chỉ này?")) {
-    return;
-  }
+const showDeleteConfirm = ref(false);
+const addressToDelete = ref<number | null>(null);
 
+const confirmDeleteAddress = (id: number) => {
+  addressToDelete.value = id;
+  showDeleteConfirm.value = true;
+};
+
+const handleDeleteAddress = async () => {
+  if (addressToDelete.value === null) return;
+  const id = addressToDelete.value;
+
+  showDeleteConfirm.value = false;
   loading.value = true;
 
   try {
@@ -266,6 +285,7 @@ const handleDeleteAddress = async (id: number) => {
     showToast("Xóa địa chỉ thất bại", "error");
   } finally {
     loading.value = false;
+    addressToDelete.value = null;
   }
 };
 </script>

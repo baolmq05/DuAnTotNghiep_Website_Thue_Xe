@@ -1,4 +1,5 @@
 <script setup lang="ts">
+const {showToast} = useToast()
 const route = useRoute();
 const { logout: authLogout } = useAuth();
 
@@ -69,7 +70,7 @@ const isActive = (path: string) => {
 
 const logout = async () => {
   await authLogout();
-  alert("Đăng xuất thành công!");
+  showToast("Đăng xuất thành công!",'success');
   if (props.mobile) {
     emit("close");
   }
