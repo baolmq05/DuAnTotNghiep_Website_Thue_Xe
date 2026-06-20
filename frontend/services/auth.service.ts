@@ -43,6 +43,14 @@ export class AuthService extends BaseService {
     });
   }
 
+  async submitDrivingLicenseApi(payload: FormData): Promise<any> {
+    return this.request<any>("auth/profile/driving-license", {
+      method: "POST",
+      body: payload,
+      useAuth: true
+    });
+  }
+
   async changePasswordApi(payload: any): Promise<any> {
     return this.request<any>("auth/change-password", {
       method: "POST",

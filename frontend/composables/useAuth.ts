@@ -67,6 +67,24 @@ export const useAuth = () => {
     }
   };
 
+  const submitDrivingLicense = async (formData: FormData) => {
+    try {
+      const res: any = await authService.submitDrivingLicenseApi(formData);
+      if (res && res.success) {
+        user.value = res.user;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_INFO", JSON.stringify(res.user));
+        }
+        return { success: true, message: res.message };
+      }
+      return { success: false, message: "Gửi duyệt bằng lái thất bại." };
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.response?._data?.message || "Gửi duyệt bằng lái thất bại.";
+      return { success: false, message: errMsg, errors: err.response?._data?.errors };
+    }
+  };
+
   const changePassword = async (passwordData: any) => {
     try {
       const res: any = await authService.changePasswordApi(passwordData);
@@ -150,6 +168,7 @@ export const useAuth = () => {
     login,
     register,
     updateProfile,
+    submitDrivingLicense,
     changePassword,
     logout,
     loginWithGoogle,

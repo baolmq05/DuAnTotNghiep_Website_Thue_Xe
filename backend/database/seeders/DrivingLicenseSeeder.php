@@ -18,18 +18,21 @@ class DrivingLicenseSeeder extends Seeder
             'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO543ii_vq7ztBZoaUmpxI5mgY8z6zy1-GBYXs9_K5Ig&s=10',
             'driving_license_number' => 'B123456789',
             'DOB' => '1990-01-01',
+            'status' => 1, // Đã duyệt
         ]);
         DrivingLicense::create([
             'full_name' => 'Trần Thị B',
             'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO543ii_vq7ztBZoaUmpxI5mgY8z6zy1-GBYXs9_K5Ig&s=10',
             'driving_license_number' => 'C987654321',
             'DOB' => '1992-05-15',
+            'status' => 0, // Chờ duyệt
         ]);
         DrivingLicense::create([
             'full_name' => 'Lê Văn C',
             'image' => 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQO543ii_vq7ztBZoaUmpxI5mgY8z6zy1-GBYXs9_K5Ig&s=10',
             'driving_license_number' => 'D456789123',
             'DOB' => '1988-10-20',
+            'status' => 2, // Bị từ chối
         ]);
     }
 }

@@ -39,6 +39,8 @@ class User extends Authenticatable implements JWTSubject
             'password' => 'hashed',
         ];
     }
+    protected $with = ['drivingLicense'];
+
     protected $fillable = [
         'name',
         'email',

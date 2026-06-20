@@ -26,7 +26,7 @@ const mainMenus = [
   {
     title: "Quản lý cho thuê",
     icon: "ic:outline-directions-car",
-    href: "my-cars",
+    href: "/my-cars",
   },
   {
     title: "Xe yêu thích",
@@ -39,16 +39,6 @@ const mainMenus = [
     href: "/profile/my-trips",
   },
   {
-    title: "Đơn hàng Thuê xe dài hạn",
-    icon: "ic:outline-receipt-long",
-    href: "/profile/orders",
-  },
-  {
-    title: "Quà tặng",
-    icon: "ic:outline-card-giftcard",
-    href: "/profile/gifts",
-  },
-  {
     title: "Địa chỉ của tôi",
     icon: "ic:outline-location-on",
     href: "/profile/address",
@@ -59,7 +49,7 @@ const settingMenus = [
   {
     title: "Chính sách bảo vệ dữ liệu",
     icon: "ic:outline-security",
-    href: "/profile/privacy-policy",
+    href: "/policy",
   },
   {
     title: "Đổi mật khẩu",

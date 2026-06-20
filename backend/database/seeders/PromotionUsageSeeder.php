@@ -13,26 +13,32 @@ class PromotionUsageSeeder extends Seeder
      */
     public function run(): void
     {
-        PromotionUsage::create([
-            'user_id' => 2,
-            'promotion_id' => 1,
-            'discount_amount' => 100000,
-            'used_at' => now(),
-            'trip_id' => 1
-        ]);
-        PromotionUsage::create([
-            'user_id' => 3,
-            'promotion_id' => 2,
-            'discount_amount' => 50000,
-            'used_at' => now(),
-            'trip_id' => 2
-        ]);
-        PromotionUsage::create([
-            'user_id' => 4,
-            'promotion_id' => 3,
-            'discount_amount' => 200000,
-            'used_at' => now(),
-            'trip_id' => 3
-        ]);
+        $trips = \App\Models\Trip::all();
+        $promotions = \App\Models\Promotion::all();
+        $users = \App\Models\User::all();
+
+        if ($trips->count() >= 3 && $promotions->count() >= 3) {
+            PromotionUsage::create([
+                'user_id' => $users->skip(1)->first()?->id ?? 2,
+                'promotion_id' => $promotions->first()?->id ?? 1,
+                'discount_amount' => 100000,
+                'used_at' => now(),
+                'trip_id' => $trips->first()?->id
+            ]);
+            PromotionUsage::create([
+                'user_id' => $users->skip(2)->first()?->id ?? 3,
+                'promotion_id' => $promotions->skip(1)->first()?->id ?? 2,
+                'discount_amount' => 50000,
+                'used_at' => now(),
+                'trip_id' => $trips->skip(1)->first()?->id
+            ]);
+            PromotionUsage::create([
+                'user_id' => $users->skip(3)->first()?->id ?? 4,
+                'promotion_id' => $promotions->skip(2)->first()?->id ?? 3,
+                'discount_amount' => 200000,
+                'used_at' => now(),
+                'trip_id' => $trips->skip(2)->first()?->id
+            ]);
+        }
     }
 }

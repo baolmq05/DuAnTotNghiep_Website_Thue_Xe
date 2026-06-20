@@ -250,6 +250,119 @@ class AuthController extends Controller
     }
 
     /**
+     * Submit or update the driving license for verification.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function submitDrivingLicense(Request $request)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'driving_license_number' => [
+                'required',
+                'string',
+                'max:255',
+                \Illuminate\Validation\Rule::unique('driving_licenses', 'driving_license_number')->ignore($user->driving_license_id)
+            ],
+            'full_name' => 'required|string|max:255',
+            'DOB' => 'required|date_format:Y-m-d',
+            'image' => [
+                $user->driving_license_id ? 'nullable' : 'required',
+                function ($attribute, $value, $fail) use ($request) {
+                    if ($request->hasFile('image')) {
+                        $file = $request->file('image');
+                        $extension = strtolower($file->getClientOriginalExtension());
+                        if (!in_array($extension, ['jpeg', 'png', 'jpg'])) {
+                            $fail('Định dạng ảnh phải là jpeg, png hoặc jpg.');
+                        }
+                        if ($file->getSize() > 5 * 1024 * 1024) {
+                            $fail('Kích thước ảnh tối đa là 5MB.');
+                        }
+                    } else {
+                        if (is_string($value) && !filter_var($value, FILTER_VALIDATE_URL)) {
+                            $fail('Đường dẫn ảnh bằng lái xe không hợp lệ.');
+                        }
+                    }
+                }
+            ],
+        ], [
+            'driving_license_number.required' => 'Số GPLX không được để trống.',
+            'driving_license_number.unique' => 'Số GPLX này đã tồn tại trên hệ thống.',
+            'full_name.required' => 'Họ và tên không được để trống.',
+            'DOB.required' => 'Ngày sinh không được để trống.',
+            'DOB.date_format' => 'Ngày sinh không đúng định dạng YYYY-MM-DD.',
+            'image.required' => 'Ảnh bằng lái xe không được để trống.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $drivingLicenseData = [
+                'driving_license_number' => $request->input('driving_license_number'),
+                'full_name' => $request->input('full_name'),
+                'DOB' => $request->input('DOB'),
+                'status' => 0, // Chờ duyệt
+            ];
+
+            if ($request->hasFile('image')) {
+                $imageFile = $request->file('image');
+                $filename = time() . '_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
+                $path = $imageFile->storeAs('licenses', $filename, 'public');
+                $imageUrl = asset('storage/' . $path);
+                $drivingLicenseData['image'] = $imageUrl;
+            } elseif ($request->filled('image')) {
+                $drivingLicenseData['image'] = $request->input('image');
+            }
+
+            if ($user->driving_license_id) {
+                // Update existing
+                $drivingLicense = \App\Models\DrivingLicense::findOrFail($user->driving_license_id);
+                $drivingLicense->update($drivingLicenseData);
+            } else {
+                // Create new
+                $drivingLicense = \App\Models\DrivingLicense::create($drivingLicenseData);
+                $user->update([
+                    'driving_license_id' => $drivingLicense->id
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            // Load the updated relationship
+            $user->load('drivingLicense');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gửi yêu cầu duyệt bằng lái xe thành công.',
+                'user' => $user
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi gửi duyệt bằng lái.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get the token array structure.
      *
      * @param  string $token

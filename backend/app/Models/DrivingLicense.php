@@ -7,5 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class DrivingLicense extends Model
 {
     //
-    protected $fillable = ['full_name', 'image', 'driving_license_number', 'DOB'];
+    protected $fillable = ['full_name', 'image', 'driving_license_number', 'DOB', 'status'];
 }

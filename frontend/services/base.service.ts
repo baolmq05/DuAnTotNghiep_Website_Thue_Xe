@@ -8,7 +8,12 @@ export abstract class BaseService {
     }
 
     protected getToken(): string | null {
-        if (localStorage.getItem("USER_TOKEN")) {
+        const tokenCookie = useCookie<string | null>("USER_TOKEN").value;
+        if (tokenCookie) {
+            return tokenCookie;
+        }
+
+        if (typeof window !== "undefined" && localStorage.getItem("USER_TOKEN")) {
             return localStorage.getItem("USER_TOKEN");
         }
 
@@ -41,10 +46,15 @@ export abstract class BaseService {
         try {
             const { method = "GET", body, useAuth = true } = options;
 
+            const headers = { ...this.buildHeaders(useAuth) } as any;
+            if (body instanceof FormData) {
+                delete headers["Content-Type"];
+            }
+
             return await $fetch<T>(`${API_URL}${url}`, {
                 method,
                 body,
-                headers: this.buildHeaders(useAuth)
+                headers
             });
         } catch (err) {
             console.error(`[API ERROR] ${url}`, err);
