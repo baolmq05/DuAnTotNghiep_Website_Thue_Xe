@@ -7,9 +7,9 @@ use Filament\Widgets\ChartWidget;
 
 class StatusDoughnutChart extends ChartWidget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 2;
     protected ?int $height = 80;
-    protected int | string | array $columnSpan = '1/2';
+    protected int | string | array $columnSpan = '1';
     protected ?string $heading = 'Biểu đồ trạng thái đơn thuê';
 
     protected function getData(): array

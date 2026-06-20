@@ -31,6 +31,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->brandName('DRIVIO')
+            ->favicon(asset('images/logo.png'))
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -45,6 +47,7 @@ class AdminPanelProvider extends PanelProvider
                 \App\Filament\Widgets\StatsOverview::class,
                 \App\Filament\Widgets\Dashboard\RevenueChart::class,
                 \App\Filament\Widgets\Dashboard\StatusDoughnutChart::class,
+                \App\Filament\Widgets\Dashboard\UserChart::class,
             ])
             ->navigationGroups([
                 NavigationGroup::make()

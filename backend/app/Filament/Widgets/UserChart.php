@@ -1,19 +1,20 @@
 <?php
-
 namespace App\Filament\Widgets\Dashboard;
 
 use Filament\Widgets\ChartWidget;
-class RevenueChart extends ChartWidget
+class UserChart extends ChartWidget
 {
-    protected static ?int $sort = 3; 
+    protected static ?int $sort = 4; 
     protected ?int $height = 80;
-    protected int | string | array $columnSpan = '1';
-    protected ?string $heading = 'Biểu đồ doanh thu theo tháng';
+
+    protected int | string | array $columnSpan = '2';
+
+    protected ?string $heading = 'Biểu đồ người dùng mới theo tháng';
 
     protected function getData(): array
     {
         $year = now()->year;
-        $rawData = \App\Models\Transaction::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+        $rawData = \App\Models\User::selectRaw('MONTH(created_at) as month, count(*) as total')
             ->whereYear('created_at', $year)
             ->groupBy('month')
             ->orderBy('month')
@@ -26,7 +27,7 @@ class RevenueChart extends ChartWidget
         return [
             'datasets' => [
                 [
-                    'label' => 'Doanh thu',
+                    'label' => 'Người dùng mới',
                     'data' => $data,
                 ],
             ],
@@ -36,7 +37,7 @@ class RevenueChart extends ChartWidget
 
     protected function getType(): string
     {
-        return 'line';
+        return 'bar';
     }
 
     
