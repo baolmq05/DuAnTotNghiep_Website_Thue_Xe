@@ -260,6 +260,11 @@ onMounted(async () => {
     return;
   }
 
+  if (user.value.role_id !== 3 && user.value.role_id !== 1) {
+    navigateTo('/profile');
+    return;
+  }
+
   try {
     const res = await myCarService.getCars({ user_id: user.value.id });
     if (res.success && res.data) {

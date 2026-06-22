@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const {showToast} = useToast()
 const route = useRoute();
-const { logout: authLogout } = useAuth();
+const { logout: authLogout, user } = useAuth();
 
 const props = withDefaults(
   defineProps<{
@@ -45,6 +45,15 @@ const mainMenus = [
     href: "/profile/address",
   },
 ];
+
+const filteredMainMenus = computed(() => {
+  return mainMenus.filter(item => {
+    if (item.href === "/my-cars") {
+      return user.value && (user.value.role_id === 3 || user.value.role_id === 1);
+    }
+    return true;
+  });
+});
 
 const settingMenus = [
   {
@@ -125,7 +134,7 @@ const asideClass = computed(() => {
       <!-- Main Menu -->
       <ul class="space-y-1">
         <li
-          v-for="item in mainMenus"
+          v-for="item in filteredMainMenus"
           :key="item.href"
         >
           <NuxtLink
