@@ -1,4 +1,4 @@
-import { API_URL } from "~/enviroment/enviroment";
+import { BaseService } from "./base.service";
 
 export interface Post {
   id: number;
@@ -63,24 +63,9 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export class PostService {
-  private async request<T>(
-    url: string,
-    method: "GET" | "POST" = "GET",
-    body?: any
-  ): Promise<T> {
-    try {
-      return await $fetch<T>(`${API_URL}${url}`, {
-        method,
-        body,
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-    } catch (err) {
-      console.error(`[API ERROR] ${url}`, err);
-      throw err;
-    }
+export class PostService extends BaseService {
+  constructor() {
+    super("posts");
   }
 
   /**
@@ -92,30 +77,31 @@ export class PostService {
     search?: string;
     limit?: number;
   }): Promise<ApiResponse<PaginatedResponse<Post>>> {
-    const queryParams = new URLSearchParams();
-    if (params.page) queryParams.append("page", params.page.toString());
-    if (params.category_id) queryParams.append("category_id", params.category_id.toString());
-    if (params.search) queryParams.append("search", params.search);
-    if (params.limit) queryParams.append("limit", params.limit.toString());
-
-    const queryString = queryParams.toString();
-    const url = queryString ? `posts?${queryString}` : "posts";
-
-    return this.request<ApiResponse<PaginatedResponse<Post>>>(url, "GET");
+    return this.request<ApiResponse<PaginatedResponse<Post>>>(this.endpoint, {
+      method: "GET",
+      params,
+      useAuth: false
+    });
   }
 
   /**
    * Lấy chi tiết bài viết
    */
   async getPostDetailApi(id: string | number): Promise<ApiResponse<Post>> {
-    return this.request<ApiResponse<Post>>(`posts/${id}`, "GET");
+    return this.request<ApiResponse<Post>>(`${this.endpoint}/${id}`, {
+      method: "GET",
+      useAuth: false
+    });
   }
 
   /**
    * Lấy danh sách danh mục bài viết
    */
   async getCategoriesApi(): Promise<ApiResponse<PostCategory[]>> {
-    return this.request<ApiResponse<PostCategory[]>>("post-categories", "GET");
+    return this.request<ApiResponse<PostCategory[]>>("post-categories", {
+      method: "GET",
+      useAuth: false
+    });
   }
 }
 

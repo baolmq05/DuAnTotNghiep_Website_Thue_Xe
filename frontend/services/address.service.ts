@@ -1,4 +1,4 @@
-import { API_URL } from "~/enviroment/enviroment";
+import { BaseService } from "./base.service";
 
 export interface Address {
     id?: number;
@@ -14,66 +14,18 @@ export interface AddressResponse<T> {
     data: T;
 }
 
-export class AddressService {
-    private endpoint = "auth/addresses";
-
-    private getToken(): string | null {
-        // Thử lấy token từ Cookie trước (hoạt động được cả ở Server SSR và Client)
-        const tokenCookie = useCookie<string | null>("USER_TOKEN").value;
-        if (tokenCookie) {
-            return tokenCookie;
-        }
-        // Fallback lấy từ localStorage ở phía Client
-        if (typeof window !== "undefined" && localStorage.getItem("USER_TOKEN")) {
-            return localStorage.getItem("USER_TOKEN");
-        }
-        return null;
-    }
-
-    private buildHeaders(useAuth: boolean = true): HeadersInit {
-        const headers: HeadersInit = {
-            "Content-Type": "application/json"
-        };
-
-        if (useAuth) {
-            const token = this.getToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
-        }
-
-        return headers;
-    }
-
-    private async request<T>(
-        url: string,
-        options: {
-            method?: "GET" | "POST" | "PUT" | "DELETE";
-            body?: any;
-            useAuth?: boolean;
-        } = {}
-    ): Promise<T> {
-        try {
-            const { method = "GET", body, useAuth = true } = options;
-
-            return await $fetch<T>(`${API_URL}${url}`, {
-                method,
-                body,
-                headers: this.buildHeaders(useAuth)
-            });
-        } catch (err) {
-            console.error(`[API ERROR] ${url}`, err);
-            throw err;
-        }
+export class AddressService extends BaseService {
+    constructor() {
+        super("auth/addresses");
     }
 
     /**
      * Lấy danh sách địa chỉ của người dùng theo user_id
      */
     async getAddresses(userId?: number | string): Promise<AddressResponse<Address[]>> {
-        const url = userId ? `${this.endpoint}?user_id=${userId}` : this.endpoint;
-        return this.request<AddressResponse<Address[]>>(url, {
+        return this.request<AddressResponse<Address[]>>(this.endpoint, {
             method: "GET",
+            params: { user_id: userId },
             useAuth: true,
         });
     }

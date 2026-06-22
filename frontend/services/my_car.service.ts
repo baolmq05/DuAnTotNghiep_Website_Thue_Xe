@@ -1,4 +1,4 @@
-import { API_URL } from "~/enviroment/enviroment";
+import { BaseService } from "./base.service";
 
 export interface Car {
   id: number;
@@ -49,24 +49,9 @@ export interface ApiResponse<T> {
   data: T;
 }
 
-export class MyCarService {
-  private async request<T>(
-    url: string,
-    method: "GET" | "POST" = "GET",
-    body?: any
-  ): Promise<T> {
-    try {
-      return await $fetch<T>(`${API_URL}${url}`, {
-        method,
-        body,
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-    } catch (err) {
-      console.error(`[API ERROR] ${url}`, err);
-      throw err;
-    }
+export class MyCarService extends BaseService {
+  constructor() {
+    super("cars");
   }
 
   /**
@@ -78,18 +63,16 @@ export class MyCarService {
     brand_id?: number | string;
     type_id?: number | string;
   } = {}): Promise<ApiResponse<Car[]>> {
-    const queryParams = new URLSearchParams();
-    if (params.user_id) queryParams.append("user_id", params.user_id.toString());
-    if (params.status !== undefined && params.status !== "all") {
-      queryParams.append("status", params.status.toString());
+    const cleanParams = { ...params } as any;
+    if (cleanParams.status === "all") {
+      delete cleanParams.status;
     }
-    if (params.brand_id) queryParams.append("brand_id", params.brand_id.toString());
-    if (params.type_id) queryParams.append("type_id", params.type_id.toString());
 
-    const queryString = queryParams.toString();
-    const url = queryString ? `cars?${queryString}` : "cars";
-
-    return this.request<ApiResponse<Car[]>>(url, "GET");
+    return this.request<ApiResponse<Car[]>>(this.endpoint, {
+      method: "GET",
+      params: cleanParams,
+      useAuth: false
+    });
   }
 }
 

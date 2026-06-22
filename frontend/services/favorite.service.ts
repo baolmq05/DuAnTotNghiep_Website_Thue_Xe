@@ -1,4 +1,4 @@
-import { API_URL } from "~/enviroment/enviroment";
+import { BaseService } from "./base.service";
 import type { Car } from "./car.service";
 
 export interface FavoriteItem {
@@ -15,55 +15,9 @@ export interface FavoriteResponse<T> {
     data: T;
 }
 
-export class FavoriteService {
-    private endpoint = "favorites";
-
-    private getToken(): string | null {
-        const tokenCookie = useCookie<string | null>("USER_TOKEN").value;
-        if (tokenCookie) {
-            return tokenCookie;
-        }
-        if (typeof window !== "undefined" && localStorage.getItem("USER_TOKEN")) {
-            return localStorage.getItem("USER_TOKEN");
-        }
-        return null;
-    }
-
-    private buildHeaders(useAuth: boolean = true): HeadersInit {
-        const headers: HeadersInit = {
-            "Content-Type": "application/json"
-        };
-
-        if (useAuth) {
-            const token = this.getToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
-        }
-
-        return headers;
-    }
-
-    private async request<T>(
-        url: string,
-        options: {
-            method?: "GET" | "POST" | "PUT" | "DELETE";
-            body?: any;
-            useAuth?: boolean;
-        } = {}
-    ): Promise<T> {
-        try {
-            const { method = "GET", body, useAuth = true } = options;
-
-            return await $fetch<T>(`${API_URL}${url}`, {
-                method,
-                body,
-                headers: this.buildHeaders(useAuth)
-            });
-        } catch (err) {
-            console.error(`[API ERROR] ${url}`, err);
-            throw err;
-        }
+export class FavoriteService extends BaseService {
+    constructor() {
+        super("favorites");
     }
 
     async getFavorites(): Promise<FavoriteResponse<FavoriteItem[]>> {

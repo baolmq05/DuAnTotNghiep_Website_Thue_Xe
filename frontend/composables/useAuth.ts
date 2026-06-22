@@ -1,6 +1,9 @@
-import { useCookie } from "#app";
 import { computed } from "vue";
-import { authService } from "~/services/auth.service";
+
+const getAuthService = async () => {
+  const { authService } = await import("~/services/auth.service");
+  return authService;
+};
 
 export const useAuth = () => {
   const token = useCookie<string | null>("USER_TOKEN", { maxAge: 60 * 60 * 24 * 7, path: '/' });
@@ -8,6 +11,7 @@ export const useAuth = () => {
 
   const login = async (credentials: { email: string; password: string }) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.loginApi(credentials);
       if (res && res.access_token) {
         token.value = res.access_token;
@@ -30,6 +34,7 @@ export const useAuth = () => {
 
   const register = async (userData: any) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.registerApi(userData);
       if (res && res.success) {
         const accessToken = res.token_info.access_token;
@@ -51,6 +56,7 @@ export const useAuth = () => {
 
   const updateProfile = async (profileData: any) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.updateProfileApi(profileData);
       if (res && res.success) {
         user.value = res.user;
@@ -69,6 +75,7 @@ export const useAuth = () => {
 
   const submitDrivingLicense = async (formData: FormData) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.submitDrivingLicenseApi(formData);
       if (res && res.success) {
         user.value = res.user;
@@ -87,6 +94,7 @@ export const useAuth = () => {
 
   const changePassword = async (passwordData: any) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.changePasswordApi(passwordData);
       if (res && res.success) {
         return { success: true, message: res.message };
@@ -102,6 +110,7 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       if (token.value) {
+        const authService = await getAuthService();
         await authService.logoutApi();
       }
     } catch (e) {
@@ -118,6 +127,7 @@ export const useAuth = () => {
 
   const loginWithGoogle = async (googleToken: string) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.loginWithGoogleApi(googleToken);
       if (res && res.access_token) {
         token.value = res.access_token;
@@ -140,6 +150,7 @@ export const useAuth = () => {
 
   const loginWithFacebook = async (fbAccessToken: string) => {
     try {
+      const authService = await getAuthService();
       const res: any = await authService.loginWithFacebookApi(fbAccessToken);
       if (res && res.access_token) {
         token.value = res.access_token;

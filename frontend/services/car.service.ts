@@ -1,4 +1,4 @@
-import { API_URL } from "~/enviroment/enviroment";
+import { BaseService } from "./base.service";
 
 export interface CarImage {
     id: number;
@@ -105,73 +105,9 @@ export interface CarResponse<T> {
     data: T;
 }
 
-export class CarService {
-    private endpoint = "cars";
-
-    private getToken(): string | null {
-        // Thử lấy token từ Cookie trước (hoạt động được cả ở Server SSR và Client)
-        const tokenCookie = useCookie<string | null>("USER_TOKEN").value;
-        if (tokenCookie) {
-            return tokenCookie;
-        }
-        // Fallback lấy từ localStorage ở phía Client
-        if (typeof window !== "undefined" && localStorage.getItem("USER_TOKEN")) {
-            return localStorage.getItem("USER_TOKEN");
-        }
-        return null;
-    }
-
-    private buildHeaders(useAuth: boolean = true, isMultipart: boolean = false): HeadersInit {
-        const headers: HeadersInit = {};
-
-        if (!isMultipart) {
-            headers["Content-Type"] = "application/json";
-        }
-
-        if (useAuth) {
-            const token = this.getToken();
-            if (token) {
-                headers["Authorization"] = `Bearer ${token}`;
-            }
-        }
-
-        return headers;
-    }
-
-    private async request<T>(
-        url: string,
-        options: {
-            method?: "GET" | "POST" | "PUT" | "DELETE";
-            body?: any;
-            params?: Record<string, any>;
-            useAuth?: boolean;
-            isMultipart?: boolean;
-        } = {}
-    ): Promise<T> {
-        try {
-            const { method = "GET", body, params, useAuth = false, isMultipart = false } = options;
-
-            // Build query parameters
-            let queryString = "";
-            if (params) {
-                const activeParams = Object.entries(params)
-                    .filter(([_, value]) => value !== undefined && value !== null && value !== "")
-                    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
-                
-                if (Object.keys(activeParams).length > 0) {
-                    queryString = "?" + new URLSearchParams(activeParams as any).toString();
-                }
-            }
-
-            return await $fetch<T>(`${API_URL}${url}${queryString}`, {
-                method,
-                body,
-                headers: this.buildHeaders(useAuth, isMultipart)
-            });
-        } catch (err) {
-            console.error(`[API ERROR] ${url}`, err);
-            throw err;
-        }
+export class CarService extends BaseService {
+    constructor() {
+        super("cars");
     }
 
     /**
@@ -238,11 +174,10 @@ export class CarService {
      * Đăng ký xe mới
      */
     async registerCar(formData: FormData): Promise<{ success: boolean; message: string; data: any }> {
-        return this.request<{ success: boolean; message: string; data: any }>("cars", {
+        return this.request<{ success: boolean; message: string; data: any }>(this.endpoint, {
             method: "POST",
             body: formData,
-            useAuth: true,
-            isMultipart: true,
+            useAuth: true
         });
     }
 
