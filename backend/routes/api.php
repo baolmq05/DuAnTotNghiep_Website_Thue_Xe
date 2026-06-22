@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\FacebookAuthController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\CarCalendarController;
+use App\Http\Controllers\Api\MyTripController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -80,4 +81,6 @@ Route::group(['middleware' => 'api'], function () {
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 
     Route::get('car-calendar', [CarCalendarController::class, 'index']);
+    Route::get('my-trips', [MyTripController::class, 'index']);
+
 });
