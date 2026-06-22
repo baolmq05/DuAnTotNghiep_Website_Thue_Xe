@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use App\Models\Transaction;
+use App\Models\Car;
+use App\Models\Review;
+use App\Models\Trip;
 use Illuminate\Http\Request;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -70,12 +73,25 @@ class WalletController extends Controller
             $taxDeducted = intval($completedTripsChange * 0.1);
             $ownerIncome = $completedTripsChange - $taxDeducted;
 
+            // Tính toán rating của chủ xe (trung bình cộng rating các đánh giá loại 0 của các xe thuộc chủ xe)
+            $carIds = Car::where('user_id', $user->id)->pluck('id');
+            $rating = Review::whereIn('car_id', $carIds)
+                ->where('review_type', 0)
+                ->avg('rating');
+
+            $rating = $rating ? round(floatval($rating), 1) : 5.0;
+
+            // Tính số chuyến đi thành công (status = 2) của các xe thuộc chủ xe
+            $completedTripsCount = Trip::whereIn('car_id', $carIds)
+                ->where('status', 2)
+                ->count();
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'balance' => $wallet->amount,
-                    'rating' => 5.0,
-                    'completed_trips_count' => $transactions->whereNotNull('trip_id')->count(),
+                    'rating' => $rating,
+                    'completed_trips_count' => $completedTripsCount,
                     'response_rate' => 100,
                     'response_time' => '5 phút',
                     'accept_rate' => 100,

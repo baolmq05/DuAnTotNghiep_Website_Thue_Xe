@@ -21,7 +21,7 @@
           
           <NuxtLink to="/mywallet" class="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-4 py-2.5 bg-white border border-gray-200 text-slate-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition shadow-sm">
             <Icon name="lucide:wallet" class="text-emerald-500" size="18" />
-            Số dư: <span class="text-[#53cf84] font-bold">0đ</span>
+            Số dư: <span class="text-[#53cf84] font-bold">{{ formatPrice(balance) }}</span>
             <Icon name="lucide:chevron-right" class="text-gray-400" size="16" />
           </NuxtLink>
         </div>
@@ -110,8 +110,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import HeaderProfile from "~/components/Profile/HeaderProfile.vue";
+import { walletService } from "~/services/wallet.service";
+import { useAuth } from "~/composables/useAuth";
+
+const { isLoggedIn } = useAuth();
+const balance = ref<number>(0);
+
+const formatPrice = (val: number) => {
+  return new Intl.NumberFormat('vi-VN').format(val) + 'đ';
+};
+
+const loadWalletBalance = async () => {
+  try {
+    const response = await walletService.getWalletDetails();
+    if (response.success && response.data) {
+      balance.value = response.data.balance;
+    }
+  } catch (error) {
+    console.error("Lỗi khi lấy thông tin số dư ví:", error);
+  }
+};
+
+onMounted(() => {
+  loadWalletBalance();
+});
 
 const tabWrapper = ref<HTMLElement | null>(null);
 

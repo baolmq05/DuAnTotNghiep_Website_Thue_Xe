@@ -68,7 +68,7 @@
                 </div>
 
                 <div class="bg-white text-xs font-medium text-slate-700 divide-y divide-slate-100">
-                    <div class="flex justify-between px-5 py-3 bg-[#fafafa]">
+                    <!-- <div class="flex justify-between px-5 py-3 bg-[#fafafa]">
                         <span class="text-slate-500">Tổng thay đổi - Chuyến đi hoàn thành</span>
                         <span class="font-semibold text-slate-800">{{ formatCurrency(summary.completed_trips_change) }}</span>
                     </div>
@@ -79,7 +79,7 @@
                     <div class="flex justify-between px-5 py-3 bg-[#fafafa]">
                         <span class="text-slate-500">Tổng thay đổi - Giao dịch hủy chuyến</span>
                         <span class="font-semibold text-slate-800">{{ formatCurrency(summary.cancelled_trips_change) }}</span>
-                    </div>
+                    </div> -->
 
                     <div class="p-5 space-y-3 bg-white">
                         <div class="flex justify-between font-bold text-slate-400 text-[11px] tracking-wider">
@@ -88,7 +88,7 @@
                         </div>
                         <div class="flex justify-between font-normal text-slate-700">
                             <span>TIỀN ĐẦU KÌ</span>
-                            <span class="text-slate-800">{{ formatCurrency(summary.start_balance) }}</span>
+                            <span class="text-slate-800">0đ</span>
                         </div>
                         <div class="flex justify-between font-bold text-[#286874]">
                             <span>TIỀN CUỐI KÌ</span>
@@ -106,11 +106,11 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-2 gap-4 mt-6">
-                <button
+            <div class="grid gap-4 mt-6">
+                <!-- <button
                     class="h-12 rounded-lg bg-[#286874] text-white font-bold text-sm hover:bg-[#1d4f59] transition-colors focus:outline-none shadow-sm">
                     Gửi yêu cầu rút tiền
-                </button>
+                </button> -->
 
                 <button
                     @click="navigateToStatement"
