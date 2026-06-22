@@ -12,7 +12,9 @@ class CarInfolist
 {
     public static function configure(Schema $schema): Schema
     {
-        return $schema->components([
+        return $schema
+            ->columns(1)
+            ->components([
             // 1. Thông tin người đăng ký
             Section::make('Thông tin chủ sở hữu')
                 ->icon('heroicon-o-user')
