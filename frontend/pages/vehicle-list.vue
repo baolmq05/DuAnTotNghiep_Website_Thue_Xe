@@ -28,29 +28,15 @@
 
                     <div class="w-full">
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                            <div
-                                v-for="car in paginatedCarList"
-                                :key="car.id"
-                                class="block h-full cursor-pointer"
-                                @click="goToDetail(car.id)"
-                            >
-                                <vehicleCard
-                                    :name="car.name"
-                                    :image="car.image"
-                                    :price="car.price"
-                                    :location="car.location"
-                                    :seats="car.seats"
-                                    :transmission="car.transmission"
-                                    :fuel="car.fuel"
-                                    :rating="car.rating"
-                                    :trips="car.trips"
-                                    :is-instant-book="car.isInstantBook"
-                                    :is-delivery="car.isDelivery"
-                                    :no-deposit="car.noDeposit"
-                                    :discount="car.discount"
+                            <div v-for="car in paginatedCarList" :key="car.id" class="block h-full cursor-pointer"
+                                @click="goToDetail(car.id)">
+                                <vehicleCard :name="car.name" :image="car.image" :price="car.price"
+                                    :location="car.location" :seats="car.seats" :transmission="car.transmission"
+                                    :fuel="car.fuel" :rating="car.rating" :trips="car.trips"
+                                    :is-instant-book="car.isInstantBook" :is-delivery="car.isDelivery"
+                                    :no-deposit="car.noDeposit" :discount="car.discount"
                                     :isFavorite="isCarFavorited(car.id)"
-                                    @toggle-favorite="handleToggleFavorite(car.id)"
-                                />
+                                    @toggle-favorite="handleToggleFavorite(car.id)" />
                             </div>
                         </div>
                     </div>
@@ -58,7 +44,7 @@
                 </div>
             </div>
         </section>
-        <MapTriggerButton/>
+        <MapTriggerButton :vehicles="carList" />
     </div>
 </template>
 
@@ -180,10 +166,10 @@ onMounted(async () => {
 
 const mappedCarList = computed(() => {
     return rawApiCars.value.map(car => {
-        const thumbnailImg = car.images?.find((img: any) => img.is_thumbnail === 1)?.image_url 
-            || car.images?.[0]?.image_url 
+        const thumbnailImg = car.images?.find((img: any) => img.is_thumbnail === 1)?.image_url
+            || car.images?.[0]?.image_url
             || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
-        
+
         const discountPct = car.unit_price > 0 && car.discount_value > 0
             ? Math.round((car.discount_value / car.unit_price) * 100)
             : 0;
@@ -195,6 +181,7 @@ const mappedCarList = computed(() => {
             price: car.unit_price,
             location: car.car_location?.address || 'Chưa cập nhật',
             coords: car.car_location?.location || null,
+            discount_value: car.discount_value || 0,
             seats: Number(car.seat_count),
             transmission: normalizeTransmission(car.transmission),
             fuel: normalizeFuel(car.fuel_type),
@@ -220,13 +207,13 @@ const rawCarList = computed(() => {
 
 const carList = computed(() => {
     let filtered = [...rawCarList.value]
-    
+
     // Tìm kiếm từ URL (địa điểm, dòng xe từ HomePage)
     if (route.query.location) {
         const loc = (route.query.location as string).toLowerCase()
         filtered = filtered.filter(car => car.location.toLowerCase().includes(loc))
     }
-    
+
     if (route.query.carType) {
         const cType = route.query.carType as string
         if (['4', '5', '7'].includes(cType)) {
@@ -238,9 +225,9 @@ const carList = computed(() => {
 
     // Lọc từ FilterBar component
     const filters = activeFilters.value
-    
+
     if (filters.brands && filters.brands.length > 0) {
-        filtered = filtered.filter(car => 
+        filtered = filtered.filter(car =>
             filters.brands.some((brand: string) => car.name.toLowerCase().includes(brand.toLowerCase()))
         )
     }
@@ -248,11 +235,11 @@ const carList = computed(() => {
     if (filters.seats && filters.seats.length > 0) {
         filtered = filtered.filter(car => filters.seats.includes(car.seats.toString()) || (filters.seats.includes('pickup') && car.name.toLowerCase().includes('bán tải')))
     }
-    
+
     if (filters.instant) {
         filtered = filtered.filter(car => car.isInstantBook)
     }
-    
+
     if (filters.delivery) {
         filtered = filtered.filter(car => car.isDelivery)
     }
@@ -268,7 +255,7 @@ const carList = computed(() => {
     if (filters.fiveStar) {
         filtered = filtered.filter(car => car.rating >= 5.0)
     }
-    
+
     if (filters.priceMin !== undefined && filters.priceMax !== undefined) {
         filtered = filtered.filter(car => car.price >= filters.priceMin && car.price <= filters.priceMax)
     }

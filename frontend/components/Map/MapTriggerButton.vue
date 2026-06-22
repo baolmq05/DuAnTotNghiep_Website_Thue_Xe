@@ -24,29 +24,13 @@
         @click.self="closeMap"
       >
         <div
-          class="bg-white w-full h-full max-w-6xl max-h-[85vh] rounded-3xl overflow-hidden"
+          class="bg-white w-full h-full max-w-7xl max-h-[calc(100vh-3rem)] rounded-3xl overflow-hidden"
         >
-          <div
-            class="px-5 py-3 border-b flex justify-between items-center"
-          >
-            <h3 class="font-bold">
-              Bản đồ hệ thống
-            </h3>
-
-            <button
-              @click="closeMap"
-            >
-              <Icon
-                name="lucide:x"
-                size="20"
-              />
-            </button>
-          </div>
-
           <div class="h-full">
             <ClientOnly>
               <VehicleMap
                 :active="isOpen"
+                :vehicles="vehicles"
               />
             </ClientOnly>
           </div>
@@ -59,6 +43,10 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import VehicleMap from './VehicleMap.vue'
+
+const props = defineProps<{
+  vehicles?: any[]
+}>()
 
 const isOpen = ref(false)
 
