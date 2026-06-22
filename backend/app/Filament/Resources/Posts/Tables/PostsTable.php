@@ -44,15 +44,15 @@ class PostsTable
             ])
             ->recordActions([
                 EditAction::make(),
-                DeleteAction::make(),
-                RestoreAction::make(),
-                ForceDeleteAction::make(),
+                DeleteAction::make()->after(fn () => redirect(request()->header('Referer'))),
+                RestoreAction::make()->after(fn () => redirect(request()->header('Referer'))),
+                ForceDeleteAction::make()->after(fn () => redirect(request()->header('Referer'))),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                    RestoreBulkAction::make(),
-                    ForceDeleteBulkAction::make(),
+                    DeleteBulkAction::make()->after(fn () => redirect(request()->header('Referer'))),
+                    RestoreBulkAction::make()->after(fn () => redirect(request()->header('Referer'))),
+                    ForceDeleteBulkAction::make()->after(fn () => redirect(request()->header('Referer'))),
                 ]),
             ]);
     }

@@ -17,9 +17,18 @@ use App\Http\Controllers\Api\CarCalendarController;
 use App\Http\Controllers\Api\MyTripController;
 use App\Http\Controllers\Api\TripController;
 
+Route::get('cars', [CarController::class, 'index']);
+Route::get('cars/{id}', [CarController::class, 'show']);
+Route::get('car-brands', [CarController::class, 'getBrands']);
+Route::get('car-brands/{id}/types', [CarController::class, 'getTypes']);
+Route::get('car-features', [CarController::class, 'getFeatures']);
 
-// API AUTH URL: http://127.0.0.1:8000/api/auth/
-// API URL: http://127.0.0.1:8000/api/
+Route::get('posts', [PostController::class, 'index']);
+Route::get('posts/{id}', [PostController::class, 'show']);
+Route::get('post-categories', [PostController::class, 'categories']);
+
+Route::get('promotions', [PromotionController::class, 'index']);
+Route::get('promotions/{id}', [PromotionController::class, 'show']);
 
 Route::group([
     'middleware' => 'api',
@@ -36,54 +45,38 @@ Route::group([
 
     Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
     Route::post('facebook', [FacebookAuthController::class, 'loginWithFacebook']);
-    //api addresses
+
     Route::get('addresses', [AddressController::class, 'index']);
     Route::post('addresses', [AddressController::class, 'store']);
     Route::put('addresses/{id}', [AddressController::class, 'update']);
     Route::delete('addresses/{id}', [AddressController::class, 'destroy']);
 
-    //api notifications
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::post('notifications', [NotificationController::class, 'store']);
     Route::put('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::put('notifications/{id}', [NotificationController::class, 'update']);
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
+    
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
 
-    //api chatbot
     Route::get('chatbot', [AgentController::class, 'index']);
     Route::post('chatbot', [AgentController::class, 'store']);
 });
-
-Route::get('cars', [CarController::class, 'index']);
-Route::get('cars/{id}', [CarController::class, 'show']);
-Route::get('car-brands', [CarController::class, 'getBrands']);
-Route::get('car-brands/{id}/types', [CarController::class, 'getTypes']);
-Route::get('car-features', [CarController::class, 'getFeatures']);
-
-Route::get('posts', [PostController::class, 'index']);
-Route::get('posts/{id}', [PostController::class, 'show']);
-Route::get('post-categories', [PostController::class, 'categories']);
 
 Route::group(['middleware' => 'api'], function () {
     Route::get('favorites', [FavoriteController::class, 'index']);
     Route::post('favorites', [FavoriteController::class, 'store']);
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']);
+    
     Route::post('cars', [CarController::class, 'store']);
-    Route::post('trips', [TripController::class, 'store']);
+    
     Route::get('trips', [TripController::class, 'index']);
-});
-// Các route cho khuyến mãi
-Route::get('promotions', [PromotionController::class, 'index']);
-Route::get('promotions/{id}', [PromotionController::class, 'show']);
-
-// Route cần đăng nhập (admin/user có quyền)
-Route::group(['middleware' => 'api'], function () {
+    Route::post('trips', [TripController::class, 'store']);
+    Route::get('my-trips', [MyTripController::class, 'index']);
+    
     Route::post('promotions', [PromotionController::class, 'store']);
     Route::put('promotions/{id}', [PromotionController::class, 'update']);
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 
     Route::get('car-calendar', [CarCalendarController::class, 'index']);
-    Route::get('my-trips', [MyTripController::class, 'index']);
-
 });
