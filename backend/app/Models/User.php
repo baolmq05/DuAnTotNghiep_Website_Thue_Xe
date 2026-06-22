@@ -31,6 +31,19 @@ class User extends Authenticatable implements JWTSubject
             if (empty($user->role_id)) {
                 $user->role_id = 1; // Mặc định là Admin khi không truyền (ví dụ: chạy lệnh make:filament-user)
             }
+            if (empty($user->wallet_id)) {
+                $wallet = Wallet::create(['amount' => 0]);
+                $user->wallet_id = $wallet->id;
+            }
+        });
+
+        static::created(function ($user) {
+            try {
+                $conversationStore = resolve(\Laravel\Ai\Contracts\ConversationStore::class);
+                $conversationStore->storeConversation($user->id, 'Trợ lý AI');
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Lỗi tạo hội thoại AI mặc định cho user ' . $user->id . ': ' . $e->getMessage());
+            }
         });
     }
 

@@ -45,11 +45,11 @@
                   class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
               </button>
               <!-- Message Icon -->
-              <button
+              <NuxtLink to="/chats"
                 class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in"
                 aria-label="Tin nhắn">
                 <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-6 h-6" />
-              </button>
+              </NuxtLink>
             </div>
 
             <!-- User Profile Link -->
