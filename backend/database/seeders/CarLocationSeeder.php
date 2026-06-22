@@ -24,7 +24,7 @@ class CarLocationSeeder extends Seeder
         ]);
         CarLocation::create([
             'location' => '16.058293,108.234543',
-            'address' => 'Hải Châu, Đà Nẵng',
+            'address' => 'Lê Duẩn, Hải Châu, Đà Nẵng',
         ]);
     }
 }

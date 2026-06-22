@@ -16,6 +16,7 @@ return new class extends Migration
             $table->id();
             $table->float('max_distance', 10, 2)->comment('khoảng cách tối đa')->unsigned();
             $table->float('fee_distance', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa')->unsigned();
+            $table->float('free_distance', 10, 2)->comment('khoảng cách miễn phí')->unsigned();
             $table->tinyInteger('status')->comment('trạng thái giao xe: 0 - không áp dụng, 1 - áp dụng')->default(0);
             $table->timestamps();
         });

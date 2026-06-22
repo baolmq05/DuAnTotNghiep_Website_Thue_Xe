@@ -22,7 +22,9 @@ class TripSeeder extends Seeder
             'start_at' => '2024-01-01 08:00:00',
             'end_at' => '2024-01-03 18:00:00',
             'car_id' => 1,
-            'user_id' => 2
+            'user_id' => 2,
+            'delivery_address'=> '123 Main St',
+            'delivery_location'=> '10.958293,106.593036',
         ]);
         Trip::create([
             'cost' => 300000,
@@ -32,7 +34,9 @@ class TripSeeder extends Seeder
             'start_at' => '2024-02-01 09:00:00',
             'end_at' => '2024-02-01 17:00:00',
             'car_id' => 2,
-            'user_id' => 3
+            'user_id' => 3,
+            'delivery_address'=> '123 Main St',
+            'delivery_location'=> '10.958293,106.593036',
         ]);
         Trip::create([
             'cost' => 200000,
@@ -42,7 +46,33 @@ class TripSeeder extends Seeder
             'start_at' => '2024-03-01 10:00:00',
             'end_at' => '2024-03-02 16:00:00',
             'car_id' => 3,
-            'user_id' => 4
+            'user_id' => 4,
+            'delivery_address'=> '123 Main St',
+            'delivery_location'=> '10.958293,106.593036',
+        ]);
+        Trip::create([
+            'cost' => 1000000,
+            'discount_amount' => 100000,
+            'status' => 1, // Busy trip for Camry
+            'trip_type' => 0,
+            'start_at' => '2026-06-26 08:00:00',
+            'end_at' => '2026-06-28 20:00:00',
+            'car_id' => 1,
+            'user_id' => 2,
+            'delivery_address'=> '123 Main St',
+            'delivery_location'=> '10.958293,106.593036',
+        ]);
+        Trip::create([
+            'cost' => 900000,
+            'discount_amount' => 50000,
+            'status' => 0, // Busy trip for Civic
+            'trip_type' => 0,
+            'start_at' => '2026-06-29 08:00:00',
+            'end_at' => '2026-07-02 20:00:00',
+            'car_id' => 3,
+            'user_id' => 2,
+            'delivery_address'=> '123 Main St',
+            'delivery_location'=> '10.958293,106.593036',
         ]);
     }
 }

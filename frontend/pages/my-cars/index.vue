@@ -306,7 +306,7 @@ const formattedCars = computed(() => {
       name: car.name,
       licensePlate: car.license_plate,
       image: carImage,
-      location: car.car_location ? `${car.car_location.district}, ${car.car_location.city}` : 'Chưa cập nhật',
+      location: car.car_location ? car.car_location.address : 'Chưa cập nhật',
       seats: Number(car.seat_count),
       transmission: car.transmission,
       fuel: car.fuel_type,

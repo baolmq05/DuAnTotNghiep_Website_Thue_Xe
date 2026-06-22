@@ -54,10 +54,10 @@ class CarController extends Controller
             $endDate = Carbon::parse($request->endDate);
 
             // Tìm các xe có chuyến đi (trip) đang hoạt động giao thoa với khoảng thời gian này
-            $busyCarIds = Trip::whereIn('status', [0, 1]) // 0: chưa bắt đầu, 1: đang diễn ra
+            $busyCarIds = Trip::whereIn('status', [0, 1, 5]) // 0: chưa bắt đầu, 1: đang diễn ra, 5: chờ duyệt
                 ->where(function ($q) use ($startDate, $endDate) {
                     $q->where('start_at', '<=', $endDate)
-                      ->where('end_at', '>=', $startDate);
+                        ->where('end_at', '>=', $startDate);
                 })
                 ->pluck('car_id')
                 ->unique()
@@ -70,7 +70,7 @@ class CarController extends Controller
         if ($request->has('address')) {
             $address = $request->address;
             $query->whereHas('carLocation', function ($q) use ($address) {
-                $q->where('street_name', 'like', "%{$address}%");
+                $q->where('address', 'like', "%{$address}%");
             });
         }
 
@@ -108,9 +108,11 @@ class CarController extends Controller
         // Eager load các quan hệ & tính toán rating trung bình, tổng số chuyến đi
         $query->with(['carLocation', 'carBrand', 'carType', 'images'])
             ->withAvg('reviews', 'rating')
-            ->withCount(['trips' => function ($q) {
-                $q->where('status', 2); // Chỉ đếm các chuyến đi đã hoàn thành thành công
-            }]);
+            ->withCount([
+                'trips' => function ($q) {
+                    $q->where('status', 2); // Chỉ đếm các chuyến đi đã hoàn thành thành công
+                }
+            ]);
 
         // Thực thi query
         $cars = $query->get();
@@ -141,13 +143,19 @@ class CarController extends Controller
             },
             'reviews.reviewer' => function ($q) {
                 $q->select('id', 'name', 'avatar');
+            },
+            'trips' => function ($q) {
+                $q->whereIn('status', [0, 1, 5])
+                    ->select('id', 'car_id', 'user_id', 'start_at', 'end_at', 'status');
             }
         ])
-        ->withAvg('reviews', 'rating')
-        ->withCount(['trips' => function ($q) {
-            $q->where('status', 2); // Chuyến đi đã hoàn thành
-        }])
-        ->find($id);
+            ->withAvg('reviews', 'rating')
+            ->withCount([
+                'trips' => function ($q) {
+                    $q->where('status', 2); // Chuyến đi đã hoàn thành
+                }
+            ])
+            ->find($id);
 
         if (!$car) {
             return response()->json([
@@ -227,27 +235,29 @@ class CarController extends Controller
             'fuel_consumption' => 'required|numeric|min:0',
             'description' => 'nullable|string',
             'rental_terms' => 'nullable|string',
-            
+
             // Location
-            'street_name' => 'required|string',
-            
+            'location' => 'required|string',
+            'address' => 'required|string',
+
             // Pricing & Discount
             'unit_price' => 'required|numeric|min:0',
             'discount_value' => 'nullable|numeric|min:0',
-            
+
             // Delivery options
             'delivery_enabled' => 'required|in:0,1',
             'delivery_max_distance' => 'nullable|numeric|min:0',
             'delivery_fee' => 'nullable|numeric|min:0',
-            
+            'delivery_free_distance' => 'nullable|numeric|min:0',
+
             // Usage limit
             'km_limit_enabled' => 'required|in:0,1',
             'km_limit_val' => 'nullable|numeric|min:0',
             'over_fee_val' => 'nullable|numeric|min:0',
-            
+
             // Features
             'features' => 'nullable|string', // JSON array string or comma separated
-            
+
             // Images
             'images' => 'required|array|min:1',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
@@ -274,9 +284,8 @@ class CarController extends Controller
         try {
             // 1. Create Location
             $location = CarLocation::create([
-                'province_id' => $request->input('province_id', 1),
-                'ward_code' => $request->input('ward_code', 1),
-                'street_name' => $request->input('street_name'),
+                'location' => $request->input('location'),
+                'address' => $request->input('address'),
             ]);
 
             // 2. Create Delivery Option
@@ -284,6 +293,7 @@ class CarController extends Controller
                 'status' => $request->input('delivery_enabled') == '1' ? 1 : 0,
                 'max_distance' => $request->input('delivery_enabled') == '1' ? floatval($request->input('delivery_max_distance', 0)) : 0,
                 'fee_distance' => $request->input('delivery_enabled') == '1' ? floatval($request->input('delivery_fee', 0)) : 0,
+                'free_distance' => $request->input('delivery_enabled') == '1' ? floatval($request->input('delivery_free_distance', 0)) : 0,
             ]);
 
             // 3. Create Usage Limit
@@ -342,7 +352,7 @@ class CarController extends Controller
                     // Save file to storage
                     $filename = time() . '_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
                     $path = $imageFile->storeAs('cars', $filename, 'public');
-                    
+
                     // URL link
                     $imageUrl = asset('storage/' . $path);
 

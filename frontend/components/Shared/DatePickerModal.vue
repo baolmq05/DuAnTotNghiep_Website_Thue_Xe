@@ -44,15 +44,16 @@
               <div class="flex justify-center mb-6">
                 <ClientOnly>
                   <VDatePicker 
-                    v-model="range" 
-                    is-range 
+                    v-model.range="range" 
                     :columns="columns"
                     :step="1"
                     color="green"
                     :min-date="new Date()"
+                    :disabled-dates="disabledDatesFormatted"
                     borderless
                     expanded
                     class="custom-calendar"
+                    @dayclick="onDayClick"
                   />
                 </ClientOnly>
               </div>
@@ -120,9 +121,11 @@
                     :step="1"
                     color="green"
                     :min-date="new Date()"
+                    :disabled-dates="disabledDatesFormatted"
                     borderless
                     expanded
                     class="custom-calendar"
+                    @dayclick="onDayClick"
                   />
                 </ClientOnly>
               </div>
@@ -168,10 +171,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 
+const { showToast } = useToast()
+
 const props = defineProps({
   isOpen: Boolean,
   initialStart: Date,
-  initialEnd: Date
+  initialEnd: Date,
+  disabledDates: {
+    type: Array,
+    default: () => []
+  }
 })
 
 const emit = defineEmits(['close', 'apply'])
@@ -245,7 +254,47 @@ const close = () => {
   emit('close')
 }
 
-const { showToast } = useToast()
+// Computed: normalize disabledDates to Date objects for VDatePicker
+const disabledDatesFormatted = computed(() => {
+  if (!props.disabledDates || props.disabledDates.length === 0) return []
+  return props.disabledDates.map((range: any) => ({
+    start: range.start instanceof Date ? range.start : new Date(String(range.start).replace(' ', 'T')),
+    end: range.end instanceof Date ? range.end : new Date(String(range.end).replace(' ', 'T')),
+  }))
+})
+
+const isDayDisabled = (date: Date): boolean => {
+  const t = date.getTime()
+  return disabledDatesFormatted.value.some((range: any) => {
+    const s = range.start.getTime()
+    const e = range.end.getTime()
+    // check if date falls on or between start and end (compare by day only)
+    const dayStart = new Date(range.start); dayStart.setHours(0,0,0,0)
+    const dayEnd = new Date(range.end); dayEnd.setHours(23,59,59,999)
+    const checkDate = new Date(date); checkDate.setHours(12,0,0,0)
+    return checkDate.getTime() >= dayStart.getTime() && checkDate.getTime() <= dayEnd.getTime()
+  })
+}
+
+const onDayClick = (day: any) => {
+  if (day.isDisabled) {
+    showToast('Ngày này xe đã được đặt trước. Vui lòng chọn ngày khác!', 'error')
+  }
+}
+
+const hasOverlap = (start: Date, end: Date) => {
+  if (!disabledDatesFormatted.value || disabledDatesFormatted.value.length === 0) return false;
+  
+  const startMs = start.getTime();
+  const endMs = end.getTime();
+  
+  return disabledDatesFormatted.value.some((range: any) => {
+    if (!range.start || !range.end) return false;
+    const rangeStart = range.start.getTime();
+    const rangeEnd = range.end.getTime();
+    return startMs <= rangeEnd && rangeStart <= endMs;
+  });
+};
 
 const apply = () => {
   if (activeTab.value === 'daily') {
@@ -262,6 +311,11 @@ const apply = () => {
     const [eh, em] = endTime.value.split(':').map(Number)
     end.setHours(eh, em, 0, 0)
 
+    if (hasOverlap(start, end)) {
+      showToast("Khoảng thời gian bạn chọn có ngày xe đã bận. Vui lòng chọn lịch khác.", "error")
+      return
+    }
+
     emit('apply', { start, end, activeTab: activeTab.value })
   } else {
     if (!singleDate.value) {
@@ -274,6 +328,11 @@ const apply = () => {
     start.setHours(sh, sm, 0, 0)
     
     const end = new Date(start.getTime() + rentDuration.value * 3600000)
+
+    if (hasOverlap(start, end)) {
+      showToast("Khoảng thời gian bạn chọn có ngày xe đã bận. Vui lòng chọn lịch khác.", "error")
+      return
+    }
     
     emit('apply', { start, end, activeTab: activeTab.value })
   }
@@ -393,6 +452,24 @@ watch(() => props.isOpen, (val) => {
 .vc-day {
   min-height: 40px;
 }
+
+/* Visually mark disabled/busy days - v-calendar v3 uses .vc-disabled class */
+.custom-calendar .vc-day-content.vc-disabled {
+  color: #ef4444 !important;
+  text-decoration: line-through !important;
+  opacity: 1 !important;
+  cursor: not-allowed !important;
+  background-color: #fee2e2 !important;
+  border-radius: 50%;
+  --vc-day-content-disabled-color: #ef4444;
+}
+
+/* Style the day cell background for disabled days */
+.custom-calendar .vc-day:has(.vc-day-content.vc-disabled) {
+  background-color: #fff1f2 !important;
+  position: relative;
+}
+
 .modal-fade-enter-active,
 .modal-fade-leave-active {
   transition: opacity 0.25s ease;

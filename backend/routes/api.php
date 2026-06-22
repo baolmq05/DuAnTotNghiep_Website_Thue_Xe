@@ -15,6 +15,7 @@ use App\Http\Controllers\Api\FacebookAuthController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\CarCalendarController;
 use App\Http\Controllers\Api\MyTripController;
+use App\Http\Controllers\Api\TripController;
 
 
 // API AUTH URL: http://127.0.0.1:8000/api/auth/
@@ -69,6 +70,8 @@ Route::group(['middleware' => 'api'], function () {
     Route::post('favorites', [FavoriteController::class, 'store']);
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']);
     Route::post('cars', [CarController::class, 'store']);
+    Route::post('trips', [TripController::class, 'store']);
+    Route::get('trips', [TripController::class, 'index']);
 });
 // Các route cho khuyến mãi
 Route::get('promotions', [PromotionController::class, 'index']);

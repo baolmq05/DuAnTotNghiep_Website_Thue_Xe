@@ -22,10 +22,18 @@ export interface CarType {
 
 export interface CarLocation {
     id: number;
-    street_name: string;
-    ward_name?: string;
-    district_name?: string;
-    city_name?: string;
+    location: string;
+    address: string;
+}
+
+export interface DeliveryOption {
+    id: number;
+    max_distance: number;
+    fee_distance: number;
+    free_distance: number;
+    status: number;
+    created_at?: string;
+    updated_at?: string;
 }
 
 export interface CarBrandRegister {
@@ -76,6 +84,7 @@ export interface Car {
     created_at?: string;
     updated_at?: string;
     car_location?: CarLocation;
+    delivery_option?: DeliveryOption;
     car_brand?: CarBrand;
     car_type?: CarType;
     images?: CarImage[];
@@ -234,6 +243,36 @@ export class CarService {
             body: formData,
             useAuth: true,
             isMultipart: true,
+        });
+    }
+
+    /**
+     * Tạo chuyến đi mới (Yêu cầu thuê xe)
+     */
+    async createTrip(payload: {
+        cost: number;
+        discount_amount: number;
+        trip_type: number;
+        start_at: string;
+        end_at: string;
+        car_id: number;
+        delivery_address?: string;
+        delivery_location?: string;
+    }): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>("trips", {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Lấy danh sách chuyến đi của tôi (đã đặt & cho thuê)
+     */
+    async getTrips(): Promise<{ success: boolean; data: { booked: any[]; owner: any[] } }> {
+        return this.request<{ success: boolean; data: { booked: any[]; owner: any[] } }>("trips", {
+            method: "GET",
+            useAuth: true,
         });
     }
 }

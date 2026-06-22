@@ -57,7 +57,7 @@
           :name="fav.car?.name || fav.car_name"
           :image="getThumbnail(fav.car)"
           :price="fav.car?.unit_price || 0"
-          :location="fav.car?.car_location?.street_name || 'Chưa cập nhật'"
+          :location="fav.car?.car_location?.address || 'Chưa cập nhật'"
           :seats="Number(fav.car?.seat_count || 4)"
           :transmission="normalizeTransmission(fav.car?.transmission || '')"
           :fuel="normalizeFuel(fav.car?.fuel_type || '')"

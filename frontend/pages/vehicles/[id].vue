@@ -103,7 +103,7 @@
                       />
                     </svg>
                     <span class="text-sm font-medium"
-                      >{{ car?.car_location?.street_name || 'Chưa cập nhật' }}</span
+                      >{{ car?.car_location?.address || 'Chưa cập nhật' }}</span
                     >
                   </div>
                 </div>
@@ -241,10 +241,17 @@
             <div class="grid grid-cols-2 gap-3">
               <div
                 v-for="amenity in amenities"
-                :key="amenity"
+                :key="amenity.name"
                 class="flex items-center gap-3 text-sm text-slate-700 bg-slate-50/40 p-3 rounded-xl border border-slate-100/60 hover:border-brand-primary/20 hover:bg-white transition-all duration-200"
               >
+                <img
+                  v-if="amenity.icon"
+                  :src="amenity.icon"
+                  alt="Icon"
+                  class="w-5 h-5 object-contain flex-shrink-0"
+                />
                 <svg
+                  v-else
                   xmlns="http://www.w3.org/2000/svg"
                   class="w-4 h-4 text-brand-primary flex-shrink-0"
                   viewBox="0 0 24 24"
@@ -254,7 +261,7 @@
                     d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z"
                   />
                 </svg>
-                <span class="font-semibold text-slate-700">{{ amenity }}</span>
+                <span class="font-semibold text-slate-700">{{ amenity.name }}</span>
               </div>
             </div>
           </div>
@@ -539,7 +546,7 @@
                   >
                     Thời gian thuê
                   </p>
-                  <div class="grid grid-cols-2 gap-2">
+                  <div @click="isDatePickerOpen = true" class="grid grid-cols-2 gap-2">
                     <div
                       class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-brand-primary transition-colors"
                     >
@@ -551,7 +558,7 @@
                       <p
                         class="text-sm font-extrabold text-brand-dark mt-0.5"
                       >
-                        21:00, 12/06
+                        {{ formattedStart }}
                       </p>
                     </div>
                     <div
@@ -565,7 +572,7 @@
                       <p
                         class="text-sm font-extrabold text-brand-dark mt-0.5"
                       >
-                        20:00, 16/06
+                        {{ formattedEnd }}
                       </p>
                     </div>
                   </div>
@@ -573,13 +580,47 @@
 
                 <!-- Địa điểm -->
                 <div>
-                  <p
-                    class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"
-                  >
-                    Địa điểm nhận xe
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
+                    Hình thức nhận xe
                   </p>
+                  
+                  <!-- Tabs/Toggles -->
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button
+                      type="button"
+                      :class="[
+                        'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200',
+                        receiveMethod === 'pickup'
+                          ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                      ]"
+                      @click="receiveMethod = 'pickup'"
+                    >
+                      Nhận tại vị trí xe
+                    </button>
+                    
+                    <button
+                      type="button"
+                      :disabled="!car?.delivery_option || car.delivery_option.status !== 1"
+                      :class="[
+                        'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1',
+                        receiveMethod === 'delivery'
+                          ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                      ]"
+                      @click="receiveMethod = 'delivery'"
+                      :title="(!car?.delivery_option || car.delivery_option.status !== 1) ? 'Chủ xe không hỗ trợ giao xe tận nơi' : ''"
+                    >
+                      <i class="fa-solid fa-truck text-[10px]"></i>
+                      Giao xe tận nơi
+                    </button>
+                  </div>
+
+                  <!-- Content based on selected method -->
+                  <!-- 1. Self-pickup -->
                   <div
-                    class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl cursor-pointer hover:border-brand-primary transition-colors"
+                    v-if="receiveMethod === 'pickup'"
+                    class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:border-brand-primary transition-colors"
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -591,14 +632,77 @@
                         d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5"
                       />
                     </svg>
-                    <span
-                      class="text-sm text-slate-700 font-semibold truncate flex-1"
-                      >{{ car?.car_location?.street_name || 'Chưa cập nhật' }}</span
-                    >
-                    <span
-                      class="text-xs font-bold text-green-600 flex-shrink-0"
-                      >Miễn phí</span
-                    >
+                    <span class="text-sm text-slate-700 font-semibold truncate flex-1">
+                      {{ car?.car_location?.address || 'Chưa cập nhật' }}
+                    </span>
+                    <span class="text-xs font-bold text-green-600 flex-shrink-0">
+                      Miễn phí
+                    </span>
+                  </div>
+
+                  <!-- 2. Delivery Search Autocomplete -->
+                  <div v-else-if="receiveMethod === 'delivery'" class="space-y-3">
+                    <div class="relative">
+                      <input
+                        type="text"
+                        v-model="deliveryAddress"
+                        @input="searchDeliveryPlace"
+                        placeholder="Nhập địa chỉ nhận xe..."
+                        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 pr-10 outline-none transition text-xs font-semibold text-slate-700 focus:border-[#1e4e57] focus:ring-2 focus:ring-[#1e4e57]/10"
+                      >
+                      <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                        <i class="fa-solid fa-location-dot text-sm"></i>
+                      </div>
+
+                      <!-- Suggestions Dropdown -->
+                      <div
+                        v-if="deliverySuggestions.length"
+                        class="absolute z-[100] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100"
+                      >
+                        <div
+                          v-for="item in deliverySuggestions"
+                          :key="item.place_id"
+                          class="p-3 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 transition-colors font-medium"
+                          @click="selectDeliveryPlace(item)"
+                        >
+                          {{ item.description }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Distance & Fee details -->
+                    <div v-if="deliveryDistance !== null" class="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1 text-xs">
+                      <div class="flex justify-between font-semibold">
+                        <span class="text-slate-500">Khoảng cách giao xe:</span>
+                        <span class="text-slate-800">{{ deliveryDistance }} km</span>
+                      </div>
+                      <div class="flex justify-between font-semibold" v-if="car?.delivery_option?.free_distance">
+                        <span class="text-slate-500">Miễn phí giao xe:</span>
+                        <span class="text-green-600">Trong vòng {{ car.delivery_option.free_distance }} km</span>
+                      </div>
+                      <div class="flex justify-between font-semibold" v-if="deliveryFee > 0">
+                        <span class="text-slate-500">Phí giao xe tính thêm:</span>
+                        <span class="text-brand-dark font-bold">{{ deliveryFee.toLocaleString('vi-VN') }}đ</span>
+                      </div>
+                      <div class="flex justify-between font-semibold" v-else>
+                        <span class="text-slate-500">Phí giao xe tính thêm:</span>
+                        <span class="text-green-600 font-bold">Miễn phí</span>
+                      </div>
+
+                      <!-- Warning if too far -->
+                      <div v-if="isDistanceTooFar" class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100">
+                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                        Vị trí quá xa! Chủ xe chỉ giao tối đa {{ car?.delivery_option?.max_distance }} km.
+                      </div>
+                    </div>
+
+                    <!-- Map container -->
+                    <div
+                      id="detail-map"
+                      class="w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner"
+                      style="height: 200px; display: none;"
+                      :style="{ display: deliveryCoords ? 'block' : 'none' }"
+                    ></div>
                   </div>
                 </div>
 
@@ -652,9 +756,13 @@
 
                 <!-- CTA -->
                 <button
-                  class="w-full bg-brand-primary hover:bg-brand-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-300 text-sm tracking-widest shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 hover:-translate-y-[0.5px] transform"
+                  :disabled="hasActiveBooking || (receiveMethod === 'delivery' && (isDistanceTooFar || !deliveryCoords))"
+                  class="w-full bg-brand-primary hover:bg-brand-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-300 text-sm tracking-widest shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 hover:-translate-y-[0.5px] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  @click="handleBooking"
                 >
-                  + CHỌN THUÊ
+                  <span v-if="hasActiveBooking">CHUYẾN ĐI CHƯA HOÀN THÀNH</span>
+                  <span v-else-if="receiveMethod === 'delivery' && isDistanceTooFar">KHOẢNG CÁCH QUÁ XA</span>
+                  <span v-else>CHỌN THUÊ</span>
                 </button>
 
                 <!-- Phụ phí -->
@@ -763,14 +871,26 @@
         </NuxtLink>
       </div>
     </div>
+    
+    <!-- Date Picker Modal -->
+    <DatePickerModal 
+      :is-open="isDatePickerOpen" 
+      :initial-start="selectedStart || undefined" 
+      :initial-end="selectedEnd || undefined" 
+      :disabled-dates="disabledDates"
+      @close="isDatePickerOpen = false" 
+      @apply="handleApplyDates"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute } from "#app";
 import { carService } from "~/services/car.service";
 import { favoriteService } from "~/services/favorite.service";
+import { notificationService } from "~/services/notification.service";
+import DatePickerModal from "~/components/Shared/DatePickerModal.vue";
 
 definePageMeta({ layout: "vehicle-detail" });
 
@@ -784,6 +904,324 @@ const car = ref<any>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const isFavorite = ref(false);
+
+// Goong Map for Delivery Location
+const MAP_KEY = '8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex'
+const API_KEY = 'xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V'
+
+let maplibregl: any = null
+const receiveMethod = ref<'pickup' | 'delivery'>('pickup')
+const deliveryAddress = ref('')
+const deliverySuggestions = ref<any[]>([])
+const deliveryCoords = ref<{ lat: number; lng: number } | null>(null)
+const deliveryDistance = ref<number | null>(null)
+const deliveryFee = ref<number>(0)
+const isDistanceTooFar = ref(false)
+
+const detailMapRef = ref<any>(null)
+const carMarker = ref<any>(null)
+const userMarker = ref<any>(null)
+
+const getHaversineDistance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
+  const R = 6371 // Earth radius in km
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
+}
+
+const calculateDistance = async (carLat: number, carLng: number, userLat: number, userLng: number) => {
+  try {
+    const res = await fetch(`https://rsapi.goong.io/DistanceMatrix?origins=${carLat},${carLng}&destinations=${userLat},${userLng}&vehicle=car&api_key=${API_KEY}`)
+    const data = await res.json()
+    if (data.rows && data.rows[0] && data.rows[0].elements && data.rows[0].elements[0] && data.rows[0].elements[0].status === 'OK') {
+      return data.rows[0].elements[0].distance.value / 1000 // In km
+    }
+  } catch (e) {
+    console.error("Lỗi khi tính khoảng cách qua Goong API. Dùng Haversine làm phương án dự phòng:", e)
+  }
+  return getHaversineDistance(carLat, carLng, userLat, userLng)
+}
+
+const searchDeliveryPlace = async () => {
+  if (!deliveryAddress.value) {
+    deliverySuggestions.value = []
+    return
+  }
+  try {
+    const res = await fetch(`https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${encodeURIComponent(deliveryAddress.value)}`)
+    const data = await res.json()
+    deliverySuggestions.value = data.predictions || []
+  } catch (error) {
+    console.error('Lỗi khi tìm kiếm địa điểm:', error)
+  }
+}
+
+const selectDeliveryPlace = async (item: any) => {
+  deliveryAddress.value = item.description
+  deliverySuggestions.value = []
+  try {
+    const res = await fetch(`https://rsapi.goong.io/Place/Detail?place_id=${item.place_id}&api_key=${API_KEY}`)
+    const data = await res.json()
+    if (data.result && data.result.geometry) {
+      const loc = data.result.geometry.location
+      deliveryCoords.value = { lat: loc.lat, lng: loc.lng }
+
+      if (car.value && car.value.car_location) {
+        const carLocStr = car.value.car_location.location || ''
+        const [carLat, carLng] = carLocStr.split(',').map(Number)
+
+        if (carLat && carLng) {
+          const dist = await calculateDistance(carLat, carLng, loc.lat, loc.lng)
+          deliveryDistance.value = parseFloat(dist.toFixed(1))
+
+          const deliveryOpt = car.value.delivery_option
+          if (deliveryOpt) {
+            const maxDist = deliveryOpt.max_distance || 0
+            const freeDist = deliveryOpt.free_distance || 0
+            const feeDistance = deliveryOpt.fee_distance || 0
+
+            if (dist > maxDist) {
+              isDistanceTooFar.value = true
+              deliveryFee.value = 0
+              showToast(`Địa điểm vượt quá khoảng cách giao xe tối đa của chủ xe (${maxDist} km)`, 'error')
+            } else {
+              isDistanceTooFar.value = false
+              if (dist <= freeDist) {
+                deliveryFee.value = 0
+              } else {
+                const extraKm = dist - freeDist
+                deliveryFee.value = Math.round(extraKm * feeDistance)
+              }
+            }
+          }
+
+          nextTick(() => {
+            drawDeliveryMap(carLat, carLng, loc.lat, loc.lng)
+          })
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin chi tiết địa điểm:', error)
+  }
+}
+
+const drawDeliveryMap = (carLat: number, carLng: number, userLat: number, userLng: number) => {
+  const container = document.getElementById('detail-map')
+  if (!container || !maplibregl) return
+
+  if (detailMapRef.value) {
+    try {
+      detailMapRef.value.remove()
+    } catch (e) {
+      console.error('Lỗi khi xóa bản đồ cũ:', e)
+    }
+    detailMapRef.value = null
+    carMarker.value = null
+    userMarker.value = null
+  }
+
+  const map = new maplibregl.Map({
+    container: 'detail-map',
+    style: `https://tiles.goong.io/assets/goong_map_web.json?api_key=${MAP_KEY}`,
+    center: [(carLng + userLng) / 2, (carLat + userLat) / 2],
+    zoom: 12
+  })
+
+  map.addControl(new maplibregl.NavigationControl(), 'top-right')
+
+  map.on('load', () => {
+    carMarker.value = new maplibregl.Marker({ color: '#1e4e57' })
+      .setLngLat([carLng, carLat])
+      .setPopup(new maplibregl.Popup({ offset: 25 }).setText("Vị trí xe"))
+      .addTo(map)
+
+    userMarker.value = new maplibregl.Marker({ color: 'red' })
+      .setLngLat([userLng, userLat])
+      .setPopup(new maplibregl.Popup({ offset: 25 }).setText("Địa điểm giao xe"))
+      .addTo(map)
+      .togglePopup()
+
+    const bounds = new maplibregl.LngLatBounds()
+    bounds.extend([carLng, carLat])
+    bounds.extend([userLng, userLat])
+    map.fitBounds(bounds, { padding: 40 })
+
+    setTimeout(() => {
+      map.resize()
+    }, 200)
+  })
+
+  detailMapRef.value = map
+}
+
+const calculatedDeliveryFee = computed(() => {
+  if (receiveMethod.value === 'pickup') return 0
+  return deliveryFee.value
+})
+
+const handleBooking = async () => {
+  if (!user.value) {
+    showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'warning')
+    openLogin()
+    return
+  }
+
+  if (receiveMethod.value === 'delivery') {
+    if (!deliveryCoords.value) {
+      showToast('Vui lòng chọn địa điểm nhận xe.', 'warning')
+      return
+    }
+    if (isDistanceTooFar.value) {
+      showToast('Địa điểm giao xe vượt quá khoảng cách tối đa của chủ xe.', 'error')
+      return
+    }
+  }
+
+  if (car.value && car.value.user_id === user.value.id) {
+    showToast('Bạn không thể thuê xe của chính mình!', 'error')
+    return
+  }
+
+  if (hasActiveBooking.value) {
+    showToast('Bạn đang có chuyến đi chưa hoàn thành với xe này!', 'error')
+    return
+  }
+
+  try {
+    const pad = (num: number) => String(num).padStart(2, '0')
+    const formatFullDate = (d: Date) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
+    const startStr = selectedStart.value ? formatFullDate(selectedStart.value) : ''
+    const endStr = selectedEnd.value ? formatFullDate(selectedEnd.value) : ''
+
+    const formatDbDate = (d: Date) => {
+      const year = d.getFullYear()
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      const seconds = String(d.getSeconds()).padStart(2, '0')
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+    }
+
+    // 1. Tạo Trip trên hệ thống (status = 5: Chờ duyệt)
+    const tripPayload = {
+      cost: totalPrice.value,
+      discount_amount: totalSavings.value,
+      trip_type: 0, // thuê theo ngày
+      start_at: selectedStart.value ? formatDbDate(selectedStart.value) : '',
+      end_at: selectedEnd.value ? formatDbDate(selectedEnd.value) : '',
+      car_id: car.value.id,
+      delivery_address: receiveMethod.value === 'delivery' ? deliveryAddress.value : car.value.car_location?.address,
+      delivery_location: receiveMethod.value === 'delivery' && deliveryCoords.value 
+        ? `${deliveryCoords.value.lat},${deliveryCoords.value.lng}` 
+        : car.value.car_location?.location,
+    }
+
+    const tripRes = await carService.createTrip(tripPayload)
+
+    if (tripRes && tripRes.success) {
+      // 2. Gửi thông báo đến chủ xe
+      const message = `Khách hàng ${user.value.name} (${user.value.phone || 'Chưa cập nhật SĐT'}) gửi yêu cầu thuê xe ${car.value.name} (${car.value.license_plate}) từ ${startStr} đến ${endStr}. Tổng tiền: ${totalPrice.value.toLocaleString('vi-VN')}đ. Trạng thái: Đang chờ duyệt.`
+
+      const notifPayload = {
+        message: message,
+        user_id: car.value.user_id
+      }
+
+      await notificationService.createNotification(notifPayload)
+      showToast('Gửi yêu cầu thuê xe thành công! Chuyến đi đang chờ chủ xe duyệt.', 'success')
+      navigateTo('/profile/my-trips')
+    } else {
+      showToast(tripRes.message || 'Gửi yêu cầu thuê xe thất bại.', 'error')
+    }
+  } catch (error: any) {
+    console.error('Lỗi khi gửi yêu cầu thuê xe:', error)
+    const errMsg = error.response?._data?.message || 'Có lỗi xảy ra khi gửi yêu cầu thuê xe.'
+    showToast(errMsg, 'error')
+  }
+}
+
+watch(receiveMethod, (newMethod) => {
+  if (newMethod === 'pickup') {
+    deliveryDistance.value = null
+    deliveryCoords.value = null
+    isDistanceTooFar.value = false
+    deliveryFee.value = 0
+  }
+})
+
+const parseDateString = (str: string | null | undefined): Date | null => {
+  if (!str) return null
+  const formattedStr = str.replace(' ', 'T')
+  const date = new Date(formattedStr)
+  return isNaN(date.getTime()) ? null : date
+}
+
+const selectedStart = ref<Date | null>(parseDateString(route.query.startDate as string))
+const selectedEnd = ref<Date | null>(parseDateString(route.query.endDate as string))
+
+// Set default values if not defined in query
+if (!selectedStart.value) {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  d.setHours(21, 0, 0, 0)
+  selectedStart.value = d
+}
+if (!selectedEnd.value) {
+  const d = new Date()
+  d.setDate(d.getDate() + 3)
+  d.setHours(20, 0, 0, 0)
+  selectedEnd.value = d
+}
+
+const isDatePickerOpen = ref(false)
+
+const formattedStart = computed(() => {
+  if (!selectedStart.value) return ''
+  const d = selectedStart.value
+  const pad = (num: number) => String(num).padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}, ${pad(d.getDate())}/${pad(d.getMonth() + 1)}`
+})
+
+const formattedEnd = computed(() => {
+  if (!selectedEnd.value) return ''
+  const d = selectedEnd.value
+  const pad = (num: number) => String(num).padStart(2, '0')
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}, ${pad(d.getDate())}/${pad(d.getMonth() + 1)}`
+})
+
+const disabledDates = computed(() => {
+  console.log("Raw trips from backend:", car.value?.trips)
+  if (!car.value?.trips || car.value.trips.length === 0) return []
+  const mapped = car.value.trips.map((trip: any) => {
+    const startStr = typeof trip.start_at === 'string' ? trip.start_at.replace(' ', 'T') : trip.start_at
+    const endStr = typeof trip.end_at === 'string' ? trip.end_at.replace(' ', 'T') : trip.end_at
+    const start = new Date(startStr)
+    const end = new Date(endStr)
+    return { start, end }
+  })
+  console.log("Mapped disabledDates:", mapped)
+  return mapped
+})
+
+const rentalDays = computed(() => {
+  if (!selectedStart.value || !selectedEnd.value) return 1
+  const ms = selectedEnd.value.getTime() - selectedStart.value.getTime()
+  const days = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)))
+  return days
+})
+
+const handleApplyDates = (payload: any) => {
+  selectedStart.value = payload.start
+  selectedEnd.value = payload.end
+  isDatePickerOpen.value = false
+}
 
 const showFullDesc = ref(false);
 const activeIndex = ref(0);
@@ -871,6 +1309,13 @@ const loadCarDetails = async (id: string) => {
     if (response.success && response.data) {
       car.value = response.data;
       
+      // Kiểm tra nếu là chủ xe thì không được phép truy cập
+      if (user.value && car.value.user_id === user.value.id) {
+        showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'warning');
+        navigateTo('/vehicle-list');
+        return;
+      }
+      
       // Kiểm tra xem xe này có nằm trong danh sách yêu thích hay không
       await checkFavoriteStatus(id);
 
@@ -911,14 +1356,31 @@ const loadCarDetails = async (id: string) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadCarDetails(carId);
+  if (process.client) {
+    try {
+      const module = await import('maplibre-gl');
+      maplibregl = module.default;
+      await import('maplibre-gl/dist/maplibre-gl.css');
+    } catch (e) {
+      console.error('Không tải được thư viện bản đồ:', e);
+    }
+  }
 });
 
 // Watch thay đổi ID trên URL để tải lại dữ liệu khi đổi xe liên quan
 watch(() => route.params.id, (newId) => {
   if (newId) {
     loadCarDetails(newId as string);
+  }
+});
+
+// Watch thay đổi thông tin user đăng nhập để chuyển hướng nếu sở hữu xe
+watch(() => user.value, (newUser) => {
+  if (newUser && car.value && car.value.user_id === newUser.id) {
+    showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'warning');
+    navigateTo('/vehicle-list');
   }
 });
 
@@ -959,17 +1421,20 @@ const specs = computed(() => {
 const amenities = computed(() => {
   if (!car.value?.features || car.value.features.length === 0) {
     return [
-      "Bluetooth",
-      "Camera lùi",
-      "Định vị GPS",
-      "Khe cắm USB",
-      "Lốp dự phòng",
-      "ETC",
-      "Túi khí an toàn",
-      "Cửa sổ trời",
+      { name: "Bluetooth", icon: null },
+      { name: "Camera lùi", icon: null },
+      { name: "Định vị GPS", icon: null },
+      { name: "Khe cắm USB", icon: null },
+      { name: "Lốp dự phòng", icon: null },
+      { name: "ETC", icon: null },
+      { name: "Túi khí an toàn", icon: null },
+      { name: "Cửa sổ trời", icon: null },
     ];
   }
-  return car.value.features.map((f: any) => f.name);
+  return car.value.features.map((f: any) => ({
+    name: f.feature_name,
+    icon: f.icon || null
+  }));
 });
 
 const descItems = [
@@ -1014,22 +1479,25 @@ const priceDetails = computed(() => {
   if (!car.value) return [];
   const unitPrice = car.value.unit_price;
   const insuranceFee = Math.round(unitPrice * 0.09); // Phí bảo hiểm 9%
-  const deliveryFee = car.value.delivery_option_id ? 100000 : 0;
+  const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
+  const days = rentalDays.value;
   
   const details = [
-    { label: "Đơn giá thuê", value: `${unitPrice.toLocaleString('vi-VN')}đ/ngày`, info: true },
-    { label: "Bảo hiểm thuê xe", value: `${insuranceFee.toLocaleString('vi-VN')}đ/ngày`, info: true },
+    { label: "Đơn giá thuê", value: `${(unitPrice * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
+    { label: "Bảo hiểm thuê xe", value: `${(insuranceFee * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
   ];
 
-  if (deliveryFee > 0) {
-    details.push({ label: "Phí giao nhận xe", value: `${deliveryFee.toLocaleString('vi-VN')}đ`, info: false });
+  if (deliveryFeeVal > 0) {
+    details.push({ label: "Phí giao nhận xe", value: `${deliveryFeeVal.toLocaleString('vi-VN')}đ`, info: false });
+  } else if (receiveMethod.value === 'delivery') {
+    details.push({ label: "Phí giao nhận xe", value: `Miễn phí`, info: false });
   }
 
   if (discountVal > 0) {
     details.push({
       label: "Chương trình giảm giá",
-      value: `-${discountVal.toLocaleString('vi-VN')}đ`,
+      value: `-${(discountVal * days).toLocaleString('vi-VN')}đ`,
       info: false,
       discount: true,
     });
@@ -1040,16 +1508,16 @@ const priceDetails = computed(() => {
 
 const totalSavings = computed(() => {
   if (!car.value) return 0;
-  return car.value.discount_value || 0;
+  return (car.value.discount_value || 0) * rentalDays.value;
 });
 
 const totalPrice = computed(() => {
   if (!car.value) return 0;
   const unitPrice = car.value.unit_price;
   const insuranceFee = Math.round(unitPrice * 0.09);
-  const deliveryFee = car.value.delivery_option_id ? 100000 : 0;
+  const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
-  return unitPrice + insuranceFee + deliveryFee - discountVal;
+  return (unitPrice + insuranceFee - discountVal) * rentalDays.value + deliveryFeeVal;
 });
 
 const formattedReviews = computed(() => {
@@ -1093,12 +1561,19 @@ const similarCars = computed(() => {
       name: c.name,
       image: thumbnailImg,
       price: c.unit_price.toLocaleString('vi-VN') + 'đ',
-      location: c.car_location?.street_name || 'Chưa cập nhật',
+      location: c.car_location?.address || 'Chưa cập nhật',
       rating: c.reviews_avg_rating ? parseFloat(c.reviews_avg_rating).toFixed(1) : '5.0',
       trips: c.trips_count || 0,
       badge: discountPct > 0 ? `-${discountPct}%` : null
     };
   });
+});
+
+const hasActiveBooking = computed(() => {
+  if (!user.value || !car.value?.trips) return false;
+  return car.value.trips.some((trip: any) => 
+    trip.user_id === user.value.id && [0, 1, 5].includes(Number(trip.status))
+  );
 });
 </script>
 

@@ -22,11 +22,8 @@ export interface Car {
   status: number;
   car_location?: {
     id: number;
-    street_number: string | null;
-    street_name: string;
-    ward: string;
-    district: string;
-    city: string;
+    location: string;
+    address: string;
   };
   car_brand?: {
     id: number;

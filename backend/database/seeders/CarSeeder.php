@@ -42,7 +42,7 @@ class CarSeeder extends Seeder
             'discount_value' => 50000,
             'description' => 'Xe thể thao, năng động, phù hợp cho các chuyến đi trong thành phố.',
             'rental_terms' => 'Không hút thuốc, không chở vật nuôi, trả xe đúng giờ.',
-            'car_location_id' => 1,
+            'car_location_id' => 3,
             'car_brand_id' => 2,
             'car_type_id' => 1,
             'seat_count' => 5,

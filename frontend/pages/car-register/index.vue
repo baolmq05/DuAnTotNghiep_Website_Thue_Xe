@@ -787,14 +787,18 @@ const onSubmit = async () => {
         formData.append('discount_value', discountValue.toString());
 
         // Location address
-        formData.append('street_name', address.value);
-        formData.append('province_id', '1');
-        formData.append('ward_code', '1');
+        formData.append('address', address.value);
+        if (selectedCoords.value) {
+            formData.append('location', `${selectedCoords.value.lat},${selectedCoords.value.lng}`);
+        } else {
+            formData.append('location', '');
+        }
 
         // Delivery options
         formData.append('delivery_enabled', deliveryEnabled.value ? '1' : '0');
         formData.append('delivery_max_distance', maxDistVal.value.toString());
         formData.append('delivery_fee', (feeVal.value * 1000).toString());
+        formData.append('delivery_free_distance', freeLimitVal.value.toString());
 
         // Usage limits
         formData.append('km_limit_enabled', kmLimitEnabled.value ? '1' : '0');

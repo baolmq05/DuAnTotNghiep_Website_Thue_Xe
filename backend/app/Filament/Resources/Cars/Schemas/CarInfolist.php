@@ -126,12 +126,10 @@ class CarInfolist
                         // Địa chỉ xe
                         Section::make('Địa chỉ xe')
                             ->schema([
-                                TextEntry::make('carLocation.street_name')
-                                    ->label('Địa chỉ chi tiết (Đường)'),
-                                TextEntry::make('carLocation.ward_code')
-                                    ->label('Mã phường/xã'),
-                                TextEntry::make('carLocation.province_id')
-                                    ->label('Mã tỉnh/thành phố'),
+                                TextEntry::make('carLocation.address')
+                                    ->label('Địa chỉ chi tiết'),
+                                TextEntry::make('carLocation.location')
+                                    ->label('Toạ độ'),
                             ])->columnSpan(1),
 
                         // Giao nhận xe & Giới hạn

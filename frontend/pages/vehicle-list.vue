@@ -193,7 +193,8 @@ const mappedCarList = computed(() => {
             name: car.name,
             image: thumbnailImg,
             price: car.unit_price,
-            location: car.car_location?.street_name || 'Chưa cập nhật',
+            location: car.car_location?.address || 'Chưa cập nhật',
+            coords: car.car_location?.location || null,
             seats: Number(car.seat_count),
             transmission: normalizeTransmission(car.transmission),
             fuel: normalizeFuel(car.fuel_type),
@@ -208,6 +209,12 @@ const mappedCarList = computed(() => {
 })
 
 const rawCarList = computed(() => {
+    if (user.value && user.value.id) {
+        return mappedCarList.value.filter(car => {
+            const rawCar = rawApiCars.value.find(c => c.id === car.id);
+            return !rawCar || rawCar.user_id !== user.value.id;
+        });
+    }
     return mappedCarList.value
 })
 

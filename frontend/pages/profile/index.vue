@@ -388,7 +388,7 @@
               </h4>
               <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
                 <Icon name="lucide:map-pin" class="shrink-0" />
-                <span class="truncate">{{ car.car_location ? `${car.car_location.district}, ${car.car_location.city}` : 'Chưa cập nhật' }}</span>
+                <span class="truncate">{{ car.car_location ? car.car_location.address : 'Chưa cập nhật' }}</span>
               </p>
             </div>
 

@@ -37,6 +37,12 @@ class NotificationController extends Controller
                 'message' => 'Lấy danh sách thông báo thành công',
                 'data' => $notifications
             ]);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lấy danh sách thông báo thất bại',
+                'errors' => $e->getMessage()
+            ], 401);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -145,6 +151,12 @@ class NotificationController extends Controller
                 'success' => true,
                 'message' => 'Đánh dấu tất cả thông báo là đã đọc thành công'
             ]);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đánh dấu tất cả thông báo là đã đọc thất bại',
+                'errors' => $e->getMessage()
+            ], 401);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
