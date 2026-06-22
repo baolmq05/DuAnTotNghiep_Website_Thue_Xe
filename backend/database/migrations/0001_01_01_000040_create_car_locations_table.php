@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,9 +13,8 @@ return new class extends Migration
         Schema::create('car_locations', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->bigInteger('province_id')->comment('mã tỉnh/thành phố')->unsigned();
-            $table->bigInteger('ward_code')->comment('mã phường/xã')->unsigned();
-            $table->text('street_name')->comment('tên đường')->nullable();
+            $table->text('location')->comment('vị trí')->nullable();
+            $table->text('address')->comment('địa chỉ')->nullable();
             $table->timestamps();
         });
     }

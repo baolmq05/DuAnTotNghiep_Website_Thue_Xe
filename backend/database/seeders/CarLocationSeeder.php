@@ -15,19 +15,16 @@ class CarLocationSeeder extends Seeder
     {
         //
         CarLocation::create([
-            'province_id' => 1,
-            'ward_code' => 1,
-            'street_name' => 'Đường Lê Duẩn',
+            'location' => '10.958293,106.593036',
+            'address' => 'Tân Thạnh Đông, Củ Chi, Hồ Chí Minh',
         ]);
         CarLocation::create([
-            'province_id' => 2,
-            'ward_code' => 2,
-            'street_name' => 'Đường Nguyễn Huệ',
+            'location' => '20.958293,106.593036',
+            'address' => 'Thanh Trì, Hà Nội',
         ]);
         CarLocation::create([
-            'province_id' => 3,
-            'ward_code' => 3,
-            'street_name' => 'Đường Trần Hưng Đạo',
+            'location' => '16.058293,108.234543',
+            'address' => 'Hải Châu, Đà Nẵng',
         ]);
     }
 }
