@@ -36,6 +36,7 @@
                                     :is-instant-book="car.isInstantBook" :is-delivery="car.isDelivery"
                                     :no-deposit="car.noDeposit" :discount="car.discount"
                                     :isFavorite="isCarFavorited(car.id)"
+                                    :ownerAvatar="car.ownerAvatar"
                                     @toggle-favorite="handleToggleFavorite(car.id)" />
                             </div>
                         </div>
@@ -190,7 +191,8 @@ const mappedCarList = computed(() => {
             isInstantBook: true,
             isDelivery: car.delivery_option_id ? true : false,
             noDeposit: false,
-            discount: discountPct
+            discount: discountPct,
+            ownerAvatar: car.owner?.avatar || ''
         };
     });
 })

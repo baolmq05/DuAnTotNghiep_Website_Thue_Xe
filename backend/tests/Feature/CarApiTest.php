@@ -153,6 +153,16 @@ class CarApiTest extends TestCase
     public function test_can_create_trip_pending_approval(): void
     {
         $user = \App\Models\User::first();
+        $license = \App\Models\DrivingLicense::create([
+            'full_name' => 'Nguyễn Văn Test',
+            'image' => 'http://example.com/license.jpg',
+            'driving_license_number' => 'TEST99999',
+            'DOB' => '1995-01-01',
+            'status' => 1 // Approved
+        ]);
+        $user->update(['driving_license_id' => $license->id]);
+        $user->load('drivingLicense');
+
         $token = \Tymon\JWTAuth\Facades\JWTAuth::fromUser($user);
 
         // We need a car that is NOT owned by this user.

@@ -21,6 +21,10 @@ class ViewCar extends ViewRecord
                 ->requiresConfirmation()
                 ->action(function (Car $record) {
                     $record->update(['status' => 1]);
+                    $owner = $record->owner;
+                    if ($owner && $owner->role_id !== 3 && $owner->role_id !== 1) {
+                        $owner->update(['role_id' => 3]);
+                    }
                 })
                 ->visible(fn (Car $record) => $record->status == 2),
 

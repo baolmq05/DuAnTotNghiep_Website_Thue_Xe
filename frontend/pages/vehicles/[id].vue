@@ -1072,6 +1072,43 @@ const handleBooking = async () => {
     return
   }
 
+  // Kiểm tra số điện thoại
+  if (!user.value.phone) {
+    showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'warning')
+    setTimeout(() => {
+      navigateTo('/profile')
+    }, 2000)
+    return
+  }
+
+  // Kiểm tra giấy phép lái xe
+  const drivingLicense = user.value.driving_license
+  if (!drivingLicense) {
+    showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'warning')
+    setTimeout(() => {
+      navigateTo('/profile')
+    }, 2000)
+    return
+  }
+
+  if (drivingLicense.status === 0) {
+    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+    return
+  }
+
+  if (drivingLicense.status === 2) {
+    showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'warning')
+    setTimeout(() => {
+      navigateTo('/profile')
+    }, 2000)
+    return
+  }
+
+  if (drivingLicense.status !== 1) {
+    showToast('Giấy phép lái xe của bạn không hợp lệ.', 'error')
+    return
+  }
+
   if (receiveMethod.value === 'delivery') {
     if (!deliveryCoords.value) {
       showToast('Vui lòng chọn địa điểm nhận xe.', 'warning')

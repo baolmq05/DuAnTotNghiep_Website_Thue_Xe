@@ -106,7 +106,15 @@ class CarController extends Controller
         }
 
         // Eager load các quan hệ & tính toán rating trung bình, tổng số chuyến đi
-        $query->with(['carLocation', 'carBrand', 'carType', 'images'])
+        $query->with([
+            'carLocation',
+            'carBrand',
+            'carType',
+            'images',
+            'owner' => function ($q) {
+                $q->select('id', 'name', 'avatar');
+            }
+        ])
             ->withAvg('reviews', 'rating')
             ->withCount([
                 'trips' => function ($q) {

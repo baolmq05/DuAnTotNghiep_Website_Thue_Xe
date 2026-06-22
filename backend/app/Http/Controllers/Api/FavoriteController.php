@@ -24,7 +24,15 @@ class FavoriteController extends Controller
             // Lấy danh sách yêu thích của người dùng hiện tại
             $favorites = Favorite::with([
                 'items.car' => function ($query) {
-                    $query->with(['carLocation', 'carBrand', 'carType', 'images'])
+                    $query->with([
+                        'carLocation',
+                        'carBrand',
+                        'carType',
+                        'images',
+                        'owner' => function ($q) {
+                            $q->select('id', 'name', 'avatar');
+                        }
+                    ])
                         ->withAvg('reviews', 'rating')
                         ->withCount(['trips' => function ($q) {
                             $q->where('status', 2); // Chỉ đếm các chuyến đi đã hoàn thành thành công

@@ -24,6 +24,43 @@ class TripController extends Controller
             ], 401);
         }
 
+        // Kiểm tra số điện thoại
+        if (empty($user->phone)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần cập nhật số điện thoại trước khi thực hiện thuê xe. Vui lòng cập nhật tại trang Cá nhân.'
+            ], 400);
+        }
+
+        // Kiểm tra giấy phép lái xe
+        if (!$user->drivingLicense) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn chưa cập nhật thông tin giấy phép lái xe. Vui lòng cập nhật thông tin tại trang Cá nhân.'
+            ], 400);
+        }
+
+        if ($user->drivingLicense->status === 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.'
+            ], 400);
+        }
+
+        if ($user->drivingLicense->status === 2) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Giấy phép lái xe của bạn đã bị từ chối. Vui lòng cập nhật lại thông tin tại trang Cá nhân.'
+            ], 400);
+        }
+
+        if ($user->drivingLicense->status !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Giấy phép lái xe không hợp lệ. Vui lòng kiểm tra lại.'
+            ], 400);
+        }
+
         $validator = Validator::make($request->all(), [
             'cost' => 'required|numeric|min:0',
             'discount_amount' => 'nullable|numeric|min:0',
