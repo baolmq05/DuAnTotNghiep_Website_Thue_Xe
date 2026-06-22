@@ -6,6 +6,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/tailwind.css'],
   app: {
     head: {
+      link: [
+        { rel: 'icon', type: 'image/x-icon', href: '/logo.png' }
+      ],
       script: [
         {
           src: 'https://accounts.google.com/gsi/client',

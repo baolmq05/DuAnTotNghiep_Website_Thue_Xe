@@ -15,7 +15,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
 
                 <!-- Cột bên trái: Title & Description -->
-                <div class="lg:col-span-6 text-left space-y-4 max-w-2xl mx-auto lg:mx-0">
+                <div class="lg:col-span-7 text-left space-y-4 max-w-2xl mx-auto lg:mx-0">
                     <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
                         Kinh Nghiệm Thuê Xe
                     </h1>
@@ -28,7 +28,7 @@
                 </div>
 
                 <!-- Cột bên phải: LottieAnimation -->
-                <div class="lg:col-span-6 flex justify-center items-center w-full max-w-[500px] lg:max-w-none mx-auto">
+                <div class="lg:col-span-5 flex justify-center items-center w-full max-w-[420px] mx-auto">
                     <ClientOnly>
                         <LottieAnimation class="w-full h-auto" path="/animations/experience.json" />
                     </ClientOnly>

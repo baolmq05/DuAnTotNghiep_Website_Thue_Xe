@@ -4,28 +4,7 @@
         <CommonLoadingOverlay :loading="loading" text="Đang tải danh sách bài viết" />
 
         <!-- HERO -->
-        <section
-            class="relative overflow-hidden bg-gradient-to-r from-[#1e4e57] to-[#286874] min-h-[400px] flex items-center">
-            <div class="absolute inset-0 z-0">
-                <img src="/images/about/aboutHero.jpg"
-                    class="w-full h-full object-cover opacity-25 mix-blend-overlay" />
-            </div>
-
-            <div class="relative z-10 max-w-3xl mx-auto px-4 py-24 text-center">
-                <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] text-teal-300 mb-4">Blog ·
-                    Drivio</span>
-                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
-                    Kinh Nghiệm Thuê Xe<br />
-                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-teal-200">Tự Lái Thông
-                        Minh</span>
-                </h1>
-                <p class="mt-5 text-base md:text-lg text-cyan-50/85 leading-relaxed max-w-2xl mx-auto">
-                    Mẹo chọn xe, hướng dẫn đặt chỗ, đánh giá các mẫu xe phổ biến và những lưu ý giúp bạn có
-                    chuyến đi <strong class="text-white font-semibold">an toàn, tiết kiệm và chủ động</strong> hơn bao
-                    giờ hết.
-                </p>
-            </div>
-        </section>
+        <BlogBanner></BlogBanner>
 
         <!-- CONTENT -->
         <section class="max-w-7xl mx-auto px-4 py-16">
@@ -200,6 +179,7 @@
 import { ref, onMounted } from 'vue'
 import { postService, type Post, type PostCategory } from '~/services/post.service'
 import { BASE_URL } from '~/enviroment/enviroment'
+import BlogBanner from '~/components/Banner/BlogBanner.vue'
 
 useSeoMeta({
     title: 'Blog Thuê Xe Ô Tô Tự Lái | Kinh Nghiệm, Mẹo & Đánh Giá Xe — Drivio',

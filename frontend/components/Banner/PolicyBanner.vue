@@ -16,9 +16,9 @@
 
                 <!-- Cột bên trái: Title & Description -->
                 <div class="lg:col-span-6 text-left space-y-6 max-w-2xl mx-auto lg:mx-0">
-                    <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] text-teal-300">
+                    <!-- <span class="inline-block text-xs font-bold uppercase tracking-[0.2em] text-teal-300">
                         Quy định · Drivio
-                    </span>
+                    </span> -->
                     <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
                         Chính sách & Quy định
                     </h1>
