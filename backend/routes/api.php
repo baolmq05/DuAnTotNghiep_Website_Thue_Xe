@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarController;
 use App\Http\Controllers\Api\PostController;
@@ -46,6 +47,10 @@ Route::group([
     Route::put('notifications/{id}', [NotificationController::class, 'update']);
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
+
+    //api chatbot
+    Route::get('chatbot', [AgentController::class, 'index']);
+    Route::post('chatbot', [AgentController::class, 'store']);
 });
 
 Route::get('cars', [CarController::class, 'index']);
@@ -59,9 +64,9 @@ Route::get('posts/{id}', [PostController::class, 'show']);
 Route::get('post-categories', [PostController::class, 'categories']);
 
 Route::group(['middleware' => 'api'], function () {
-    Route::get('favorites', [FavoriteController::class, 'index']); 
-    Route::post('favorites', [FavoriteController::class, 'store']); 
-    Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']); 
+    Route::get('favorites', [FavoriteController::class, 'index']);
+    Route::post('favorites', [FavoriteController::class, 'store']);
+    Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']);
     Route::post('cars', [CarController::class, 'store']);
 });
 // Các route cho khuyến mãi

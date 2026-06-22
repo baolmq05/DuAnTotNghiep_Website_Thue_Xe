@@ -9,8 +9,10 @@
       On mobile, HeaderProfile also adds a fixed bottom navigation of height 80px,
       so we add pb-[80px] on mobile (md:pb-0) to avoid content overlapping it.
     -->
-    <main class="flex-1 flex flex-col min-h-0 pt-[80px] pb-[80px] md:pb-0  mt-4 overflow-hidden">
-      <slot />
+    <main class="flex-1 flex flex-col min-h-0 pt-[80px] pb-[80px] md:pb-0 overflow-hidden">
+      <div class="max-w-7xl mx-auto w-full h-full flex flex-col px-4 sm:px-6 lg:px-8 overflow-hidden">
+        <slot />
+      </div>
     </main>
     <AuthLogin />
     <AuthRegister />

@@ -1,34 +1,36 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
     <!-- MAIN LAYOUT -->
-    <div class="flex flex-1 overflow-hidden ">
+    <div class="flex flex-1 overflow-hidden md:border md:border-gray-200/80 md:bg-white md:shadow-xs">
       <!-- SIDEBAR -->
-      <aside 
-        :class="[
-          'w-full md:w-72 bg-white border-r border-gray-200 flex-col flex-shrink-0',
-          showChatOnMobile ? 'hidden md:flex' : 'flex'
-        ]"
-      >
+      <aside :class="[
+        'w-full md:w-72 bg-white border-r border-gray-200 flex-col flex-shrink-0',
+        showChatOnMobile ? 'hidden md:flex' : 'flex'
+      ]">
 
 
         <div class="flex-1 overflow-y-auto sidebar-scroll">
 
-          <!-- Chatbot Drivio — luôn đầu tiên -->
+          <!-- Chatbot Drivio Conversation -->
           <div class="px-3 pt-3 pb-1">
             <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5 px-1">Trợ lý AI</p>
-            <button
-              @click="selectConv('bot')"
-              :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === 'bot' ? 'active' : '']"
-            >
-              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z"/></svg>
+            <button @click="selectConv('bot')"
+              :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === 'bot' ? 'active' : '']">
+              <div
+                class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
+                </svg>
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
                   <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                 </div>
-                <p class="text-xs text-gray-500 truncate">Xin chào! Tôi có thể giúp gì?</p>
+                <p class="text-xs text-gray-500 truncate">
+                  {{ lastBotMessage }}
+                </p>
               </div>
             </button>
           </div>
@@ -37,18 +39,16 @@
           <div class="px-3 pt-3 pb-3">
             <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5 px-1">Chủ xe</p>
             <div class="space-y-0.5">
-              <button
-                v-for="host in hostConversations"
-                :key="host.id"
-                @click="selectConv(host.id)"
-                :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === host.id ? 'active' : '']"
-              >
+              <button v-for="host in hostConversations" :key="host.id" @click="selectConv(host.id)"
+                :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === host.id ? 'active' : '']">
                 <!-- Avatar -->
                 <div class="relative flex-shrink-0">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold" :style="{ backgroundColor: host.color }">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                    :style="{ backgroundColor: host.color }">
                     {{ host.name.charAt(0) }}
                   </div>
-                  <span v-if="host.online" class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+                  <span v-if="host.online"
+                    class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
@@ -57,42 +57,47 @@
                   </div>
                   <div class="flex items-center justify-between gap-1">
                     <p class="text-xs text-gray-500 truncate">{{ host.lastMessage }}</p>
-                    <span v-if="host.unread" class="flex-shrink-0 w-4 h-4 rounded-full bg-brand-primary text-white text-[10px] flex items-center justify-center font-medium">{{ host.unread }}</span>
+                    <span v-if="host.unread"
+                      class="flex-shrink-0 w-4 h-4 rounded-full bg-brand-primary text-white text-[10px] flex items-center justify-center font-medium">{{
+                        host.unread }}</span>
                   </div>
                   <!-- Car info badge -->
-                  <p class="text-[10px] text-brand-accent font-medium truncate mt-0.5">🚗 {{ host.car }}</p>
+                  <p class="text-[10px] text-brand-accent font-medium truncate mt-0.5">{{ host.car }}</p>
                 </div>
               </button>
             </div>
           </div>
         </div>
 
-        
+
       </aside>
 
       <!-- CHAT AREA -->
-      <main 
-        :class="[
-          'flex-1 flex flex-col overflow-hidden bg-gray-50',
-          showChatOnMobile ? 'flex' : 'hidden md:flex'
-        ]"
-      >
+      <main :class="[
+        'flex-1 flex flex-col overflow-hidden bg-gray-50',
+        showChatOnMobile ? 'flex' : 'hidden md:flex'
+      ]">
 
         <!-- Chat header -->
         <div class="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center gap-3 flex-shrink-0">
           <!-- Back button (Mobile only) -->
-          <button 
-            @click="showChatOnMobile = false" 
+          <button @click="showChatOnMobile = false"
             class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors -ml-1 mr-1"
-            title="Quay lại danh sách"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m15 19l-7-7l7-7"/></svg>
+            title="Quay lại danh sách">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+              <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="m15 19l-7-7l7-7" />
+            </svg>
           </button>
 
           <!-- Bot header -->
           <template v-if="activeConvId === 'bot'">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z"/></svg>
+            <div
+              class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
+              </svg>
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
@@ -106,35 +111,37 @@
           <!-- Host header -->
           <template v-else-if="activeHost">
             <div class="relative flex-shrink-0">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold" :style="{ backgroundColor: activeHost.color }">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
+                :style="{ backgroundColor: activeHost.color }">
                 {{ activeHost.name.charAt(0) }}
               </div>
-              <span v-if="activeHost.online" class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
+              <span v-if="activeHost.online"
+                class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-800">{{ activeHost.name }}</p>
               <div class="flex items-center gap-1.5">
                 <span v-if="activeHost.online" class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                <span class="text-xs text-gray-500">{{ activeHost.online ? 'Đang online' : 'Offline' }} • {{ activeHost.car }}</span>
+                <span class="text-xs text-gray-500">{{ activeHost.online ? 'Đang online' : 'Offline' }} • {{
+                  activeHost.car }}</span>
               </div>
             </div>
             <!-- Car info pill -->
             <div class="ml-3 hidden sm:flex items-center gap-1.5 bg-brand-secondary px-3 py-1 rounded-full">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-brand-accent" viewBox="0 0 24 24"><path fill="currentColor" d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-brand-accent" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
+              </svg>
               <span class="text-xs text-brand-accent font-medium">{{ activeHost.car }}</span>
             </div>
           </template>
 
-          <div class="ml-auto flex items-center gap-1">
-            <button @click="clearChat" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Xóa cuộc trò chuyện">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M9 3v1H4v2h1v13a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6h1V4h-5V3H9m0 5h2v9H9V8m4 0h2v9h-2V8z"/></svg>
-            </button>
-          </div>
+
         </div>
 
         <!-- Messages -->
         <div ref="chatContainer" class="flex-1 overflow-y-auto chat-scroll px-4 md:px-6 py-6 space-y-5">
-          <template v-for="(msg, index) in activeMessages" :key="index">
+          <template v-for="(msg, index) in messages" :key="index">
 
             <!-- User / me (right side) -->
             <div v-if="msg.role === 'user'" class="flex gap-3 justify-end msg-anim">
@@ -144,19 +151,29 @@
                 </div>
                 <p class="text-xs text-gray-400 mt-1 text-right mr-1">{{ msg.time }}</p>
               </div>
-              <div class="w-8 h-8 rounded-full bg-brand-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-primary" viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4s-4 1.79-4 4s1.79 4 4 4m0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <div
+                class="w-8 h-8 rounded-full bg-brand-secondary flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-primary" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4s-4 1.79-4 4s1.79 4 4 4m0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
               </div>
             </div>
 
             <!-- Bot / host (left side) -->
             <div v-else class="flex gap-3 msg-anim">
               <!-- Bot avatar -->
-              <div v-if="activeConvId === 'bot'" class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z"/></svg>
+              <div v-if="activeConvId === 'bot'"
+                class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0 mt-0.5">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
+                </svg>
               </div>
               <!-- Host avatar -->
-              <div v-else-if="activeHost" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5" :style="{ backgroundColor: activeHost.color }">
+              <div v-else-if="activeHost"
+                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
+                :style="{ backgroundColor: activeHost.color }">
                 {{ activeHost.name.charAt(0) }}
               </div>
 
@@ -173,29 +190,44 @@
           </template>
 
           <!-- Typing indicator -->
-          <div v-if="isTyping" class="flex gap-3 msg-anim">
-            <div v-if="activeConvId === 'bot'" class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z"/></svg>
+          <div v-if="isTyping" class="flex gap-3 msg-anim items-start">
+            <!-- Bot Avatar -->
+            <div v-if="activeConvId === 'bot'"
+              class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0 animate-pulse mt-0.5">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24">
+                <path fill="currentColor"
+                  d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
+              </svg>
             </div>
-            <div v-else-if="activeHost" class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0" :style="{ backgroundColor: activeHost.color }">
+            <!-- Host Avatar -->
+            <div v-else-if="activeHost"
+              class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
+              :style="{ backgroundColor: activeHost.color }">
               {{ activeHost.name.charAt(0) }}
             </div>
-            <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-1.5">
-              <span class="dot w-2 h-2 rounded-full bg-gray-400 inline-block"></span>
-              <span class="dot w-2 h-2 rounded-full bg-gray-400 inline-block"></span>
-              <span class="dot w-2 h-2 rounded-full bg-gray-400 inline-block"></span>
+
+            <!-- Thinking Bubble -->
+            <div class="max-w-lg">
+              <div class="bg-white border border-gray-200/80 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-2">
+                <span class="text-sm text-gray-500 select-none">
+                  {{ activeConvId === 'bot' ? 'Thinking' : `${activeHost?.name} đang nhập` }}
+                </span>
+                
+                <!-- Bouncing dots -->
+                <div class="flex items-center gap-1 mt-0.5">
+                  <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                  <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                  <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Quick suggestions (chỉ hiện với bot) -->
         <div v-if="showSuggestions && activeConvId === 'bot'" class="px-4 md:px-6 pb-3 flex gap-2 flex-wrap">
-          <button
-            v-for="s in suggestions"
-            :key="s.text"
-            @click="sendSuggestion(s.text)"
-            class="text-xs text-brand-primary bg-brand-secondary border border-brand-primary/20 hover:bg-brand-light px-3 py-1.5 rounded-full transition-colors"
-          >
+          <button v-for="s in suggestions" :key="s.text" @click="sendSuggestion(s.text)"
+            class="text-xs text-brand-primary bg-brand-secondary border border-brand-primary/20 hover:bg-brand-light px-3 py-1.5 rounded-full transition-colors">
             {{ s.label }}
           </button>
         </div>
@@ -204,29 +236,27 @@
         <div class="bg-gray-50 px-4 md:px-6 pb-6 pt-2 flex-shrink-0">
           <div class="flex items-end gap-3 max-w-4xl mx-auto">
             <div class="flex-1 relative">
-              <textarea
-                ref="inputRef"
-                v-model="inputText"
-                rows="1"
+              <textarea ref="inputRef" v-model="inputText" rows="1"
                 :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.name ?? 'chủ xe'}...`"
                 class="w-full resize-none text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-200 focus:border-brand-primary focus:outline-none rounded-2xl px-4 py-3 pr-12 transition-all leading-relaxed shadow-sm"
-                style="max-height: 120px"
-                @keydown="handleKey"
-                @input="autoResize"
-              />
+                style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
               <button class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
+                </svg>
               </button>
             </div>
-            <button
-              @click="sendMessage"
-              :disabled="isTyping || !inputText.trim()"
-              class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24"><path fill="currentColor" d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z"/></svg>
+            <button @click="sendMessage" :disabled="isTyping || !inputText.trim()"
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z" />
+              </svg>
             </button>
           </div>
-          <p v-if="activeConvId === 'bot'" class="text-center text-xs text-gray-400 mt-2">Drivio AI có thể mắc lỗi. Vui lòng kiểm tra thông tin quan trọng.</p>
+          <p v-if="activeConvId === 'bot'" class="text-center text-xs text-gray-400 mt-2">Drivio AI có thể mắc lỗi. Vui
+            lòng
+            kiểm tra thông tin quan trọng.</p>
         </div>
 
       </main>
@@ -239,10 +269,32 @@ definePageMeta({
   layout: "chat",
 });
 
-import { ref, computed, nextTick } from 'vue'
+import { ref, computed, nextTick, onMounted } from 'vue'
+import { chatBotService } from '~/services/chatbot.service'
 
+// ---------------- STATE / REFS ----------------
+const activeConvId = ref('bot')
+const inputText = ref('')
+const isTyping = ref(false)
+const showSuggestions = ref(true)
+const chatContainer = ref(null)
+const inputRef = ref(null)
+const showChatOnMobile = ref(false)
 
-// ─── Mock host conversations ────────────────────────────────────────────────
+// Unified Messages State
+const messages = ref([])
+const lastBotMessage = ref('Xin chào tôi là Chatbot AI')
+
+// Bot State
+const botConversationId = ref('')
+const suggestions = [
+  { label: 'Thuê xe TP.HCM', text: 'Tôi muốn thuê xe ở TP. Hồ Chí Minh' },
+  { label: 'Chi phí thuê xe', text: 'Chi phí thuê xe như thế nào?' },
+  { label: 'Trở thành chủ xe', text: 'Làm sao để trở thành chủ xe Drivio?' },
+  { label: 'Bảo hiểm', text: 'Chính sách bảo hiểm của Drivio' },
+]
+
+// Host Mock State
 const hostConversations = ref([
   {
     id: 'host-1',
@@ -277,47 +329,6 @@ const hostConversations = ref([
     ],
   },
 ])
-
-// ─── Bot config ──────────────────────────────────────────────────────────────
-const botInitialMessages = [
-  {
-    role: 'bot',
-    text: 'Xin chào! 👋 Tôi là trợ lý Drivio. Tôi có thể giúp bạn:\n• Tìm kiếm và đặt xe phù hợp\n• Hỗ trợ thông tin chuyến đi\n• Giải đáp thắc mắc về dịch vụ',
-    time: 'vừa xong',
-  },
-]
-
-const botMessages = ref([...botInitialMessages])
-
-const suggestions = [
-  { label: '🚗 Thuê xe TP.HCM', text: 'Tôi muốn thuê xe ở TP. Hồ Chí Minh' },
-  { label: '💰 Chi phí thuê xe', text: 'Chi phí thuê xe như thế nào?' },
-  { label: '🏠 Trở thành chủ xe', text: 'Làm sao để trở thành chủ xe Drivio?' },
-  { label: '🛡️ Bảo hiểm', text: 'Chính sách bảo hiểm của Drivio' },
-]
-
-const botReplies = {
-  'thuê xe': 'Drivio cung cấp đa dạng loại xe từ 4 chỗ đến 16 chỗ! Bạn muốn thuê ở đâu và trong bao lâu? Giá thuê dao động từ 500.000đ - 2.000.000đ/ngày tùy loại xe.',
-  'chi phí': 'Chi phí thuê xe trên Drivio rất cạnh tranh:\n• Xe 4 chỗ: từ 500.000đ/ngày\n• Xe 7 chỗ: từ 800.000đ/ngày\n• Xe 16 chỗ: từ 1.500.000đ/ngày\nBạn còn được bảo hiểm chuyến đi miễn phí!',
-  'chủ xe': 'Để trở thành chủ xe Drivio, bạn cần:\n1. Đăng ký tài khoản chủ xe\n2. Chuẩn bị giấy tờ xe và CMND\n3. Chụp ảnh xe theo hướng dẫn\n4. Chờ duyệt (thường 1-2 ngày làm việc)\nThu nhập trung bình 15-25 triệu/tháng!',
-  'bảo hiểm': 'Drivio cung cấp bảo hiểm toàn diện cho mỗi chuyến đi:\n🛡️ Bảo hiểm thân vỏ xe\n🏥 Bảo hiểm tai nạn người ngồi xe\n🆘 Hỗ trợ 24/7 khi có sự cố\nĐối tác bảo hiểm: PVII, MIC, VBI',
-  default: [
-    'Cảm ơn bạn đã liên hệ Drivio! Tôi sẽ hỗ trợ bạn ngay. Bạn có thể cho tôi biết thêm chi tiết không?',
-    'Tôi hiểu rồi! Để tìm xe phù hợp nhất, bạn có thể cho biết ngày và địa điểm cụ thể không?',
-    'Drivio có hơn 10.000 xe đăng ký trên toàn quốc. Tôi sẽ giúp bạn tìm lựa chọn tốt nhất!',
-  ],
-}
-
-function getBotReply(text) {
-  const lower = text.toLowerCase()
-  for (const [key, val] of Object.entries(botReplies)) {
-    if (key !== 'default' && lower.includes(key)) return val
-  }
-  const defaults = botReplies.default
-  return defaults[Math.floor(Math.random() * defaults.length)]
-}
-
-// Host mock replies
 const hostReplies = [
   'Được bạn ơi, tôi sẽ xem lại và phản hồi sớm nhé!',
   'Cảm ơn bạn đã hỏi! Để tôi kiểm tra lại thông tin xe cho bạn.',
@@ -326,44 +337,49 @@ const hostReplies = [
   'Địa điểm giao xe có thể thỏa thuận thêm bạn nhé!',
 ]
 
-// ─── Active conversation ─────────────────────────────────────────────────────
-const activeConvId = ref('bot')
-
+// ---------------------------------- COMPUTED --------------------------------------
 const activeHost = computed(() =>
   hostConversations.value.find(h => h.id === activeConvId.value) ?? null
 )
 
-const activeMessages = computed(() => {
-  if (activeConvId.value === 'bot') return botMessages.value
-  return activeHost.value?.messages ?? []
+// ---------------------------------- API / SERVICE ACTIONS --------------------------------------
+async function fetchBotMessages() {
+  try {
+    const data = await chatBotService.getMessages()
+    if (data && data.res) {
+      botConversationId.value = data.res.id
+      if (data.res.messages && data.res.messages.length > 0) {
+        messages.value = data.res.messages.map(m => ({
+          role: m.role === 'user' ? 'user' : 'bot',
+          text: m.content,
+          time: new Date(m.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+        }))
+        showSuggestions.value = false
+      } else {
+        messages.value = []
+        showSuggestions.value = true
+      }
+
+      // Update sidebar preview
+      if (messages.value.length > 0) {
+        lastBotMessage.value = messages.value[messages.value.length - 1].text
+      } else {
+        lastBotMessage.value = 'Xin chào tôi là Chatbot AI'
+      }
+
+      await scrollToBottom()
+    }
+  } catch (error) {
+    console.error('Lỗi khi tải tin nhắn bot:', error)
+  }
+}
+
+// ---------------------------------- LIFECYCLE --------------------------------------
+onMounted(() => {
+  fetchBotMessages()
 })
 
-// ─── UI state ────────────────────────────────────────────────────────────────
-const inputText = ref('')
-const isTyping = ref(false)
-const showSuggestions = ref(true)
-const chatContainer = ref(null)
-const inputRef = ref(null)
-const showChatOnMobile = ref(false)
-
-function getTime() {
-  return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-}
-
-async function scrollToBottom() {
-  await nextTick()
-  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
-}
-
-function selectConv(id) {
-  activeConvId.value = id
-  // Clear unread
-  const host = hostConversations.value.find(h => h.id === id)
-  if (host) host.unread = 0
-  scrollToBottom()
-  showChatOnMobile.value = true
-}
-
+// ---------------------------------- CHAT ACTIONS --------------------------------------
 async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isTyping.value) return
@@ -371,10 +387,47 @@ async function sendMessage() {
   showSuggestions.value = false
   const time = getTime()
 
+  // 1. Chatbot Drivio Logic
   if (activeConvId.value === 'bot') {
-    botMessages.value.push({ role: 'user', text, time })
-  } else if (activeHost.value) {
-    activeHost.value.messages.push({ role: 'user', text, time })
+    messages.value.push({ role: 'user', text, time })
+    inputText.value = ''
+    if (inputRef.value) inputRef.value.style.height = 'auto'
+    await scrollToBottom()
+
+    isTyping.value = true
+    await scrollToBottom()
+
+    try {
+      const reply = await chatBotService.sendMessage(botConversationId.value || undefined, text)
+      isTyping.value = false
+      const replyText = typeof reply === 'string' ? reply : (reply.text || reply)
+
+      messages.value.push({
+        role: 'bot',
+        text: replyText,
+        time: getTime()
+      })
+      lastBotMessage.value = replyText
+
+      if (!botConversationId.value) {
+        await fetchBotMessages()
+      }
+    } catch (e) {
+      isTyping.value = false
+      messages.value.push({
+        role: 'bot',
+        text: 'Có lỗi xảy ra khi kết nối tới Drivio AI. Vui lòng thử lại.',
+        time: getTime()
+      })
+      lastBotMessage.value = 'Có lỗi xảy ra khi kết nối tới Drivio AI. Vui lòng thử lại.'
+    }
+    await scrollToBottom()
+    return
+  }
+
+  // 2. Owner/Host Chat Logic
+  if (activeHost.value) {
+    messages.value.push({ role: 'user', text, time })
     activeHost.value.lastMessage = text
     activeHost.value.time = time
   }
@@ -390,11 +443,9 @@ async function sendMessage() {
     isTyping.value = false
     const replyTime = getTime()
 
-    if (activeConvId.value === 'bot') {
-      botMessages.value.push({ role: 'bot', text: getBotReply(text), time: replyTime })
-    } else if (activeHost.value) {
+    if (activeHost.value) {
       const reply = hostReplies[Math.floor(Math.random() * hostReplies.length)]
-      activeHost.value.messages.push({ role: 'other', text: reply, time: replyTime })
+      messages.value.push({ role: 'other', text: reply, time: replyTime })
       activeHost.value.lastMessage = reply
       activeHost.value.time = replyTime
     }
@@ -406,6 +457,33 @@ async function sendMessage() {
 function sendSuggestion(text) {
   inputText.value = text
   sendMessage()
+}
+
+async function selectConv(id) {
+  activeConvId.value = id
+  if (id === 'bot') {
+    scrollToBottom();
+    await fetchBotMessages()
+  } else {
+    const host = hostConversations.value.find(h => h.id === id)
+    if (host) {
+      host.unread = 0
+      messages.value = host.messages
+    }
+  }
+  scrollToBottom()
+  showChatOnMobile.value = true
+}
+
+
+// ---------------------------------- UI HELPERS --------------------------------------
+function getTime() {
+  return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+}
+
+async function scrollToBottom() {
+  await nextTick()
+  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
 }
 
 function handleKey(e) {
@@ -420,32 +498,17 @@ function autoResize(e) {
   el.style.height = 'auto'
   el.style.height = Math.min(el.scrollHeight, 120) + 'px'
 }
-
-function clearChat() {
-  if (activeConvId.value === 'bot') {
-    botMessages.value = [...botInitialMessages]
-    showSuggestions.value = true
-  } else if (activeHost.value) {
-    activeHost.value.messages = []
-  }
-}
-
-function newChat() {
-  activeConvId.value = 'bot'
-  botMessages.value = [...botInitialMessages]
-  showSuggestions.value = true
-  inputRef.value?.focus()
-  showChatOnMobile.value = true
-}
 </script>
 
 <style scoped>
 .chat-scroll::-webkit-scrollbar {
   width: 4px;
 }
+
 .chat-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .chat-scroll::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 999px;
@@ -454,32 +517,39 @@ function newChat() {
 .sidebar-scroll::-webkit-scrollbar {
   width: 3px;
 }
+
 .sidebar-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
+
 .sidebar-scroll::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 999px;
 }
 
 @keyframes dot-bounce {
+
   0%,
   80%,
   100% {
     transform: translateY(0);
     opacity: 0.4;
   }
+
   40% {
     transform: translateY(-6px);
     opacity: 1;
   }
 }
+
 .dot {
   animation: dot-bounce 1.2s infinite ease-in-out;
 }
+
 .dot:nth-child(2) {
   animation-delay: 0.2s;
 }
+
 .dot:nth-child(3) {
   animation-delay: 0.4s;
 }
@@ -489,11 +559,13 @@ function newChat() {
     opacity: 0;
     transform: translateY(8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
 .msg-anim {
   animation: fade-up 0.25s ease-out;
 }
@@ -501,11 +573,14 @@ function newChat() {
 .conv-item {
   border-left: 3px solid transparent;
 }
+
 .conv-item:hover {
   background: rgba(40, 104, 116, 0.05);
 }
+
 .conv-item.active {
   background: rgba(40, 104, 116, 0.08);
   border-left: 3px solid #0d9488;
 }
+
 </style>
