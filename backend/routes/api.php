@@ -16,6 +16,7 @@ use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\CarCalendarController;
 use App\Http\Controllers\Api\MyTripController;
 use App\Http\Controllers\Api\TripController;
+use App\Http\Controllers\Api\VNPayController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -58,6 +59,9 @@ Route::group([
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
     
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
+    
+    // VNPay Authenticated routes
+    Route::post('vnpay/create-payment', [VNPayController::class, 'createPayment']);
 
     Route::get('chatbot', [AgentController::class, 'index']);
     Route::post('chatbot', [AgentController::class, 'store']);
@@ -80,3 +84,7 @@ Route::group(['middleware' => 'api'], function () {
 
     Route::get('car-calendar', [CarCalendarController::class, 'index']);
 });
+
+// VNPay Public Callback/Verification routes
+Route::get('vnpay/ipn', [VNPayController::class, 'ipn']);
+Route::get('vnpay/verify', [VNPayController::class, 'verify']);
