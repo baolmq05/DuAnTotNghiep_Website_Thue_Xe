@@ -99,6 +99,8 @@ class PostForm
                                         FileUpload::make('thumbnail')
                                             ->label("Ảnh đại diện")
                                             ->image()
+                                            ->disk('public')
+                                            ->directory('blogs')
                                             ->imageEditor()
                                             ->imageEditorViewportWidth('1920')
                                             ->imageEditorViewportHeight('1080'),
