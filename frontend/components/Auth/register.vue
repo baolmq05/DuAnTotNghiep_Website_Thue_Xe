@@ -1,10 +1,12 @@
 <template>
+  <LoadingOverlay :loading="isLoading" :text="loadingText" />
+
   <div v-if="isRegisterOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
     <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
 
     <div
       class="relative bg-white w-full max-w-xl h-auto max-h-[90vh] rounded-3xl overflow-y-auto custom-scroll shadow-2xl z-10 animate-fade-in">
-      
+
       <button @click="closeModal"
         class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-20 transition-colors">
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -14,18 +16,7 @@
 
       <div class="col-span-12 md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white h-full overflow-y-auto">
 
-        <div v-if="isGoogleLoading" class="flex flex-col items-center justify-center space-y-4 py-12 animate-fade-in">
-          <svg class="animate-spin h-12 w-12 text-[#286874]" xmlns="http://www.w3.org/2000/svg" fill="none"
-            viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-            </path>
-          </svg>
-          <p class="text-sm font-semibold text-gray-600 tracking-wide">Đang xác thực tài khoản Google...</p>
-        </div>
-
-        <div v-else class="w-full">
+        <div class="w-full">
           <div class="mb-6">
             <h2 class="text-2xl font-black text-gray-900 tracking-tight text-center">Tạo tài khoản</h2>
           </div>
@@ -47,21 +38,17 @@
 
             <div class="space-y-1">
               <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Mật khẩu</label>
-
               <div class="relative w-full flex items-center">
                 <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
                   class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
                 <button type="button" @click="togglePassword"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 p-1 focus:outline-none flex items-center justify-center transition-colors"
-                  aria-label="Thay đổi ẩn hiện mật khẩu">
-
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 p-1 focus:outline-none flex items-center justify-center transition-colors">
                   <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke-width="2" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   </svg>
-
                   <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -69,30 +56,24 @@
                   </svg>
                 </button>
               </div>
-              <p v-if="passwordError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">
-                {{ passwordError }}
+              <p v-if="passwordError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">{{ passwordError }}
               </p>
             </div>
 
             <div class="space-y-1">
               <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Xác nhận mật khẩu</label>
-
               <div class="relative w-full flex items-center">
                 <input v-model="confirmPassword" :type="showConfirmPassword ? 'text' : 'password'"
                   placeholder="••••••••"
                   class="w-full pl-4 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
-
                 <button type="button" @click="toggleConfirmPassword"
-                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 p-1 focus:outline-none flex items-center justify-center transition-colors"
-                  aria-label="Thay đổi ẩn hiện mật khẩu">
-
+                  class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-10 p-1 focus:outline-none flex items-center justify-center transition-colors">
                   <svg v-if="!showConfirmPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke-width="2" stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
                       d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   </svg>
-
                   <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -100,9 +81,8 @@
                   </svg>
                 </button>
               </div>
-              <p v-if="confirmPasswordError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">
-                {{ confirmPasswordError }}
-              </p>
+              <p v-if="confirmPasswordError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">{{
+                confirmPasswordError }}</p>
             </div>
 
             <div class="flex flex-col gap-1 pt-1">
@@ -161,13 +141,16 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import LoadingOverlay from '@/components/Common/LoadingOverlay.vue' // Đảm bảo đúng đường dẫn file của bạn
 
 const { isRegisterOpen, openRegister, closeRegister, switchToLogin } = useAuthModal()
 const { register } = useAuth()
 const { showToast } = useToast()
 const { openRegisterSuccess } = useRegisterSuccessModal()
-// trạng thái loading khi xử lý đăng ký bằng Google để ẩn form cũ đi, tránh giật giao diện
-const isGoogleLoading = ref(false)
+
+// --- QUẢN LÝ LOADING ĐỒNG BỘ ---
+const isLoading = ref(false)
+const loadingText = ref('')
 
 const name = ref('')
 const email = ref('')
@@ -175,14 +158,12 @@ const password = ref('')
 const confirmPassword = ref('')
 const tosChecked = ref(false)
 
-// khai báo các biến để hiển thị lỗi 
 const nameError = ref('')
 const emailError = ref('')
 const passwordError = ref('')
 const confirmPasswordError = ref('')
 const tosError = ref('')
 
-// hàm xóa lỗi cũ trước khi submit form mới, tránh lỗi cũ vẫn còn hiển thị
 const clearErrors = () => {
   nameError.value = ''
   emailError.value = ''
@@ -192,7 +173,6 @@ const clearErrors = () => {
 }
 
 const openModal = openRegister
-// đóng modal và reset lại các giá trị form và lỗi cũ
 const closeModal = () => {
   clearErrors()
   name.value = ''
@@ -200,38 +180,33 @@ const closeModal = () => {
   password.value = ''
   confirmPassword.value = ''
   tosChecked.value = false
+  isLoading.value = false // Tắt loading phòng khi đóng bất ngờ
 
   closeRegister()
 }
 
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
-const togglePassword = () => {
-  showPassword.value = !showPassword.value
-}
-const toggleConfirmPassword = () => {
-  showConfirmPassword.value = !showConfirmPassword.value
-}
+const togglePassword = () => { showPassword.value = !showPassword.value }
+const toggleConfirmPassword = () => { showConfirmPassword.value = !showConfirmPassword.value }
 
-// hàm giải mã JWT token lấy từ Google
 function decodeJWT(token) {
   let base64Url = token.split(".")[1];
   let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
   let jsonPayload = decodeURIComponent(
     atob(base64)
       .split("")
-      .map(function (c) {
-        return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-      })
+      .map(function (c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2); })
       .join("")
   );
   return JSON.parse(jsonPayload);
 }
 
-// callback xử lý khi nhấn nút Google bên giao diện Đăng ký
+// --- CALLBACK ĐĂNG KÝ GOOGLE ---
 const handleGoogleRegisterResponse = async (response) => {
-  // bắt đầu quá trình đăng ký bằng Google, bật trạng thái loading để ẩn form và tránh giật giao diện
-  isGoogleLoading.value = true
+  // Bật overlay đè màn hình mượt mà thay vì làm giật form
+  loadingText.value = "Đang xác thực tài khoản Google..."
+  isLoading.value = true
   const responsePayload = decodeJWT(response.credential);
 
   try {
@@ -244,35 +219,28 @@ const handleGoogleRegisterResponse = async (response) => {
       showToast(`Xin chào ${responsePayload.name}! Kết nối Google thành công.`, "success")
 
       if (typeof window !== 'undefined') {
-        // lưu dữ liệu theo đúng chuẩn USER_TOKEN và USER_INFO của useAuth()
         localStorage.setItem("USER_TOKEN", res.access_token);
         document.cookie = `USER_TOKEN=${res.access_token}; path=/; max-age=${60 * 60 * 24 * 7};`;
-
         localStorage.setItem("USER_INFO", JSON.stringify(res.user));
         document.cookie = `USER_INFO=${encodeURIComponent(JSON.stringify(res.user))}; path=/; max-age=${60 * 60 * 24 * 7};`;
       }
 
-      // đóng modal đăng ký và mở modal thành công
-      setTimeout(() => {
-        window.location.reload()
-      }, 300) // Tải lại trang nhanh sau 0.3 giây
+      setTimeout(() => { window.location.reload() }, 300)
     } else {
-      isGoogleLoading.value = false // Tắt loading nếu thất bại
+      isLoading.value = false
       showToast(res.message || "Đăng ký bằng Google thất bại!", "error")
     }
   } catch (error) {
-    isGoogleLoading.value = false // Tắt loading nếu lỗi kết nối
+    isLoading.value = false
     console.error(error)
     showToast("Không thể kết nối đến máy chủ xác thực!", "error")
   }
 }
 
-// gắn callback riêng của màn hình Register lên window toàn cục
 if (typeof window !== 'undefined') {
   window.handleGoogleRegisterResponse = handleGoogleRegisterResponse
 }
 
-// hàm vẽ nút Google chính chủ riêng cho Form Đăng ký
 const initGoogleRegister = () => {
   if (typeof window !== 'undefined' && window.google) {
     window.google.accounts.id.initialize({
@@ -284,102 +252,75 @@ const initGoogleRegister = () => {
     const container = document.getElementById("googleRegisterButtonContainer");
     if (container) {
       window.google.accounts.id.renderButton(container, {
-        type: "standard",
-        theme: "outline",
-        size: "large",
-        text: "signup_with",
-        shape: "pill",
-        width: 220,
-        logo_alignment: "left"
+        type: "standard", theme: "outline", size: "large", text: "signup_with", shape: "pill", width: 220, logo_alignment: "left"
       });
     }
   }
 }
 
-// lắng nghe trạng thái đóng/mở của Modal thông qua Watcher để khởi tạo nút Google khi cần thiết
 watch(() => isRegisterOpen.value, async (isOpen) => {
-  if (isOpen && !isGoogleLoading.value) {
+  if (isOpen && !isLoading.value) {
     await nextTick();
-    setTimeout(() => {
-      initGoogleRegister();
-    }, 150);
+    setTimeout(() => { initGoogleRegister(); }, 150);
   }
-}, {
-  immediate: true
-});
+}, { immediate: true });
 
+// --- ĐĂNG KÝ BẰNG FORM THƯỜNG ---
 const handleRegister = async () => {
-  clearErrors() // Xóa lỗi cũ
+  clearErrors()
   let isErrors = false
 
-  if (!name.value) {
-    nameError.value = 'Họ và tên không được để trống'
-    isErrors = true
-  }
-
+  if (!name.value) { nameError.value = 'Họ và tên không được để trống'; isErrors = true }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!email.value.trim()) {
-    emailError.value = 'Email không được để trống'
-    isErrors = true
-  } else if (!emailRegex.test(email.value)) {
-    emailError.value = 'Email không đúng định dạng'
-    isErrors = true
-  }
+  if (!email.value.trim()) { emailError.value = 'Email không được để trống'; isErrors = true }
+  else if (!emailRegex.test(email.value)) { emailError.value = 'Email không đúng định dạng'; isErrors = true }
 
-  if (!password.value) {
-    passwordError.value = 'Mật khẩu không được để trống'
-    isErrors = true
-  } else if (password.value.length < 6) {
-    passwordError.value = 'Mật khẩu phải có ít nhất 6 ký tự'
-    isErrors = true
-  } else if (password.value.length > 16) {
-    passwordError.value = 'Mật khẩu tối đa là 16 ký tự'
-    isErrors = true
-  }
+  if (!password.value) { passwordError.value = 'Mật khẩu không được để trống'; isErrors = true }
+  else if (password.value.length < 6) { passwordError.value = 'Mật khẩu phải có ít nhất 6 ký tự'; isErrors = true }
+  else if (password.value.length > 16) { passwordError.value = 'Mật khẩu tối đa là 16 ký tự'; isErrors = true }
 
-  if (!confirmPassword.value) {
-    confirmPasswordError.value = 'Vui lòng xác nhận lại mật khẩu'
-    isErrors = true
-  } else if (password.value !== confirmPassword.value) {
-    confirmPasswordError.value = 'Mật khẩu xác nhận không trùng khớp'
-    isErrors = true
-  }
+  if (!confirmPassword.value) { confirmPasswordError.value = 'Vui lòng xác nhận lại mật khẩu'; isErrors = true }
+  else if (password.value !== confirmPassword.value) { confirmPasswordError.value = 'Mật khẩu xác nhận không trùng khớp'; isErrors = true }
 
-  if (!tosChecked.value) {
-    tosError.value = 'Bạn phải đồng ý với điều khoản dịch vụ để tiếp tục'
-    isErrors = true
-  }
+  if (!tosChecked.value) { tosError.value = 'Bạn phải đồng ý với điều khoản dịch vụ để tiếp tục'; isErrors = true }
 
-  if (isErrors) {
-    return
-  }
+  if (isErrors) return
 
-  const res = await register({
-    name: name.value,
-    email: email.value,
-    password: password.value,
-    confirm_password: confirmPassword.value
-  })
+  // Bật loading overlay đen mờ cho đăng ký thường
+  loadingText.value = "Đang xử lý đăng ký..."
+  isLoading.value = true
 
-  if (res.success) {
-    closeModal()
-    openRegisterSuccess()
-    name.value = ''
-    email.value = ''
-    password.value = ''
-    confirmPassword.value = ''
-    tosChecked.value = false
-  } else {
-    // Xử lý lỗi từ API và hiển thị thông báo lỗi tương ứng
-    if (res.errors) {
-      if (res.errors.email) {
-        emailError.value = res.errors.email[0]
-      }
-      if (res.errors.name) nameError.value = res.errors.name[0]
-      if (res.errors.password) passwordError.value = res.errors.password[0]
+  try {
+    const res = await register({
+      name: name.value,
+      email: email.value,
+      password: password.value,
+      confirm_password: confirmPassword.value
+    })
+
+    if (res.success) {
+      closeModal()
+      openRegisterSuccess()
+      name.value = ''
+      email.value = ''
+      password.value = ''
+      confirmPassword.value = ''
+      tosChecked.value = false
     } else {
-      showToast(res.message || "Đăng ký thất bại!", "error")
+      if (res.errors) {
+        if (res.errors.email) emailError.value = res.errors.email[0]
+        if (res.errors.name) nameError.value = res.errors.name[0]
+        if (res.errors.password) passwordError.value = res.errors.password[0]
+      } else {
+        showToast(res.message || "Đăng ký thất bại!", "error")
+      }
     }
+  } catch (error) {
+    console.error(error)
+    showToast("Có lỗi xảy ra, vui lòng thử lại!", "error")
+  } finally {
+    // Đảm bảo tắt loading dù API chạy thành công hay lỗi
+    isLoading.value = false
   }
 }
 
@@ -387,6 +328,7 @@ defineExpose({ openModal, closeModal })
 </script>
 
 <style scoped>
+/* Giữ nguyên các class style của bạn */
 .animate-fade-in {
   animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -397,9 +339,7 @@ defineExpose({ openModal, closeModal })
 
 .custom-scroll {
   -ms-overflow-style: none;
-  /* IE and Edge */
   scrollbar-width: none;
-  /* Firefox */
 }
 
 @keyframes fadeIn {

@@ -1,4 +1,6 @@
 <template>
+    <LoadingOverlay :loading="isLoading" :text="loadingText" />
+
     <div v-if="isLoginOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
 
@@ -15,20 +17,7 @@
 
             <div class="col-span-12 md:col-span-7 p-8 sm:p-12 flex flex-col justify-center bg-white h-full">
 
-                <div v-if="isGoogleLoading"
-                    class="flex flex-col items-center justify-center space-y-4 py-12 animate-fade-in">
-                    <svg class="animate-spin h-12 w-12 text-[#286874]" xmlns="http://www.w3.org/2000/svg" fill="none"
-                        viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
-                        </circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
-                    </svg>
-                    <p class="text-sm font-semibold text-gray-600 tracking-wide">Đang xác thực tài khoản Google...</p>
-                </div>
-
-                <div v-else class="w-full">
+                <div class="w-full">
                     <div class="mb-8">
                         <h2 class="text-2xl font-black text-gray-900 tracking-tight text-center">Đăng nhập</h2>
                     </div>
@@ -123,6 +112,8 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import LoadingOverlay from '@/components/Common/LoadingOverlay.vue'
+
 
 // =====================================================================================
 // 1. STATE & MODAL MANAGEMENT
@@ -131,10 +122,12 @@ const { isLoginOpen, openLogin, closeLogin, switchToRegister } = useAuthModal()
 const { login, loginWithGoogle: loginWithGoogleService, loginWithFacebook: loginWithFacebookService } = useAuth()
 const { showToast } = useToast()
 
+const isLoading = ref(false)
+const loadingText = ref('')
+
 const email = ref('')
 const password = ref('')
 const showPassword = ref(false)
-const isGoogleLoading = ref(false)
 
 const emailError = ref('')
 const passwordError = ref('')
@@ -149,6 +142,7 @@ const closeModal = () => {
     clearErrors()
     email.value = ''
     password.value = ''
+    isLoading.value = false // Tắt loading khi chủ động tắt modal
     closeLogin()
 }
 const togglePassword = () => {
@@ -159,7 +153,7 @@ const togglePassword = () => {
 // 2. TRADITIONAL LOGIN
 // =====================================================================================
 const handleLogin = async () => {
-    clearErrors() // Xóa lỗi cũ
+    clearErrors()
     let isErrors = false
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -184,42 +178,48 @@ const handleLogin = async () => {
 
     if (isErrors) return
 
-    const res = await login({
-        email: email.value,
-        password: password.value
-    })
+    // Bật Loading khi xử lý form đăng nhập truyền thống
+    loadingText.value = 'Đang đăng nhập vào hệ thống...'
+    isLoading.value = true
 
-    if (res.success) {
-        showToast("Đăng nhập thành công!", "success")
-        closeModal()
-        email.value = ''
-        password.value = ''
-        setTimeout(() => {
-            window.location.reload()
-        }, 500)
-    } else {
-        if (res.errors) {
-            if (res.errors.email) emailError.value = res.errors.email[0]
-            if (res.errors.password) passwordError.value = res.errors.password[0]
+    try {
+        const res = await login({
+            email: email.value,
+            password: password.value
+        })
+
+        if (res.success) {
+            showToast("Đăng nhập thành công!", "success")
+            closeModal()
+            email.value = ''
+            password.value = ''
+            setTimeout(() => { window.location.reload() }, 500)
         } else {
-            showToast(res.message || "Tài khoản không tồn tại hoặc sai mật khẩu!", "error")
+            if (res.errors) {
+                if (res.errors.email) emailError.value = res.errors.email[0]
+                if (res.errors.password) passwordError.value = res.errors.password[0]
+            } else {
+                showToast(res.message || "Tài khoản không tồn tại hoặc sai mật khẩu!", "error")
+            }
         }
+    } catch (error) {
+        console.error(error)
+        showToast("Có lỗi xảy ra trong quá trình đăng nhập!", "error")
+    } finally {
+        isLoading.value = false // Đảm bảo đóng loading
     }
 }
 
 // =====================================================================================
 // 3. GOOGLE SIGN-IN LOGIN
 // =====================================================================================
-// Hàm giải mã JWT token lấy từ Google
 function decodeJWT(token) {
     let base64Url = token.split(".")[1];
     let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
     let jsonPayload = decodeURIComponent(
         atob(base64)
             .split("")
-            .map(function (c) {
-                return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-            })
+            .map(function (c) { return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2); })
             .join("")
     );
     return JSON.parse(jsonPayload);
@@ -227,28 +227,24 @@ function decodeJWT(token) {
 
 // Hàm callback xử lý dữ liệu sau khi đăng nhập Google thành công
 const handleCredentialResponse = async (response) => {
-    isGoogleLoading.value = true // Bật trạng thái loading để ẩn Form đăng nhập cũ đi
-    console.log("Encoded JWT ID token: " + response.credential);
+    // Kích hoạt overlay cho Google mượt mà
+    loadingText.value = 'Đang xác thực tài khoản Google...'
+    isLoading.value = true
 
     const responsePayload = decodeJWT(response.credential);
-    console.log("Decoded JWT Fields:", responsePayload);
 
     try {
-        // Sử dụng service từ useAuth để thực hiện đăng nhập Google
         const res = await loginWithGoogleService(response.credential);
 
         if (res.success) {
             showToast(`Xin chào ${responsePayload.name}! Đăng nhập thành công.`, "success")
-            // Tải lại trang để đồng bộ phiên làm việc mới
-            setTimeout(() => {
-                window.location.reload()
-            }, 300)
+            setTimeout(() => { window.location.reload() }, 300)
         } else {
-            isGoogleLoading.value = false
+            isLoading.value = false
             showToast(res.message || "Đăng nhập Google thất bại!", "error")
         }
     } catch (error) {
-        isGoogleLoading.value = false
+        isLoading.value = false
         console.error(error)
         showToast("Không thể kết nối đến máy chủ hoặc lỗi ghi Database!", "error")
     }
@@ -283,43 +279,43 @@ const initGoogleSignIn = () => {
     }
 }
 
-// Lắng nghe đóng mở Modal để dựng lại nút Google
 watch(() => isLoginOpen.value, async (isOpen) => {
-    if (isOpen && !isGoogleLoading.value) {
+    if (process.client && isOpen && !isLoading.value) {
         await nextTick();
-        setTimeout(() => {
-            initGoogleSignIn();
-        }, 150);
+        setTimeout(() => { 
+            initGoogleSignIn(); 
+        }, 200);
     }
-}, {
-    immediate: true
-});
+}, { immediate: true });
 
 // =====================================================================================
-// 4. FACEBOOK SIGN-IN LOGIN (Tích hợp đăng nhập Facebook)
+// 4. FACEBOOK SIGN-IN LOGIN
 // =====================================================================================
 function loginWithFacebook() {
     if (process.client && window.FB) {
         window.FB.login(function (response) {
             if (response.authResponse) {
+                // Kích hoạt overlay cho Facebook mượt mà
+                loadingText.value = 'Đang xác thực tài khoản Facebook...'
+                isLoading.value = true
+
                 const accessToken = response.authResponse.accessToken;
                 loginWithFacebookService(accessToken)
                     .then((loginRes) => {
                         if (loginRes.success) {
                             showToast(`Xin chào ${loginRes.user?.name || ''}! Đăng nhập Facebook thành công.`, "success");
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 300);
+                            setTimeout(() => { window.location.reload(); }, 300);
                         } else {
+                            isLoading.value = false
                             showToast(loginRes.message || "Đăng nhập Facebook thất bại!", "error");
                         }
                     })
                     .catch((error) => {
+                        isLoading.value = false
                         console.error(error);
                         showToast("Đăng nhập bằng Facebook thất bại!", "error");
                     });
             } else {
-                console.log("User cancelled login or did not fully authorize.");
                 showToast("Người dùng đã hủy hoặc không cấp quyền đăng nhập.", "error");
             }
         }, { scope: 'public_profile,email' });
