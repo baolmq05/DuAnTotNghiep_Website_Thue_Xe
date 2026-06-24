@@ -16,6 +16,8 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255)->comment('tên xe');
             $table->string('license_plate', 12)->comment('biển số xe')->unique();
+            $table->string('VIN', 17)->comment('số khung gồm 17 kí tự')->unique();
+            $table->string('engine_number',255)->comment('số máy')->unique();
             $table->float('fuel_consumption', 10, 2)->comment('mức tiêu thụ nhiên liệu')->unsigned();
             $table->bigInteger('unit_price')->comment('đơn giá thuê xe')->unsigned();
             $table->bigInteger('discount_value')->comment('giá trị giảm giá')->unsigned()->default(0);

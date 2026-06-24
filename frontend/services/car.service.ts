@@ -65,6 +65,8 @@ export interface Car {
     id: number;
     name: string;
     license_plate: string;
+    VIN: string;
+    engine_number: string;
     fuel_consumption: number;
     unit_price: number;
     discount_value: number;

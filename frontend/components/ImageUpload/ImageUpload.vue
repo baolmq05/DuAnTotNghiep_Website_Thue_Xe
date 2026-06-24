@@ -399,9 +399,12 @@ const removeImage = (index: number) => {
 
     emitImages();
 };
+const getThumbnailIndex = () => {
+    return images.value.findIndex(image => image.isThumbnail);
+};
 
-// Expose phương thức upload ra ngoài cho component cha gọi
 defineExpose({
     upload,
+    getThumbnailIndex,
 });
 </script>

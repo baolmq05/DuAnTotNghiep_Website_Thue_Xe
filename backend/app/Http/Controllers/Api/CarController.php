@@ -232,8 +232,25 @@ class CarController extends Controller
             ], 401);
         }
 
+        // Giải mã các chuỗi JSON từ FormData trước khi validation
+        if (is_string($request->input('images'))) {
+            $decoded = json_decode($request->input('images'), true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $request->merge(['images' => $decoded]);
+            }
+        }
+
+        if (is_string($request->input('features'))) {
+            $decoded = json_decode($request->input('features'), true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                $request->merge(['features' => $decoded]);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'license_plate' => 'required|string|max:12|unique:cars,license_plate',
+            'VIN' => 'required|string|max:17|unique:cars,VIN',
+            'engine_number' => 'required|string|max:100|unique:cars,engine_number',
             'car_brand_id' => 'required|exists:car_brands,id',
             'car_type_id' => 'required|exists:car_types,id',
             'seat_count' => 'required|integer|min:2',
@@ -245,7 +262,7 @@ class CarController extends Controller
             'rental_terms' => 'nullable|string',
 
             // Location
-            'location' => 'required|string',
+            'location' => 'nullable|string',
             'address' => 'required|string',
 
             // Pricing & Discount
@@ -264,15 +281,20 @@ class CarController extends Controller
             'over_fee_val' => 'nullable|numeric|min:0',
 
             // Features
-            'features' => 'nullable|string', // JSON array string or comma separated
+            'features' => 'nullable|array',
+            'features.*' => 'integer|exists:features,id',
 
             // Images
             'images' => 'required|array|min:1',
-            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
+            'images.*' => 'required|string|url',
             'thumbnail_index' => 'required|integer|min:0',
         ], [
             'license_plate.required' => 'Biển số xe không được để trống.',
             'license_plate.unique' => 'Biển số xe này đã được đăng ký trên hệ thống.',
+            'VIN.required' => 'Số khung không được để trống',
+            'VIN.unique' => 'Số khung này đã được đăng ký trên hệ thống',
+            'engine_number.required'=> 'Số máy không được để trống',
+            'engine_number.unique' => 'Số máy này đã được đăng ký trên hệ thống',
             'car_brand_id.required' => 'Hãng xe không được để trống.',
             'car_brand_id.exists' => 'Hãng xe không tồn tại.',
             'car_type_id.required' => 'Mẫu xe không được để trống.',
@@ -320,6 +342,8 @@ class CarController extends Controller
             $car = Car::create([
                 'name' => trim($carName),
                 'license_plate' => $request->input('license_plate'),
+                'VIN' => $request->input('VIN'),
+                'engine_number' => $request->input('engine_number'),
                 'fuel_consumption' => $request->input('fuel_consumption'),
                 'unit_price' => $request->input('unit_price'),
                 'discount_value' => $request->input('discount_value', 0),
@@ -352,24 +376,24 @@ class CarController extends Controller
             }
 
             // 6. Handle Images Upload
-            if ($request->hasFile('images')) {
-                $images = $request->file('images');
-                $thumbnailIndex = intval($request->input('thumbnail_index', 0));
+            $imageUrls = $request->input('images');
 
-                foreach ($images as $index => $imageFile) {
-                    // Save file to storage
-                    $filename = time() . '_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
-                    $path = $imageFile->storeAs('cars', $filename, 'public');
+            if (is_string($imageUrls)) {
+                $imageUrls = json_decode($imageUrls, true);
+            }
 
-                    // URL link
-                    $imageUrl = asset('storage/' . $path);
+            if (!is_array($imageUrls)) {
+                $imageUrls = [];
+            }
+            $thumbnailIndex = intval($request->thumbnail_index);
+            foreach ($imageUrls as $index => $url) {
 
-                    CarImage::create([
-                        'car_id' => $car->id,
-                        'image_url' => $imageUrl,
-                        'is_thumbnail' => ($index === $thumbnailIndex) ? 1 : 0
-                    ]);
-                }
+                CarImage::create([
+                    'car_id' => $car->id,
+                    'image_url' => $url,
+                    'is_thumbnail' => $index == $thumbnailIndex
+                ]);
+
             }
 
             DB::commit();

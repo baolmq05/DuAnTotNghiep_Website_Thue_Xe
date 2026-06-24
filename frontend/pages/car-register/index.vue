@@ -58,16 +58,47 @@
                     </div>
 
                     <div class="p-5 sm:p-8 lg:p-10">
-                        <div v-if="activeStep === 1" class="space-y-8">
+                        <div v-show="activeStep === 1" class="space-y-8">
                             <section>
                                 <div class="mb-4">
-                                    <h3 class="text-lg font-bold text-slate-900">Biển số xe</h3>
-                                    <p class="text-sm text-red-500/90">Lưu ý: Biển số sẽ không thể thay đổi sau khi đăng
-                                        ký.</p>
+                                    <h3 class="text-lg font-bold text-slate-900">Thông tin đăng ký xe</h3>
+                                    <p class="text-sm text-red-500/90">
+                                        Lưu ý: Biển số, số khung và số máy sẽ không thể thay đổi sau khi đăng ký.
+                                    </p>
                                 </div>
-                                <input type="text" v-model="licensePlate" placeholder="Nhập biển số xe (VD: 51H-123.45)"
-                                    class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 sm:w-1/2">
+
+                                <!-- Biển số -->
+                                <div class="mb-5">
+                                    <label class="mb-1 block text-sm font-medium text-slate-700">
+                                        Biển số xe
+                                    </label>
+                                    <input type="text" v-model="licensePlate"
+                                        placeholder="Nhập biển số xe (VD: 51H-123.45)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
+                   focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                </div>
+
+                                <!-- Số khung + Số máy -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div>
+                                        <label class="mb-1 block text-sm font-medium text-slate-700">
+                                            Số khung (VIN)
+                                        </label>
+                                        <input type="text" v-model="VIN"
+                                            placeholder="Nhập số khung (VD: 1HGCR2F8XHA045239)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
+                       focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                    </div>
+
+                                    <div>
+                                        <label class="mb-1 block text-sm font-medium text-slate-700">
+                                            Số máy
+                                        </label>
+                                        <input type="text" v-model="engineNumber"
+                                            placeholder="Nhập số máy (VD: K24W1-1234567)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
+                       focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                    </div>
+                                </div>
                             </section>
+
                             <div class="mb-4">
                                 <h3 class="text-lg font-bold text-slate-900">Thông tin cơ bản</h3>
                                 <p class="text-sm text-slate-500">Nhóm các thông tin cần khai báo một lần cho xe.</p>
@@ -88,7 +119,7 @@
                                     <select v-model="selectedTypeId" :disabled="!selectedBrandId"
                                         class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                         <option :value="null">{{ selectedBrandId ? 'Chọn mẫu xe' : 'Chọn dòng xe trước'
-                                            }}</option>
+                                        }}</option>
                                         <option v-for="type in carTypes" :key="type.id" :value="type.id">{{
                                             type.type_name }}</option>
                                     </select>
@@ -182,7 +213,7 @@
                             </section>
                         </div>
 
-                        <div v-else-if="activeStep === 2" class="space-y-7">
+                        <div v-show="activeStep === 2" class="space-y-7">
 
                             <!-- SECTION 1: ĐƠN GIÁ THUÊ MẶC ĐỊNH -->
                             <section class="space-y-4">
@@ -229,7 +260,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Mức giảm đề xuất: <strong class="text-slate-800">{{ discountVal
-                                                    }}%</strong></span>
+                                            }}%</strong></span>
                                             <span class="font-bold">5%</span>
                                         </div>
                                     </div>
@@ -418,87 +449,10 @@
 
                         </div>
 
-                        <div v-else class="space-y-8">
-
-                            <!-- Upload Zone -->
-                            <section class="space-y-4">
-                                <div>
-                                    <h3 class="text-lg font-bold text-slate-900">Hình ảnh xe</h3>
-                                    <p class="mt-1 text-sm text-slate-500">Chọn nhiều ảnh thật để tăng độ tin cậy. Bấm
-                                        vào ảnh để đặt làm <strong class="text-[#1e4e57]">ảnh đại diện</strong>.</p>
-                                </div>
-
-                                <!-- Drop Zone -->
-                                <div class="relative flex flex-col items-center justify-center gap-4 rounded-3xl border-2 border-dashed transition-all duration-200 p-10 text-center cursor-pointer"
-                                    :class="isDragging
-                                        ? 'border-[#1e4e57] bg-[#1e4e57]/8 scale-[1.01]'
-                                        : 'border-[#1e4e57]/25 bg-[#1e4e57]/3 hover:border-[#1e4e57]/50 hover:bg-[#1e4e57]/6'"
-                                    @dragover.prevent="isDragging = true" @dragleave.prevent="isDragging = false"
-                                    @drop.prevent="onDrop" @click="fileInputRef?.click()">
-                                    <input ref="fileInputRef" type="file" accept="image/*" multiple class="hidden"
-                                        @change="onFileChange">
-                                    <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#1e4e57]/10 text-[#1e4e57] transition-transform duration-200"
-                                        :class="isDragging ? 'scale-110' : ''">
-                                        <Icon name="ic:sharp-cloud-upload" style="color: black" />
-                                    </div>
-                                    <div>
-                                        <p class="text-sm font-semibold text-slate-800">
-                                            <span class="text-[#1e4e57] font-bold">Bấm để chọn ảnh</span> hoặc kéo thả
-                                            vào đây
-                                        </p>
-                                        <p class="mt-1 text-xs text-slate-400">PNG, JPG, WEBP — Tối đa 10MB mỗi ảnh</p>
-                                    </div>
-                                    <div v-if="uploadedImages.length > 0"
-                                        class="flex items-center gap-2 rounded-full bg-[#1e4e57]/10 px-4 py-1.5">
-                                        <Icon name="ic:baseline-drive-folder-upload" style="color: black" />
-                                        <span class="text-xs font-semibold text-[#1e4e57]">{{ uploadedImages.length }}
-                                            ảnh đã chọn</span>
-                                    </div>
-                                </div>
-
-                                <!-- Preview Grid -->
-                                <div v-if="uploadedImages.length > 0"
-                                    class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-                                    <div v-for="(img, index) in uploadedImages" :key="img.id"
-                                        class="group relative overflow-hidden rounded-2xl border-2 transition-all duration-200 cursor-pointer"
-                                        :class="thumbnailIndex === index
-                                            ? 'border-[#1e4e57] shadow-lg shadow-[#1e4e57]/20'
-                                            : 'border-transparent hover:border-[#1e4e57]/40'"
-                                        @click="thumbnailIndex = index">
-                                        <!-- Image -->
-                                        <img :src="img.url" :alt="'Ảnh ' + (index + 1)"
-                                            class="h-36 w-full object-cover transition-transform duration-300 group-hover:scale-105">
-
-                                        <!-- Thumbnail badge -->
-                                        <div v-if="thumbnailIndex === index"
-                                            class="absolute top-2 left-2 flex items-center gap-1 rounded-full bg-[#1e4e57] px-2 py-0.5 text-white text-[10px] font-bold shadow">
-                                            <i class="fa-solid fa-star text-[9px]"></i>
-                                            Đại diện
-                                        </div>
-
-                                        <!-- Select hint overlay -->
-                                        <div v-else
-                                            class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-200">
-                                            <span
-                                                class="scale-0 group-hover:scale-100 transition-transform duration-200 text-white text-xs font-semibold bg-black/50 rounded-full px-3 py-1">
-                                                Đặt làm đại diện
-                                            </span>
-                                        </div>
-
-                                        <!-- Remove button -->
-                                        <button type="button"
-                                            class="absolute top-2 right-2 flex h-6 w-6 items-center justify-center rounded-full bg-white/90 text-slate-600 shadow opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-red-500 hover:text-white"
-                                            @click.stop="removeImage(index)">
-                                            <Icon name="ic:outline-close" style="color: black" />
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Empty hint -->
-                                <p v-if="uploadedImages.length === 0" class="text-center text-xs text-slate-400 pt-1">
-                                    Chưa có ảnh nào được chọn
-                                </p>
-                            </section>
+                        <div v-show="activeStep === 3" class="space-y-8">
+                            <!-- đây là chỗ để component nè -->
+                            <!-- Component ImageUpload -->
+                            <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
 
                             <!-- Checklist -->
                             <section class="rounded-3xl border border-slate-100 bg-slate-50/70 p-6">
@@ -576,6 +530,8 @@ const activeStep = ref(1)
 
 // New registration form refs
 const licensePlate = ref('')
+const VIN = ref('')
+const engineNumber = ref('')
 const selectedBrandId = ref<number | null>(null)
 const selectedTypeId = ref<number | null>(null)
 const selectedSeatCount = ref(4)
@@ -649,47 +605,8 @@ const toggleFeature = (name: string) => {
 }
 
 // Step 3 - Image upload
-interface UploadedImage {
-    id: number
-    url: string
-    file: File
-}
-
-const fileInputRef = ref<HTMLInputElement | null>(null)
-const uploadedImages = ref<UploadedImage[]>([])
-const thumbnailIndex = ref(0)
-const isDragging = ref(false)
-let imageIdCounter = 0
-
-const addFiles = (files: FileList | File[]) => {
-    Array.from(files).forEach((file) => {
-        if (!file.type.startsWith('image/')) return
-        const url = URL.createObjectURL(file)
-        uploadedImages.value.push({ id: imageIdCounter++, url, file })
-    })
-    if (thumbnailIndex.value >= uploadedImages.value.length) {
-        thumbnailIndex.value = 0
-    }
-}
-
-const onFileChange = (e: Event) => {
-    const input = e.target as HTMLInputElement
-    if (input.files) addFiles(input.files)
-    input.value = ''
-}
-
-const onDrop = (e: DragEvent) => {
-    isDragging.value = false
-    if (e.dataTransfer?.files) addFiles(e.dataTransfer.files)
-}
-
-const removeImage = (index: number) => {
-    URL.revokeObjectURL(uploadedImages.value[index].url)
-    uploadedImages.value.splice(index, 1)
-    if (thumbnailIndex.value >= uploadedImages.value.length) {
-        thumbnailIndex.value = Math.max(0, uploadedImages.value.length - 1)
-    }
-}
+const uploadedImages = ref<string[]>([])
+const imageUploadRef = ref<any>(null)
 
 const { isLoggedIn } = useAuth()
 const { openLogin } = useAuthModal()
@@ -761,11 +678,36 @@ const onSubmit = async () => {
         activeStep.value = 3;
         return;
     }
+    console.log(licensePlate.value);
+    console.log(VIN.value);
+    console.log(engineNumber.value);
+    console.log(selectedBrandId.value);
+    console.log(selectedTypeId.value);
+    console.log(selectedSeatCount.value);
+    console.log(selectedManufactureYear.value);
+    console.log(selectedTransmission.value);
+    console.log(selectedFuelType.value);
+    console.log(fuelConsumption.value);
+    console.log(description.value);
+    console.log(basePrice.value);
+    console.log(discountEnabled.value);
+    console.log(discountVal.value);
+    console.log(address.value);
+    console.log(selectedCoords.value);
+    console.log(deliveryEnabled.value);
+    console.log(kmLimitEnabled.value);
+    console.log(kmLimitVal.value);
+    console.log(overFeeVal.value);
+    console.log(rentalTerms.value);
+    console.log(uploadedImages.value);
 
     submitting.value = true;
+    let formData = new FormData();
+
     try {
-        const formData = new FormData();
         formData.append('license_plate', licensePlate.value);
+        formData.append('VIN', VIN.value);
+        formData.append('engine_number', engineNumber.value);
         formData.append('car_brand_id', selectedBrandId.value.toString());
         formData.append('car_type_id', selectedTypeId.value.toString());
         formData.append('seat_count', selectedSeatCount.value.toString());
@@ -815,13 +757,24 @@ const onSubmit = async () => {
             .filter((id: any) => id !== null);
         formData.append('features', JSON.stringify(selectedFeatureIds));
 
-        // Images
-        uploadedImages.value.forEach((img) => {
-            formData.append('images[]', img.file);
-        });
-        formData.append('thumbnail_index', thumbnailIndex.value.toString());
+        // Upload ảnh lên Cloudinary
+        const imageUrls = await imageUploadRef.value?.upload()
 
+        if (!imageUrls) {
+            showToast('Không thể upload hình ảnh.', 'error')
+            return
+        }
+
+        if (!imageUrls || imageUrls.length === 0) {
+            showToast("Không thể upload hình ảnh", "error")
+            return
+        }
+
+        // gửi đúng format Laravel đang cần
+        formData.append("images", JSON.stringify(imageUrls))
+        formData.append("thumbnail_index", "0")
         const res = await carService.registerCar(formData);
+
         if (res && res.success) {
             showToast('Đăng ký xe thành công! Xe của bạn đang chờ kiểm duyệt.', 'success');
             navigateTo('/my-cars');
@@ -831,6 +784,7 @@ const onSubmit = async () => {
     } catch (e: any) {
         console.error('Đăng ký xe thất bại:', e);
         const errMsg = e.response?._data?.message || 'Có lỗi xảy ra khi kết nối máy chủ.';
+console.log(...formData); // here it show the output
         showToast(errMsg, 'error');
     } finally {
         submitting.value = false;

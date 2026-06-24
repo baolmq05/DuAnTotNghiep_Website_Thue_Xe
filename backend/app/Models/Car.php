@@ -10,6 +10,8 @@ class Car extends Model
     protected $fillable = [
         'name',
         'license_plate',
+        'VIN',
+        'engine_number',
         'fuel_consumption',
         'unit_price',
         'discount_value',

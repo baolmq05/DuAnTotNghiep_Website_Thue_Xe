@@ -108,6 +108,8 @@ class CarApiTest extends TestCase
         $response = $this->withHeader('Authorization', 'Bearer ' . $token)
             ->postJson('/api/cars', [
                 'license_plate' => '29A-99999',
+                'VIN' => '1HGCR2F8XHA999999',
+                'engine_number' => 'K24W1-9999999',
                 'car_brand_id' => 1,
                 'car_type_id' => 1,
                 'seat_count' => 5,
@@ -130,7 +132,7 @@ class CarApiTest extends TestCase
                 'over_fee_val' => 5000,
                 'features' => '[1,2]',
                 'images' => [
-                    \Illuminate\Http\UploadedFile::fake()->image('car1.jpg')
+                    'https://res.cloudinary.com/djbobb5oe/image/upload/v1764143352/tu1d4wbkkdshpsghluu2.jpg'
                 ],
                 'thumbnail_index' => 0
             ]);
@@ -143,6 +145,8 @@ class CarApiTest extends TestCase
 
         $this->assertDatabaseHas('cars', [
             'license_plate' => '29A-99999',
+            'VIN' => '1HGCR2F8XHA999999',
+            'engine_number' => 'K24W1-9999999',
             'user_id' => $user->id
         ]);
     }
