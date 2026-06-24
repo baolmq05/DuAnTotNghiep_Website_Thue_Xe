@@ -5,7 +5,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Premium Dashboard Header Card -->
       <div
-        class="bg-gradient-to-br from-[#1e4e57] via-[#163a41] to-[#0f272c] rounded-3xl p-6 lg:p-8 shadow-xl mb-8 text-white relative overflow-hidden border border-white/5">
+        class="bg-gradient-to-br from-[#1d4454] via-[#163a41] to-[#0f272c] rounded-3xl p-6 lg:p-8 shadow-xl mb-8 text-white relative overflow-hidden border border-white/5">
         <!-- Decorative Glow Background Effects -->
         <div class="absolute -right-20 -top-20 w-80 h-80 bg-[#5FCF86]/10 rounded-full blur-[100px] pointer-events-none">
         </div>
@@ -56,7 +56,7 @@
         <!-- Quick Stats Strip -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8 pt-6 border-t border-white/10 relative z-10">
           <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
-            <div class="p-3 bg-[#5FCF86]/10 rounded-xl text-[#5FCF86]">
+            <div class="p-3 bg-white/10 rounded-xl text-slate-200 border border-white/5 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path
@@ -70,13 +70,13 @@
             </div>
             <div>
               <p class="text-[11px] text-white/50 font-bold uppercase tracking-wider">Tổng số xe</p>
-              <h4 class="text-xl font-black mt-0.5">{{ totalCars }} <span
+              <h4 class="text-xl font-black mt-0.5 text-white">{{ totalCars }} <span
                   class="text-xs font-normal text-white/60">xe</span></h4>
             </div>
           </div>
 
           <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
-            <div class="p-3 bg-cyan-500/10 rounded-xl text-cyan-400">
+            <div class="p-3 bg-white/10 rounded-xl text-slate-200 border border-white/5 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"></path>
@@ -84,13 +84,13 @@
             </div>
             <div>
               <p class="text-[11px] text-white/50 font-bold uppercase tracking-wider">Đang hoạt động</p>
-              <h4 class="text-xl font-black mt-0.5">{{ activeCars }} <span
+              <h4 class="text-xl font-black mt-0.5 text-white">{{ activeCars }} <span
                   class="text-xs font-normal text-white/60">xe</span></h4>
             </div>
           </div>
 
           <div class="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4">
-            <div class="p-3 bg-amber-500/10 rounded-xl text-amber-400">
+            <div class="p-3 bg-white/10 rounded-xl text-slate-200 border border-white/5 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path>
@@ -99,13 +99,13 @@
             </div>
             <div>
               <p class="text-[11px] text-white/50 font-bold uppercase tracking-wider">Hiệu suất thuê</p>
-              <h4 class="text-xl font-black mt-0.5">{{ activeRate }}%</h4>
+              <h4 class="text-xl font-black mt-0.5 text-white">{{ activeRate }}%</h4>
             </div>
           </div>
 
           <div
             class="bg-white/5 rounded-2xl p-4 border border-white/5 flex items-center gap-4 col-span-2 md:col-span-1">
-            <div class="p-3 bg-indigo-500/10 rounded-xl text-indigo-400">
+            <div class="p-3 bg-white/10 rounded-xl text-slate-200 border border-white/5 shadow-inner">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
@@ -114,7 +114,7 @@
             </div>
             <div>
               <p class="text-[11px] text-white/50 font-bold uppercase tracking-wider">Doanh thu khả dụng</p>
-              <h4 class="text-xl font-black mt-0.5 text-[#5FCF86]">{{ formatPrice(walletBalance) }}</h4>
+              <h4 class="text-xl font-black mt-0.5 text-white">{{ formatPrice(walletBalance) }}</h4>
             </div>
           </div>
         </div>
@@ -139,6 +139,21 @@
               <path d="M13 10h3"></path>
             </svg>
             Danh sách xe
+          </NuxtLink>
+
+          <NuxtLink to="/my-cars/bookings"
+            class="py-5 text-slate-500 whitespace-nowrap hover:text-[#1e4e57] transition-colors border-b-2 border-transparent flex items-center gap-2 text-sm font-semibold"
+            active-class="!border-[#1e4e57] !text-[#1e4e57] !font-bold" @click="handleLinkClick">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="text-current opacity-85">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            Chuyến cho thuê
           </NuxtLink>
 
           <NuxtLink to="/my-cars/calendar"
@@ -226,6 +241,7 @@
       </div>
     </div>
   </main>
+  <CommonToast />
 </template>
 
 <script setup lang="ts">
