@@ -1,11 +1,11 @@
 <template>
     <div v-if="isLoginOpen" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeLogin"></div>
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeModal"></div>
 
         <div
             class="relative bg-white w-full max-w-xl h-[600px] rounded-3xl overflow-hidden shadow-2xl z-10 animate-fade-in">
 
-            <button @click="closeLogin"
+            <button @click="closeModal"
                 class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-20 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
@@ -36,8 +36,10 @@
                     <form @submit.prevent="handleLogin" class="space-y-4">
                         <div class="space-y-1.5">
                             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Email</label>
-                            <input v-model="email" type="email" placeholder="example@gmail.com" required
+                            <input v-model="email" type="email" placeholder="example@gmail.com"
                                 class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
+                            <p v-if="emailError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">{{
+                                emailError }}</p>
                         </div>
 
                         <div class="space-y-1.5">
@@ -49,7 +51,7 @@
 
                             <div class="relative w-full flex items-center">
                                 <input v-model="password" :type="showPassword ? 'text' : 'password'"
-                                    placeholder="••••••••" required
+                                    placeholder="••••••••"
                                     class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-[#286874] focus:bg-white transition-all" />
 
                                 <button type="button" @click="togglePassword"
@@ -71,6 +73,8 @@
                                     </svg>
                                 </button>
                             </div>
+                            <p v-if="passwordError" class="text-xs text-red-500 font-medium pl-1 animate-fade-in">{{
+                                passwordError }}</p>
                         </div>
 
                         <button type="submit"
@@ -132,9 +136,21 @@ const password = ref('')
 const showPassword = ref(false)
 const isGoogleLoading = ref(false)
 
-const openModal = openLogin
-const closeModal = closeLogin
+const emailError = ref('')
+const passwordError = ref('')
 
+const clearErrors = () => {
+    emailError.value = ''
+    passwordError.value = ''
+}
+
+const openModal = openLogin
+const closeModal = () => {
+    clearErrors()
+    email.value = ''
+    password.value = ''
+    closeLogin()
+}
 const togglePassword = () => {
     showPassword.value = !showPassword.value
 }
@@ -143,6 +159,31 @@ const togglePassword = () => {
 // 2. TRADITIONAL LOGIN
 // =====================================================================================
 const handleLogin = async () => {
+    clearErrors() // Xóa lỗi cũ
+    let isErrors = false
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!email.value.trim()) {
+        emailError.value = 'Email không được để trống'
+        isErrors = true
+    } else if (!emailRegex.test(email.value)) {
+        emailError.value = 'Email không đúng định dạng'
+        isErrors = true
+    }
+
+    if (!password.value) {
+        passwordError.value = 'Mật khẩu không được để trống'
+        isErrors = true
+    } else if (password.value.length < 6) {
+        passwordError.value = 'Mật khẩu phải có ít nhất 6 ký tự'
+        isErrors = true
+    } else if (password.value.length > 16) {
+        passwordError.value = 'Mật khẩu tối đa là 16 ký tự'
+        isErrors = true
+    }
+
+    if (isErrors) return
+
     const res = await login({
         email: email.value,
         password: password.value
@@ -150,14 +191,19 @@ const handleLogin = async () => {
 
     if (res.success) {
         showToast("Đăng nhập thành công!", "success")
-        closeLogin()
+        closeModal()
         email.value = ''
         password.value = ''
         setTimeout(() => {
             window.location.reload()
         }, 500)
     } else {
-        showToast(res.message || "Đăng nhập thất bại!", "error")
+        if (res.errors) {
+            if (res.errors.email) emailError.value = res.errors.email[0]
+            if (res.errors.password) passwordError.value = res.errors.password[0]
+        } else {
+            showToast(res.message || "Tài khoản không tồn tại hoặc sai mật khẩu!", "error")
+        }
     }
 }
 

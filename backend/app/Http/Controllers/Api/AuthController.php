@@ -67,14 +67,17 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|max:16',
+            'confirm_password' => 'required|same:password',
         ], [
-            'name.required' => 'Họ và tên không được để trống.',
-            'email.required' => 'Email không được để trống.',
-            'email.email' => 'Email không đúng định dạng.',
-            'email.unique' => 'Email này đã được sử dụng.',
-            'password.required' => 'Mật khẩu không được để trống.',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
-            'password.max' => 'Mật khẩu tối đa là 16 ký tự.',
+            'name.required' => 'Họ và tên không được để trống',
+            'email.required' => 'Email không được để trống',
+            'email.email' => 'Email không đúng định dạng',
+            'email.unique' => 'Email này đã được sử dụng',
+            'password.required' => 'Mật khẩu không được để trống',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
+            'password.max' => 'Mật khẩu tối đa là 16 ký tự',
+            'confirm_password.required' => 'Vui lòng xác nhận lại mật khẩu',
+            'confirm_password.same' => 'Mật khẩu xác nhận không đúng',
         ]);
 
         if ($validator->fails()) {
