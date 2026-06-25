@@ -4,30 +4,33 @@
 
       <!-- Logo -->
       <div class="flex flex-col space-y-4 px-3">
-        <div class="flex items-center space-x-2">
-          <img src="https://placehold.co/120x40/png?text=DRIVIO+Logo" alt="Drivio Logo"
-            class="h-8 object-contain brightness-0 invert" />
+        <div class="flex-shrink-0">
+          <NuxtLink to="/" class="flex items-center gap-2 group focus:outline-none">
+            <!-- Stylized modern D-shaped logo -->
+            <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
+              class="w-8 h-8 text-brand-light fill-current drop-shadow-[0_2px_8px_rgba(254,227,206,0.2)] transition-transform duration-300 group-hover:scale-105">
+              <path d="M20 15h30c20 0 35 15 35 35s-15 35-35 35H20V15zm16 16v38h14c10 0 18-8 18-19s-8-19-18-19H36z" />
+              <circle cx="50" cy="50" r="10" class="text-brand-accent" />
+            </svg> -->
+            <span
+              class="text-2xl font-black tracking-wider text-white group-hover:text-brand-light transition-colors duration-200">
+              DRIVIO
+            </span>
+          </NuxtLink>
         </div>
 
         <p class="text-sm text-gray-300">
-          DRIVIO - Cùng Bạn Trên Mọi Hành Trình
+          Cùng Bạn Trên Mọi Hành Trình
         </p>
 
         <div class="flex items-start gap-4 pt-2">
           <div class="flex flex-col gap-4">
             <a href="#">
-              <img src="https://placehold.co/135x40/png?text=App+Store" alt="App Store"
-                class="h-9 rounded border border-gray-600" />
+              <img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292463/Google_Play_Store_badge_EN.svg_fdutvj.png"
+                alt="Google Play" class="h-14 rounded border border-gray-600" />
             </a>
-
-            <a href="#">
-              <img src="https://placehold.co/135x40/png?text=Google+Play" alt="Google Play"
-                class="h-9 rounded border border-gray-600" />
-            </a>
-          </div>
-
-          <div class="bg-white p-1 rounded">
-            <img src="https://placehold.co/84x84/png?text=QR" alt="QR Code" class="w-20 h-20" />
+            <img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292642/bocongthuong.40599f29_cvipjv.png"
+              alt="Đã đăng ký bộ công thương" class="h-15 object-contain" />
           </div>
         </div>
       </div>
@@ -40,7 +43,7 @@
 
         <ul class="space-y-2 text-sm text-gray-300">
           <li>
-            <NuxtLink to="/">Hướng dẫn chung</NuxtLink>
+            <NuxtLink to="/howitwork">Hướng dẫn chung</NuxtLink>
           </li>
           <li>
             <NuxtLink to="/">Hướng dẫn thanh toán</NuxtLink>
@@ -121,6 +124,12 @@
             <Icon name="simple-icons:zalo" class="text-3xl" />
           </a>
         </div>
+              <div class="flex items-center gap-2 flex-wrap">
+                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782293102/download_osrbwg.png" alt="" class="h-10"></a>
+                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292713/vnpay.780689d6_ftuqtj.png" alt="" class="h-10"></a>
+                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292711/download_1_zbu7en.png" alt="" class="h-10"></a>
+                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292709/download_2_v3hdjk.png" alt="" class="h-10"></a>
+      </div>
       </div>
 
     </div>
@@ -128,15 +137,7 @@
     <div
       class="max-w-7xl mx-auto mt-8 pt-6 border-t border-gray-700 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-400">
       <div>
-        <p>© Công ty Cổ phần Mioto Mioto Asia | Công ty CT CI CP MIOTO. Biên Phủ, Phường Thanh M, Việt Nam</p>
-      </div>
-      <div class="flex items-center gap-2 flex-wrap justify-center">
-        <img src="https://placehold.co/60x22/png?text=BoCongThuong" alt="Đã đăng ký bộ công thương"
-          class="h-6 object-contain" />
-        <span class="bg-gray-800 px-2 py-1 rounded text-[10px]">momo</span>
-        <span class="bg-gray-800 px-2 py-1 rounded text-[10px]">VNPAY</span>
-        <span class="bg-gray-800 px-2 py-1 rounded text-[10px]">VISA</span>
-        <span class="bg-gray-800 px-2 py-1 rounded text-[10px]">ZaloPay</span>
+        <p>© Công ty Cổ phần Drivio | Công ty Drivio. Cần Thơ, Việt Nam</p>
       </div>
     </div>
   </footer>
