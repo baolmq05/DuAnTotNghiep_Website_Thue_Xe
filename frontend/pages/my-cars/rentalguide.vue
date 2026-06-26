@@ -10,7 +10,8 @@
       <div class="divide-y divide-gray-100">
         
         <NuxtLink 
-          to="/quan-ly-xe/cam-nang/quy-trinh"
+          to="https://drive.google.com/file/d/1NaUHX_mosrPt1657Jb207_e_QXzfiKep/view?usp=sharing"
+          target="_blank"
           class="group flex items-center justify-between py-4 hover:bg-slate-50/50 px-2 rounded-xl transition duration-200"
         >
           <div class="flex items-center gap-3.5">
@@ -25,7 +26,8 @@
         </NuxtLink>
 
         <NuxtLink 
-          to="/quan-ly-xe/cam-nang/quyet-toan-thue"
+          to="https://drive.google.com/file/d/1YRbXpSunbp3LDFr4qVh9p_fLi69pmcPu/view?usp=drive_link"
+          target="_blank"
           class="group flex items-center justify-between py-4 hover:bg-slate-50/50 px-2 rounded-xl transition duration-200"
         >
           <div class="flex items-center gap-3.5">
@@ -51,7 +53,8 @@
 
           <div class="pl-14">
             <NuxtLink 
-              to="/quan-ly-xe/cam-nang/nghi-dinh-336"
+              to="https://drive.google.com/file/d/1WIJb5Yk7aI34R5Iyuz_N3lzkPmLCkXy9/view?usp=drive_link"
+              target="_blank"
               class="group inline-flex items-center gap-2 text-sm text-slate-500 hover:text-brand-primary transition-colors py-1.5"
             >
               <span class="w-1.5 h-1.5 rounded-full bg-gray-400 group-hover:bg-brand-primary transition-colors"></span>
