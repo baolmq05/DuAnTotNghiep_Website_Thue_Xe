@@ -32,6 +32,22 @@ class DrivingLicensesTable
                     ->label('Ngày sinh')
                     ->date()
                     ->sortable(),
+                TextColumn::make('status')
+                    ->label('Trạng thái')
+                    ->badge()
+                    ->color(fn(string $state): string => match ((string) $state) {
+                        '0' => 'warning',
+                        '1' => 'success',
+                        '2' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn(string $state): string => match ((string) $state) {
+                        '0' => 'Chờ duyệt',
+                        '1' => 'Đã duyệt',
+                        '2' => 'Bị từ chối',
+                        default => 'Không xác định',
+                    })
+                    ->sortable(),
                 TextColumn::make('created_at')
                     ->label('Ngày tạo')
                     ->dateTime()
