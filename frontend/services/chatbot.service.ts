@@ -1,6 +1,6 @@
 import { BaseService } from "./base.service";
 
-class ChatBotService extends BaseService {
+export class ChatBotService extends BaseService {
     constructor() {
         super("auth/chatbot");
     }
@@ -23,5 +23,3 @@ class ChatBotService extends BaseService {
         });
     }
 }
-
-export const chatBotService = new ChatBotService();

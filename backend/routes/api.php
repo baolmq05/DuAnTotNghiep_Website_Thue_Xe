@@ -3,10 +3,12 @@
 use App\Http\Controllers\Api\AgentController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CarController;
+use App\Http\Controllers\Api\ChatController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\AddressController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
 use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\GoogleAuthController;
@@ -85,6 +87,16 @@ Route::group(['middleware' => 'api'], function () {
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 
     Route::get('car-calendar', [CarCalendarController::class, 'index']);
+
+    //Chat
+    Route::get('conversations', [ChatController::class, 'index']);
+    Route::post('conversations', [ChatController::class, 'storeConversation']);
+    Route::get('messages/{id}', [ChatController::class, 'getMessages']);
+    Route::post('messages', [ChatController::class, 'storeMessage']);
+    Route::put('conversations/{id}/read', [ChatController::class, 'markAsRead']);
+
+    // Register Broadcasting Auth with JWT Auth middleware
+    Broadcast::routes(['middleware' => ['api', 'auth:api']]);
 });
 
 // VNPay Public Callback/Verification routes

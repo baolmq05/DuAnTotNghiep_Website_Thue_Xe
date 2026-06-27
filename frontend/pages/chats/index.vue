@@ -1,5 +1,6 @@
 <template>
   <div class="h-full flex flex-col overflow-hidden">
+    <CommonLoadingOverlay :loading="isLoading" text="Đang tải dữ liệu..." />
     <!-- MAIN LAYOUT -->
     <div class="flex flex-1 overflow-hidden md:border md:border-gray-200/80 md:bg-white md:shadow-xs">
       <!-- SIDEBAR -->
@@ -7,7 +8,6 @@
         'w-full md:w-72 bg-white border-r border-gray-200 flex-col flex-shrink-0',
         showChatOnMobile ? 'hidden md:flex' : 'flex'
       ]">
-
 
         <div class="flex-1 overflow-y-auto sidebar-scroll">
 
@@ -35,40 +35,47 @@
             </button>
           </div>
 
+          <!-- ======================================================= -->
           <!-- Chủ xe -->
           <div class="px-3 pt-3 pb-3">
             <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5 px-1">Chủ xe</p>
             <div class="space-y-0.5">
-              <button v-for="host in hostConversations" :key="host.id" @click="selectConv(host.id)"
-                :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === host.id ? 'active' : '']">
+              <button v-for="conversation in conversations" :key="conversation.id" @click="selectConv(conversation.id)"
+                :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === conversation.id ? 'active' : '']">
                 <!-- Avatar -->
                 <div class="relative flex-shrink-0">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                    :style="{ backgroundColor: host.color }">
-                    {{ host.name.charAt(0) }}
+                  <img v-if="conversation.other_user?.avatar" :src="conversation.other_user.avatar"
+                    class="w-10 h-10 rounded-full object-cover" />
+
+                  <div v-else
+                    class="w-10 h-10 rounded-full bg-brand-secondary text-brand-primary flex items-center justify-center text-sm font-bold">
+                    {{ conversation.other_user?.name?.charAt(0) || 'U' }}
                   </div>
-                  <span v-if="host.online"
+                  <span v-if="conversation.other_user?.online"
                     class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
-                    <p class="text-sm font-semibold text-gray-800 truncate">{{ host.name }}</p>
-                    <span class="text-[10px] text-gray-400 flex-shrink-0">{{ host.time }}</span>
+                    <p class="text-sm font-semibold text-gray-800 truncate">{{ conversation.other_user?.name }}</p>
+                    <span class="text-[10px] text-gray-400 flex-shrink-0">
+                      {{ conversation.last_message?.time || 'Vừa xong' }}
+                    </span>
                   </div>
                   <div class="flex items-center justify-between gap-1">
-                    <p class="text-xs text-gray-500 truncate">{{ host.lastMessage }}</p>
-                    <span v-if="host.unread"
+                    <p class="text-xs text-gray-500 truncate">{{ conversation.last_message?.text }}</p>
+                    <span v-if="conversation.unread_count"
                       class="flex-shrink-0 w-4 h-4 rounded-full bg-brand-primary text-white text-[10px] flex items-center justify-center font-medium">{{
-                        host.unread }}</span>
+                        conversation.unread_count }}</span>
                   </div>
                   <!-- Car info badge -->
-                  <p class="text-[10px] text-brand-accent font-medium truncate mt-0.5">{{ host.car }}</p>
+                  <p v-if="conversation.car" class="text-[10px] text-brand-accent font-medium truncate mt-0.5">{{
+                    conversation.car.name }}</p>
                 </div>
               </button>
             </div>
           </div>
         </div>
-
+        <!-- ======================================================= -->
 
       </aside>
 
@@ -81,7 +88,7 @@
         <!-- Chat header -->
         <div class="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center gap-3 flex-shrink-0">
           <!-- Back button (Mobile only) -->
-          <button @click="showChatOnMobile = false"
+          <button @click="exitChat"
             class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors -ml-1 mr-1"
             title="Quay lại danh sách">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
@@ -111,31 +118,35 @@
           <!-- Host header -->
           <template v-else-if="activeHost">
             <div class="relative flex-shrink-0">
-              <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold"
-                :style="{ backgroundColor: activeHost.color }">
-                {{ activeHost.name.charAt(0) }}
+              <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
+                class="w-9 h-9 rounded-full object-cover" />
+              <div v-else
+                class="w-9 h-9 rounded-full bg-brand-secondary text-brand-primary flex items-center justify-center text-sm font-bold">
+                {{ activeHost.other_user?.name?.charAt(0) }}
               </div>
-              <span v-if="activeHost.online"
+              <span v-if="activeHost.other_user?.online"
                 class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-800">{{ activeHost.name }}</p>
+              <p class="text-sm font-semibold text-gray-800">{{ activeHost.other_user?.name }}</p>
               <div class="flex items-center gap-1.5">
-                <span v-if="activeHost.online" class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                <span class="text-xs text-gray-500">{{ activeHost.online ? 'Đang online' : 'Offline' }} • {{
-                  activeHost.car }}</span>
+                <span v-if="activeHost.other_user?.online" class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                <span class="text-xs text-gray-500">
+                  {{ activeHost.other_user?.online ? 'Đang online' : 'Offline' }}
+                  <span v-if="activeHost.car"> • {{ activeHost.car.name }}</span>
+                </span>
               </div>
             </div>
             <!-- Car info pill -->
-            <div class="ml-3 hidden sm:flex items-center gap-1.5 bg-brand-secondary px-3 py-1 rounded-full">
+            <div v-if="activeHost.car"
+              class="ml-3 hidden sm:flex items-center gap-1.5 bg-brand-secondary px-3 py-1 rounded-full">
               <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-brand-accent" viewBox="0 0 24 24">
                 <path fill="currentColor"
                   d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z" />
               </svg>
-              <span class="text-xs text-brand-accent font-medium">{{ activeHost.car }}</span>
+              <span class="text-xs text-brand-accent font-medium">{{ activeHost.car.name }}</span>
             </div>
           </template>
-
 
         </div>
 
@@ -171,10 +182,13 @@
                 </svg>
               </div>
               <!-- Host avatar -->
-              <div v-else-if="activeHost"
-                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
-                :style="{ backgroundColor: activeHost.color }">
-                {{ activeHost.name.charAt(0) }}
+              <div v-else-if="activeHost" class="w-8 h-8 flex-shrink-0 mt-0.5">
+                <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
+                  class="w-8 h-8 rounded-full object-cover" />
+                <div v-else
+                  class="w-8 h-8 rounded-full flex items-center justify-center text-brand-primary bg-brand-secondary text-xs font-bold">
+                  {{ activeHost.other_user?.name?.charAt(0) }}
+                </div>
               </div>
 
               <div class="max-w-lg">
@@ -182,7 +196,7 @@
                   <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 ml-1">
-                  {{ activeConvId === 'bot' ? 'Chatbot Drivio' : activeHost?.name }} • {{ msg.time }}
+                  {{ activeConvId === 'bot' ? 'Chatbot Drivio' : activeHost?.other_user?.name }} • {{ msg.time }}
                 </p>
               </div>
             </div>
@@ -200,19 +214,23 @@
               </svg>
             </div>
             <!-- Host Avatar -->
-            <div v-else-if="activeHost"
-              class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5"
-              :style="{ backgroundColor: activeHost.color }">
-              {{ activeHost.name.charAt(0) }}
+            <div v-else-if="activeHost" class="w-8 h-8 flex-shrink-0 mt-0.5">
+              <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
+                class="w-8 h-8 rounded-full object-cover animate-pulse" />
+              <div v-else
+                class="w-8 h-8 rounded-full flex items-center justify-center text-brand-primary bg-brand-secondary text-xs font-bold animate-pulse">
+                {{ activeHost.other_user?.name?.charAt(0) }}
+              </div>
             </div>
 
             <!-- Thinking Bubble -->
             <div class="max-w-lg">
-              <div class="bg-white border border-gray-200/80 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-2">
+              <div
+                class="bg-white border border-gray-200/80 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm flex items-center gap-2">
                 <span class="text-sm text-gray-500 select-none">
-                  {{ activeConvId === 'bot' ? 'Thinking' : `${activeHost?.name} đang nhập` }}
+                  {{ activeConvId === 'bot' ? 'Thinking' : `${activeHost?.other_user?.name} đang nhập` }}
                 </span>
-                
+
                 <!-- Bouncing dots -->
                 <div class="flex items-center gap-1 mt-0.5">
                   <span class="dot w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>
@@ -237,7 +255,7 @@
           <div class="flex items-end gap-3 max-w-4xl mx-auto">
             <div class="flex-1 relative">
               <textarea ref="inputRef" v-model="inputText" rows="1"
-                :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.name ?? 'chủ xe'}...`"
+                :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.other_user?.name ?? 'chủ xe'}...`"
                 class="w-full resize-none text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-200 focus:border-brand-primary focus:outline-none rounded-2xl px-4 py-3 pr-12 transition-all leading-relaxed shadow-sm"
                 style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
               <button class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors">
@@ -269,23 +287,31 @@ definePageMeta({
   layout: "chat",
 });
 
-import { ref, computed, nextTick, onMounted } from 'vue'
-import { chatBotService } from '~/services/chatbot.service'
+// ---------------- IMPORTS & CONFIG ----------------
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
+import { ChatBotService } from '~/services/chatbot.service'
+import { ChatService } from '~/services/chat.service'
+
+const { $echo } = useNuxtApp()
+const chatBotService = new ChatBotService()
+const chatService = new ChatService()
 
 // ---------------- STATE / REFS ----------------
 const activeConvId = ref('bot')
+const chat_id = ref(null)
+const userInfo = useCookie('USER_INFO')
 const inputText = ref('')
 const isTyping = ref(false)
+const isLoading = ref(false)
 const showSuggestions = ref(true)
 const chatContainer = ref(null)
 const inputRef = ref(null)
 const showChatOnMobile = ref(false)
 
-// Unified Messages State
+const conversations = ref([])
 const messages = ref([])
 const lastBotMessage = ref('Xin chào tôi là Chatbot AI')
 
-// Bot State
 const botConversationId = ref('')
 const suggestions = [
   { label: 'Thuê xe TP.HCM', text: 'Tôi muốn thuê xe ở TP. Hồ Chí Minh' },
@@ -293,57 +319,78 @@ const suggestions = [
   { label: 'Trở thành chủ xe', text: 'Làm sao để trở thành chủ xe Drivio?' },
   { label: 'Bảo hiểm', text: 'Chính sách bảo hiểm của Drivio' },
 ]
+const activeChannels = ref([])
 
-// Host Mock State
-const hostConversations = ref([
-  {
-    id: 'host-1',
-    name: 'Trần Minh Tuấn',
-    car: 'Toyota Fortuner 2022',
-    color: '#A77E52',
-    online: true,
-    time: '10:32',
-    lastMessage: 'Bạn có thể nhận xe lúc 8h sáng nhé!',
-    unread: 2,
-    messages: [
-      { role: 'other', text: 'Xin chào! Tôi thấy bạn đã đặt xe Fortuner của tôi cho chuyến Đà Lạt cuối tuần này 🎉', time: '10:20' },
-      { role: 'user', text: 'Vâng anh ơi! Cho em hỏi xe đổ xăng loại gì ạ?', time: '10:25' },
-      { role: 'other', text: 'Xe dùng xăng RON 95 nha bạn. Tôi sẽ đổ đầy bình trước khi giao xe.', time: '10:28' },
-      { role: 'other', text: 'Bạn có thể nhận xe lúc 8h sáng nhé!', time: '10:32' },
-    ],
-  },
-  {
-    id: 'host-2',
-    name: 'Lê Thị Hương',
-    car: 'Kia Morning 2021',
-    color: '#286874',
-    online: false,
-    time: 'Hôm qua',
-    lastMessage: 'Cảm ơn bạn đã thuê xe nhà tôi!',
-    unread: 0,
-    messages: [
-      { role: 'other', text: 'Chào bạn! Xe Kia Morning của tôi đã sẵn sàng cho chuyến đi của bạn.', time: 'Hôm qua' },
-      { role: 'user', text: 'Cảm ơn chị! Chị cho em hỏi xe có camera hành trình không ạ?', time: 'Hôm qua' },
-      { role: 'other', text: 'Có bạn nhé, camera hành trình gắn sẵn rồi. Chúc bạn chuyến đi vui vẻ!', time: 'Hôm qua' },
-      { role: 'other', text: 'Cảm ơn bạn đã thuê xe nhà tôi!', time: 'Hôm qua' },
-    ],
-  },
-])
-const hostReplies = [
-  'Được bạn ơi, tôi sẽ xem lại và phản hồi sớm nhé!',
-  'Cảm ơn bạn đã hỏi! Để tôi kiểm tra lại thông tin xe cho bạn.',
-  'Không vấn đề gì! Bạn cứ liên hệ tôi nếu cần hỗ trợ thêm.',
-  'Vâng, xe sẽ được vệ sinh sạch sẽ trước khi giao cho bạn.',
-  'Địa điểm giao xe có thể thỏa thuận thêm bạn nhé!',
-]
-
-// ---------------------------------- COMPUTED --------------------------------------
+// ---------------- COMPUTED ----------------
 const activeHost = computed(() =>
-  hostConversations.value.find(h => h.id === activeConvId.value) ?? null
+  conversations.value.find(h => h.id === activeConvId.value) ?? null
 )
 
-// ---------------------------------- API / SERVICE ACTIONS --------------------------------------
+// ---------------- REALTIME & SOCKETS ----------------
+function subscribeToAllConversations() {
+  if (!$echo || !conversations.value.length) return
+
+  activeChannels.value.forEach(channelName => {
+    $echo.leave(channelName)
+  })
+  activeChannels.value = []
+
+  conversations.value.forEach(conv => {
+    const channelName = `chat.${conv.id}`
+    activeChannels.value.push(channelName)
+    console.log(`Subscribing to channel: ${channelName}`)
+
+    $echo.private(channelName)
+      .listen('.message.sent', (e) => {
+        console.log('Realtime message received:', e.message)
+        const timeFormatted = new Date(e.message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+
+        if (activeConvId.value === conv.id) {
+          messages.value.push({
+            role: e.message.sender_id === userInfo.value?.id ? 'user' : 'other',
+            text: e.message.text,
+            time: timeFormatted
+          })
+          scrollToBottom()
+
+          chatService.markAsRead(conv.id).catch(err => console.error(err))
+        } else {
+          conv.unread_count = (conv.unread_count || 0) + 1
+        }
+
+        if (!conv.last_message) {
+          conv.last_message = {}
+        }
+        conv.last_message.text = e.message.text
+        conv.last_message.time = timeFormatted
+      })
+  })
+}
+
+watch(conversations, (newVal) => {
+  if (newVal && newVal.length > 0 && activeChannels.value.length === 0) {
+    subscribeToAllConversations()
+  }
+}, { deep: false })
+
+// ---------------- API & SERVICE ACTIONS ----------------
+const getConversations = async () => {
+  isLoading.value = true
+  try {
+    const res = await chatService.getConversations()
+    if (res && res.conversations) {
+      conversations.value = res.conversations
+      subscribeToAllConversations()
+    }
+  } catch (error) {
+    console.error('Error loading conversations:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 async function fetchBotMessages() {
+  isLoading.value = true
   try {
     const data = await chatBotService.getMessages()
     if (data && data.res) {
@@ -360,26 +407,45 @@ async function fetchBotMessages() {
         showSuggestions.value = true
       }
 
-      // Update sidebar preview
       if (messages.value.length > 0) {
         lastBotMessage.value = messages.value[messages.value.length - 1].text
       } else {
         lastBotMessage.value = 'Xin chào tôi là Chatbot AI'
       }
-
       await scrollToBottom()
     }
   } catch (error) {
-    console.error('Lỗi khi tải tin nhắn bot:', error)
+    console.error('Error loading bot messages:', error)
+  } finally {
+    isLoading.value = false
   }
 }
 
-// ---------------------------------- LIFECYCLE --------------------------------------
-onMounted(() => {
-  fetchBotMessages()
-})
+async function fetchHostMessages(id) {
+  isLoading.value = true
+  try {
+    const res = await chatService.getMessagesByConversationId(id)
 
-// ---------------------------------- CHAT ACTIONS --------------------------------------
+    if (res && res.messages) {
+      messages.value = res.messages.map(m => ({
+        role: m.sender_id === userInfo.value?.id ? 'user' : 'other',
+        text: m.text,
+        time: m.created_at ? new Date(m.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : getTime()
+      }))
+    } else {
+      messages.value = []
+    }
+
+    await scrollToBottom()
+  } catch (error) {
+    console.error('Error loading host messages:', error)
+    messages.value = []
+  } finally {
+    isLoading.value = false
+  }
+}
+
+// ---------------- CHAT ACTIONS ----------------
 async function sendMessage() {
   const text = inputText.value.trim()
   if (!text || isTyping.value) return
@@ -387,7 +453,6 @@ async function sendMessage() {
   showSuggestions.value = false
   const time = getTime()
 
-  // 1. Chatbot Drivio Logic
   if (activeConvId.value === 'bot') {
     messages.value.push({ role: 'user', text, time })
     inputText.value = ''
@@ -425,33 +490,27 @@ async function sendMessage() {
     return
   }
 
-  // 2. Owner/Host Chat Logic
-  if (activeHost.value) {
-    messages.value.push({ role: 'user', text, time })
-    activeHost.value.lastMessage = text
-    activeHost.value.time = time
-  }
-
-  inputText.value = ''
-  if (inputRef.value) inputRef.value.style.height = 'auto'
-  await scrollToBottom()
-
-  isTyping.value = true
-  await scrollToBottom()
-
-  setTimeout(async () => {
-    isTyping.value = false
-    const replyTime = getTime()
-
-    if (activeHost.value) {
-      const reply = hostReplies[Math.floor(Math.random() * hostReplies.length)]
-      messages.value.push({ role: 'other', text: reply, time: replyTime })
-      activeHost.value.lastMessage = reply
-      activeHost.value.time = replyTime
+  if (activeHost.value && chat_id.value) {
+    if (activeHost.value.last_message) {
+      activeHost.value.last_message.text = text
+      activeHost.value.last_message.time = time
     }
 
+    inputText.value = ''
+    if (inputRef.value) inputRef.value.style.height = 'auto'
     await scrollToBottom()
-  }, 1000 + Math.random() * 800)
+
+    try {
+      await chatService.storeMessage({
+        conversation_id: chat_id.value,
+        text: text,
+        type: 'text'
+      })
+    } catch (error) {
+      console.error('Error sending message:', error)
+    }
+    return
+  }
 }
 
 function sendSuggestion(text) {
@@ -461,22 +520,34 @@ function sendSuggestion(text) {
 
 async function selectConv(id) {
   activeConvId.value = id
+  chat_id.value = id === 'bot' ? null : id
+  showChatOnMobile.value = true
+
   if (id === 'bot') {
-    scrollToBottom();
     await fetchBotMessages()
   } else {
-    const host = hostConversations.value.find(h => h.id === id)
+    const host = conversations.value.find(h => h.id === id)
     if (host) {
-      host.unread = 0
-      messages.value = host.messages
+      host.unread_count = 0
+      console.log('Fetching host messages:', await fetchHostMessages(id))
+
+      try {
+        await chatService.markAsRead(id)
+      } catch (error) {
+        console.error('Error marking conversation as read:', error)
+      }
     }
   }
-  scrollToBottom()
-  showChatOnMobile.value = true
+  await scrollToBottom()
 }
 
+function exitChat() {
+  showChatOnMobile.value = false
+  activeConvId.value = null
+  chat_id.value = null
+}
 
-// ---------------------------------- UI HELPERS --------------------------------------
+// ---------------- UI HELPERS ----------------
 function getTime() {
   return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 }
@@ -498,6 +569,20 @@ function autoResize(e) {
   el.style.height = 'auto'
   el.style.height = Math.min(el.scrollHeight, 120) + 'px'
 }
+
+// ---------------- LIFECYCLE ----------------
+onMounted(async () => {
+  await fetchBotMessages()
+  await getConversations()
+})
+
+onUnmounted(() => {
+  activeChannels.value.forEach(channelName => {
+    if ($echo) {
+      $echo.leave(channelName)
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -582,5 +667,4 @@ function autoResize(e) {
   background: rgba(40, 104, 116, 0.08);
   border-left: 3px solid #0d9488;
 }
-
 </style>
