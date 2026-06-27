@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\CarCalendarController;
 use App\Http\Controllers\Api\MyTripController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\VNPayController;
+use App\Http\Controllers\Api\ZaloPayController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -57,12 +58,13 @@ Route::group([
     Route::put('notifications/read-all', [NotificationController::class, 'readAll']);
     Route::put('notifications/{id}', [NotificationController::class, 'update']);
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
-    
+
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
-    
+
     // VNPay Authenticated routes
     Route::post('vnpay/create-payment', [VNPayController::class, 'createPayment']);
-
+    // ZaloPay Authenticated routes
+    Route::post('zalopay/create-payment', [ZaloPayController::class, 'createPayment']);
     Route::get('chatbot', [AgentController::class, 'index']);
     Route::post('chatbot', [AgentController::class, 'store']);
 });
@@ -71,13 +73,13 @@ Route::group(['middleware' => 'api'], function () {
     Route::get('favorites', [FavoriteController::class, 'index']);
     Route::post('favorites', [FavoriteController::class, 'store']);
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']);
-    
+
     Route::post('cars', [CarController::class, 'store']);
-    
+
     Route::get('trips', [TripController::class, 'index']);
     Route::post('trips', [TripController::class, 'store']);
     Route::get('my-trips', [MyTripController::class, 'index']);
-    
+
     Route::post('promotions', [PromotionController::class, 'store']);
     Route::put('promotions/{id}', [PromotionController::class, 'update']);
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
@@ -88,3 +90,8 @@ Route::group(['middleware' => 'api'], function () {
 // VNPay Public Callback/Verification routes
 Route::get('vnpay/ipn', [VNPayController::class, 'ipn']);
 Route::get('vnpay/verify', [VNPayController::class, 'verify']);
+
+// ZaloPay Public Callback/Verification routes
+Route::post('zalopay/callback', [ZaloPayController::class, 'callback']);
+Route::get('zalopay/verify', [ZaloPayController::class, 'verify']);
+Route::get('zalopay/banks', [ZaloPayController::class, 'getBanks']);

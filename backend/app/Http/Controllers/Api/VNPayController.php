@@ -84,6 +84,24 @@ class VNPayController extends Controller
                 'payment_url' => $paymentUrl
             ]);
 
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            Log::warning("VNPay createPayment - Token Expired: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Token has expired'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            Log::warning("VNPay createPayment - Token Invalid: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Token is invalid'
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            Log::warning("VNPay createPayment - JWT Error: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Token is absent or invalid'
+            ], 401);
         } catch (\Exception $e) {
             Log::error('VNPay createPayment error: ' . $e->getMessage());
             return response()->json([

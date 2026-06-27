@@ -1,20 +1,9 @@
 import { ref } from 'vue'
-import { API_URL } from '~/enviroment/enviroment'
+import { paymentService } from '~/services/payment.service'
 
 export function useVNPay() {
     const loading = ref(false)
     const error = ref<string | null>(null)
-
-    const getToken = (): string | null => {
-        const tokenCookie = useCookie<string | null>("USER_TOKEN").value
-        if (tokenCookie) {
-            return tokenCookie
-        }
-        if (typeof window !== "undefined" && localStorage.getItem("USER_TOKEN")) {
-            return localStorage.getItem("USER_TOKEN")
-        }
-        return null
-    }
 
     /**
      * Initiate payment redirect to VNPay
@@ -27,26 +16,7 @@ export function useVNPay() {
         loading.value = true
         error.value = null
         try {
-            const token = getToken()
-            if (!token) {
-                throw new Error("Bạn cần đăng nhập để thực hiện thanh toán.")
-            }
-
-            const response = await $fetch<{ success: boolean; payment_url?: string; message?: string }>(
-                `${API_URL}auth/vnpay/create-payment`, 
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: {
-                        payment_type: paymentType,
-                        amount: amount,
-                        trip_id: tripId
-                    }
-                }
-            )
+            const response = await paymentService.createVNPayPayment(amount, paymentType, tripId)
 
             if (response.success && response.payment_url) {
                 // Redirect user to VNPay Sandbox checkout
@@ -72,10 +42,7 @@ export function useVNPay() {
         loading.value = true
         error.value = null
         try {
-            const queryString = new URLSearchParams(queryParams as any).toString()
-            const response = await $fetch<{ success: boolean; message: string; data?: any }>(
-                `${API_URL}vnpay/verify?${queryString}`
-            )
+            const response = await paymentService.verifyVNPayPayment(queryParams)
             return response
         } catch (err: any) {
             console.error('VNPay verification failed:', err)

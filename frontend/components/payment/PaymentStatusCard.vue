@@ -34,7 +34,7 @@
                 <div class="flex justify-between items-center">
                     <span class="text-slate-400 font-medium">Hình thức</span>
                     <span class="text-slate-800 font-semibold flex items-center gap-1">
-                        Cổng thanh toán VNPay
+                        Cổng thanh toán {{ provider === 'zalopay' ? 'ZaloPay' : 'VNPay' }}
                     </span>
                 </div>
                 <div class="flex justify-between items-center">
@@ -64,8 +64,9 @@
                     <Icon name="lucide:help-circle" class="w-3.5 h-3.5" /> Gợi ý khắc phục:
                 </p>
                 <ul class="list-disc list-inside space-y-0.5 text-slate-600">
-                    <li>Kiểm tra số dư tài khoản ngân hàng của bạn.</li>
-                    <li>Sử dụng đúng thẻ test NCB VNPay Sandbox trong chế độ thử nghiệm.</li>
+                    <li>Kiểm tra số dư tài khoản ví / ngân hàng của bạn.</li>
+                    <li v-if="provider === 'vnpay'">Sử dụng đúng thẻ test NCB VNPay Sandbox trong chế độ thử nghiệm.</li>
+                    <li v-else-if="provider === 'zalopay'">Sử dụng đúng tài khoản test ZaloPay Sandbox trong chế độ thử nghiệm.</li>
                     <li>Liên hệ bộ phận chăm sóc khách hàng nếu tài khoản đã bị trừ tiền.</li>
                 </ul>
             </div>
@@ -98,11 +99,13 @@ interface Props {
     success: boolean
     message?: string
     data?: any
+    provider?: 'vnpay' | 'zalopay'
 }
 
 const props = withDefaults(defineProps<Props>(), {
     success: false,
-    message: ''
+    message: '',
+    provider: 'vnpay'
 })
 
 const router = useRouter()

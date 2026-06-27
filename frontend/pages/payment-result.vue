@@ -14,6 +14,7 @@
                 :success="isSuccess"
                 :message="resultMessage"
                 :data="paymentData"
+                :provider="provider"
             />
         </div>
     </div>
@@ -23,18 +24,20 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useVNPay } from '~/composables/useVNPay'
+import { useZaloPay } from '~/composables/useZaloPay'
 import PaymentStatusCard from '~/components/payment/PaymentStatusCard.vue'
 
 const route = useRoute()
-const { verifyPayment } = useVNPay()
+const { verifyPayment: verifyVNPay } = useVNPay()
+const { verifyPayment: verifyZaloPay } = useZaloPay()
 
 const verifying = ref(true)
 const isSuccess = ref(false)
 const resultMessage = ref('')
 const paymentData = ref<any>(null)
+const provider = ref<'vnpay' | 'zalopay'>('vnpay')
 
 onMounted(async () => {
-    // 1. Gather all VNPay callback query params
     const queryParams = route.query
 
     if (Object.keys(queryParams).length === 0) {
@@ -45,8 +48,20 @@ onMounted(async () => {
     }
 
     try {
-        // 2. Call backend verification endpoint
-        const response = await verifyPayment(queryParams)
+        let response;
+        if (queryParams.vnp_TxnRef) {
+            provider.value = 'vnpay'
+            response = await verifyVNPay(queryParams)
+        } else if (queryParams.apptransid || queryParams.app_trans_id) {
+            provider.value = 'zalopay'
+            const appTransId = (queryParams.apptransid || queryParams.app_trans_id) as string
+            response = await verifyZaloPay(appTransId)
+        } else {
+            verifying.value = false
+            isSuccess.value = false
+            resultMessage.value = 'Cổng thanh toán không được hỗ trợ.'
+            return
+        }
         
         isSuccess.value = response.success
         resultMessage.value = response.message
