@@ -20,8 +20,6 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Filament\Support\Facades\FilamentView;
 use Filament\Navigation\NavigationGroup;
 
-use Slimani\MediaManager\MediaManagerPlugin;
-
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -36,7 +34,6 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->plugin(MediaManagerPlugin::make())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
@@ -58,7 +55,7 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Truyền thông')
                     ->icon('heroicon-o-document-text'),
 
-                    NavigationGroup::make()
+                NavigationGroup::make()
                     ->label('Quản lý Vận hành')
                     ->icon(Heroicon::Cog),
 
