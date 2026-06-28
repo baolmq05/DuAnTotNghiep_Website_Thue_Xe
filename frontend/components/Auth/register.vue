@@ -114,7 +114,7 @@
                 <div id="googleRegisterButtonContainer"></div>
               </div>
 
-              <button type="button"
+              <button type="button" @click="loginWithFacebook"
                 class="flex items-center justify-center gap-2 h-[44px] w-full border border-slate-200 rounded-full text-sm font-medium hover:bg-slate-50 transition-colors focus:outline-none">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-5 h-5">
                   <path fill="#3b5998"
@@ -144,7 +144,7 @@ import { ref, watch, nextTick } from 'vue'
 import LoadingOverlay from '@/components/Common/LoadingOverlay.vue' // Đảm bảo đúng đường dẫn file của bạn
 
 const { isRegisterOpen, openRegister, closeRegister, switchToLogin } = useAuthModal()
-const { register } = useAuth()
+const { register, loginWithFacebook: loginWithFacebookService } = useAuth()
 const { showToast } = useToast()
 const { openRegisterSuccess } = useRegisterSuccessModal()
 
@@ -234,6 +234,31 @@ const handleGoogleRegisterResponse = async (response) => {
     isLoading.value = false
     console.error(error)
     showToast("Không thể kết nối đến máy chủ xác thực!", "error")
+  }
+}
+
+function loginWithFacebook() {
+  if (typeof window !== 'undefined' && window.FB) {
+    window.FB.login(function (response) {
+      if (response.authResponse) {
+        // Kích hoạt overlay cho Facebook mượt mà
+        loadingText.value = 'Đang xác thực tài khoản Facebook...'
+        isLoading.value = true
+
+        loginWithFacebookService(response.authResponse.accessToken).then(res => {
+          if (res.success) {
+            showToast(`Xin chào ${res.user.name}! Đăng nhập thành công.`, "success")
+            setTimeout(() => { window.location.reload() }, 300)
+          } else {
+            isLoading.value = false
+            showToast(res.message || "Đăng nhập Facebook thất bại!", "error")
+          }
+        }).catch(err => {
+          isLoading.value = false
+          showToast("Đăng nhập Facebook thất bại!", "error")
+        })
+      }
+    }, { scope: 'email' })
   }
 }
 
