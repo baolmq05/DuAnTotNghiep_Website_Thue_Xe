@@ -7,7 +7,7 @@ class PromotionController extends Controller
 {
     public function index()
     {
-        $promotions = Promotion::all();
+        $promotions = Promotion::with('images')->get();
         return response()->json([
             'success' => true,
             'message' => 'Danh sách khuyến mãi.',
@@ -16,7 +16,7 @@ class PromotionController extends Controller
     }
     public function show($id)
     {
-        $promotion = Promotion::find($id);
+        $promotion = Promotion::with('images')->find($id);
         if (!$promotion) {
             return response()->json([
                 'success' => false,

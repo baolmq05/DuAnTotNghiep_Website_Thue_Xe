@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             CarImageSeeder::class,
             TripSeeder::class,
             PromotionSeeder::class,
+            PromotionImageSeeder::class,
             PromotionUsageSeeder::class,
             ViewHistorySeeder::class,
             ReviewSeeder::class,
