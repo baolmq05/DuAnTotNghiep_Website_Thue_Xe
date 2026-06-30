@@ -152,4 +152,107 @@ class TripController extends Controller
             ]
         ]);
     }
+
+    /**
+     * API Duyệt yêu cầu thuê xe
+     * PUT /api/trips/{id}/confirm
+     */
+    public function confirm($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền chủ xe
+        if ($trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền phê duyệt yêu cầu này.'
+            ], 403);
+        }
+
+        if ($trip->status !== 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu này đã được xử lý.'
+            ], 400);
+        }
+
+        // Cập nhật trạng thái thành 0 (Chưa bắt đầu)
+        $trip->update(['status' => 0]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Xác nhận cho thuê xe thành công!',
+            'data' => $trip
+        ]);
+    }
+
+    /**
+     * API Từ chối yêu cầu thuê xe
+     * PUT /api/trips/{id}/reject
+     */
+    public function reject(Request $request, $id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền chủ xe
+        if ($trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền từ chối yêu cầu này.'
+            ], 403);
+        }
+
+        if ($trip->status !== 5) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Yêu cầu này đã được xử lý.'
+            ], 400);
+        }
+
+        $reason = $request->input('reason', 'Chủ xe bận lịch đột xuất');
+
+        // Cập nhật trạng thái thành 4 (Đã từ chối / Đã hủy bởi chủ xe)
+        $trip->update(['status' => 4]);
+
+        // Tạo thông báo cho khách thuê
+        \App\Models\Notification::create([
+            'user_id' => $trip->user_id,
+            'message' => "Yêu cầu thuê xe '{$trip->car->name}' của bạn đã bị từ chối. Lý do: {$reason}.",
+            'is_read' => '0',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã từ chối yêu cầu thuê xe thành công!',
+            'data' => $trip
+        ]);
+    }
 }

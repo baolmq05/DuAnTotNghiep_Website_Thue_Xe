@@ -125,10 +125,13 @@ class ChatController extends Controller
                 ], 404);
             }
 
-            $conversation = ChatConversation::create([
-                'trip_id' => $request->trip_id,
-                'status' => 1,
-            ]);
+            $conversation = ChatConversation::where('trip_id', $request->trip_id)->first();
+            if (!$conversation) {
+                $conversation = ChatConversation::create([
+                    'trip_id' => $request->trip_id,
+                    'status' => 1,
+                ]);
+            }
 
             return response()->json([
                 'success' => true,

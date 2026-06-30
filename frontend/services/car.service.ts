@@ -212,6 +212,27 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Xác nhận cho thuê xe (Duyệt yêu cầu)
+     */
+    async confirmTrip(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/confirm`, {
+            method: "PUT",
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Từ chối yêu cầu thuê xe
+     */
+    async rejectTrip(id: number | string, reason: string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/reject`, {
+            method: "PUT",
+            body: { reason },
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();

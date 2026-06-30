@@ -82,6 +82,8 @@ Route::group(['middleware' => 'api'], function () {
 
     Route::get('trips', [TripController::class, 'index']);
     Route::post('trips', [TripController::class, 'store']);
+    Route::put('trips/{id}/confirm', [TripController::class, 'confirm']);
+    Route::put('trips/{id}/reject', [TripController::class, 'reject']);
     Route::get('my-trips', [MyTripController::class, 'index']);
 
     Route::post('promotions', [PromotionController::class, 'store']);
