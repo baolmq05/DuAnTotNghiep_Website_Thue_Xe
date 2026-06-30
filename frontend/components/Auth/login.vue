@@ -34,7 +34,7 @@
                         <div class="space-y-1.5">
                             <div class="flex justify-between items-center">
                                 <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Mật khẩu</label>
-                                <a href="#" class="text-xs font-semibold text-[#286874] hover:underline">Quên mật
+                                <a href="#" @click.prevent="switchToForgotPassword" class="text-xs font-semibold text-[#286874] hover:underline">Quên mật
                                     khẩu?</a>
                             </div>
 
@@ -118,7 +118,7 @@ import LoadingOverlay from '@/components/Common/LoadingOverlay.vue'
 // =====================================================================================
 // 1. STATE & MODAL MANAGEMENT
 // =====================================================================================
-const { isLoginOpen, openLogin, closeLogin, switchToRegister } = useAuthModal()
+const { isLoginOpen, openLogin, closeLogin, switchToRegister, switchToForgotPassword } = useAuthModal()
 const { login, loginWithGoogle: loginWithGoogleService, loginWithFacebook: loginWithFacebookService } = useAuth()
 const { showToast } = useToast()
 

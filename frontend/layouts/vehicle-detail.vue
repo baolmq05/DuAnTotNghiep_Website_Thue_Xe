@@ -15,6 +15,7 @@
     <Footer />
     <AuthLogin />
     <AuthRegister />
+    <AuthForgotPassword />
     <CommonToast />
     <CommonRegisterSuccessModal />
   </div>

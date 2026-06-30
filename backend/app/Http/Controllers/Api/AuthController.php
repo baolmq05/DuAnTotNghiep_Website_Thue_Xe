@@ -381,4 +381,130 @@ class AuthController extends Controller
             'user' => auth('api')->user()
         ]);
     }
+
+    /**
+     * Send OTP for password reset.
+     */
+    public function forgotPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+        ], [
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.exists' => 'Email này không tồn tại trong hệ thống.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $otp = mt_rand(100000, 999999);
+
+        // Save OTP to password_reset_tokens table
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+            ['email' => $email],
+            [
+                'token' => \Illuminate\Support\Facades\Hash::make($otp),
+                'created_at' => now()
+            ]
+        );
+
+        // Send OTP email
+        try {
+            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\ResetPasswordOtp($otp));
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không thể gửi email OTP. Vui lòng thử lại sau.',
+                'error_detail' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mã OTP khôi phục mật khẩu đã được gửi đến email của bạn.'
+        ]);
+    }
+
+    /**
+     * Reset password using OTP.
+     */
+    public function resetPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email|exists:users,email',
+            'token' => 'required|string|size:6',
+            'password' => 'required|string|min:6|max:16',
+            'confirm_password' => 'required|same:password',
+        ], [
+            'email.required' => 'Email không được để trống.',
+            'email.email' => 'Email không đúng định dạng.',
+            'email.exists' => 'Email này không tồn tại trong hệ thống.',
+            'token.required' => 'Mã OTP không được để trống.',
+            'token.size' => 'Mã OTP phải gồm 6 chữ số.',
+            'password.required' => 'Mật khẩu mới không được để trống.',
+            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
+            'password.max' => 'Mật khẩu tối đa là 16 ký tự.',
+            'confirm_password.required' => 'Vui lòng xác nhận lại mật khẩu mới.',
+            'confirm_password.same' => 'Mật khẩu xác nhận không đúng.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $email = $request->input('email');
+        $otp = $request->input('token');
+
+        // Check if OTP exists in database
+        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+            ->where('email', $email)
+            ->first();
+
+        if (!$record) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã OTP không hợp lệ hoặc đã hết hạn.'
+            ], 400);
+        }
+
+        // Check expiration (15 minutes)
+        if (now()->diffInMinutes(\Carbon\Carbon::parse($record->created_at)) > 15) {
+            \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $email)->delete();
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã OTP đã hết hạn.'
+            ], 400);
+        }
+
+        // Verify OTP hash
+        if (!\Illuminate\Support\Facades\Hash::check($otp, $record->token)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Mã OTP không chính xác.'
+            ], 400);
+        }
+
+        // Update password
+        $user = User::where('email', $email)->first();
+        $user->update([
+            'password' => bcrypt($request->input('password'))
+        ]);
+
+        // Delete token entry
+        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $email)->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Mật khẩu của bạn đã được thay đổi thành công. Vui lòng đăng nhập bằng mật khẩu mới.'
+        ]);
+    }
 }

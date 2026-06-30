@@ -46,6 +46,8 @@ Route::group([
     Route::put('profile', [AuthController::class, 'updateProfile']);
     Route::post('profile/driving-license', [AuthController::class, 'submitDrivingLicense']);
     Route::post('change-password', [AuthController::class, 'changePassword']);
+    Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+    Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
     Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
     Route::post('facebook', [FacebookAuthController::class, 'loginWithFacebook']);

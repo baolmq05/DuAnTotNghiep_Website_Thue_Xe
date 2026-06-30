@@ -6,6 +6,7 @@
     <Footer></Footer>
     <AuthLogin />
     <AuthRegister />
+    <AuthForgotPassword />
     <CommonToast />
     <CommonRegisterSuccessModal />
 </template>

@@ -74,6 +74,22 @@ export class AuthService extends BaseService {
       useAuth: false
     });
   }
+
+  async forgotPasswordApi(payload: { email: string }): Promise<any> {
+    return this.request<any>("auth/forgot-password", {
+      method: "POST",
+      body: payload,
+      useAuth: false
+    });
+  }
+
+  async resetPasswordApi(payload: any): Promise<any> {
+    return this.request<any>("auth/reset-password", {
+      method: "POST",
+      body: payload,
+      useAuth: false
+    });
+  }
 }
 
 export const authService = new AuthService();

@@ -16,6 +16,7 @@
     </main>
     <AuthLogin />
     <AuthRegister />
+    <AuthForgotPassword />
     <CommonToast />
     <CommonRegisterSuccessModal />
   </div>
