@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Trip;
@@ -34,7 +35,7 @@ class MyTripController extends Controller
         }
 
         // lọc trạng thái
-        if ($request->filled('status') && in_array($request->status, [0, 1, 2, 3, 4])) {
+        if ($request->filled('status') && in_array($request->status, [0, 1, 2, 3, 4, 5, 6])) {
             $status = (int)$request->status;
             $tripQuery->where('status', $status);
         }
@@ -67,11 +68,13 @@ class MyTripController extends Controller
 
         foreach ($trips as $trip) {
             switch ($trip->status) {
-                case 0: $trip->status_text = 'Chưa bắt đầu'; break;
-                case 1: $trip->status_text = 'Đang diễn ra'; break;
-                case 2: $trip->status_text = 'Đã hoàn thành'; break;
-                case 3: $trip->status_text = 'Đã hủy bởi bạn'; break;
-                case 4: $trip->status_text = 'Đã hủy bởi chủ xe'; break;
+                case TripStatus::Pending->value: $trip->status_text = 'Chờ duyệt'; break;
+                case TripStatus::WaitingPayment->value: $trip->status_text = 'Chờ thanh toán'; break;
+                case TripStatus::Confirmed->value: $trip->status_text = 'Chưa bắt đầu'; break;
+                case TripStatus::Ongoing->value: $trip->status_text = 'Đang diễn ra'; break;
+                case TripStatus::Complete->value: $trip->status_text = 'Đã hoàn thành'; break;
+                case TripStatus::UserCancel->value: $trip->status_text = 'Đã hủy bởi bạn'; break;
+                case TripStatus::OwnerCancel->value: $trip->status_text = 'Đã hủy bởi chủ xe'; break;
                 default: $trip->status_text = 'Không xác định'; break;
             }
 

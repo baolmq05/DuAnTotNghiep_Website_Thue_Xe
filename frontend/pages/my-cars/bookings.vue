@@ -26,7 +26,6 @@
         :class="activeFilter === tab.value
           ? 'bg-[#1e4e57] border-[#1e4e57] text-white'
           : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'">
-        <span class="w-1.5 h-1.5 rounded-full" :class="tab.dotColor"></span>
         <span>{{ tab.label }}</span>
         <span class="text-[10px] px-1.5 py-0.5 rounded-lg ml-0.5"
           :class="activeFilter === tab.value ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500'">
@@ -82,7 +81,6 @@
                 </span>
                 <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold"
                   :class="statusClass(trip.status)">
-                  <span class="h-1.5 w-1.5 rounded-full" :class="statusDot(trip.status)"></span>
                   {{ statusLabel(trip.status) }}
                 </span>
               </div>
@@ -111,7 +109,7 @@
                 <p class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ trip.renter.name }}</p>
                 <p class="text-[11px] text-slate-500 font-medium mt-0.5">{{ trip.renter.phone }}</p>
               </div>
-              <button v-if="trip.status !== 5" @click="startConversation(trip)"
+              <button v-if="trip.status !== TripStatus.Pending" @click="startConversation(trip)"
                 class="p-2.5 bg-white hover:bg-slate-100 text-[#1e4e57] rounded-xl border border-slate-200 shadow-sm transition-all flex items-center justify-center shrink-0">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -156,8 +154,8 @@
           </div>
         </div>
 
-        <!-- Confirm / Reject Action buttons (ONLY for Pending - status 5) -->
-        <div v-if="trip.status === 5" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+        <!-- Confirm / Reject Action buttons (ONLY for Pending) -->
+        <div v-if="trip.status === TripStatus.Pending" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
           <button @click="openRejectDialog(trip)"
             class="flex-1 py-3 px-4 border border-rose-200 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] transition-all text-xs font-bold text-rose-600 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -254,6 +252,7 @@ import { ref, computed, onMounted } from 'vue';
 import { carService } from '~/services/car.service';
 import { useToast } from '~/composables/useToast';
 import { ChatService } from '~/services/chat.service';
+import { TripStatus, TripStatusLabel, TripStatusBadgeClass } from '~/config/trip-status';
 
 definePageMeta({
   layout: "my-cars",
@@ -263,7 +262,7 @@ const chatService = new ChatService();
 const { showToast } = useToast();
 const loading = ref(true);
 const ownerTrips = ref<any[]>([]);
-const activeFilter = ref<'pending' | 'confirmed' | 'active' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
+const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
 
 // Modal States
 const showRejectModal = ref(false);
@@ -276,38 +275,37 @@ const filterTabs = computed(() => {
     {
       value: 'pending' as const,
       label: 'Chờ duyệt',
-      count: ownerTrips.value.filter(t => t.status === 5).length,
-      dotColor: 'bg-amber-500'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.Pending).length,
+    },
+    {
+      value: 'waiting_payment' as const,
+      label: 'Chờ thanh toán',
+      count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingPayment).length,
     },
     {
       value: 'confirmed' as const,
       label: 'Đã xác nhận',
-      count: ownerTrips.value.filter(t => t.status === 0).length,
-      dotColor: 'bg-slate-400'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.Confirmed).length,
     },
     {
       value: 'active' as const,
       label: 'Đang diễn ra',
-      count: ownerTrips.value.filter(t => t.status === 1).length,
-      dotColor: 'bg-amber-500'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.Ongoing).length,
     },
     {
       value: 'completed' as const,
       label: 'Đã hoàn thành',
-      count: ownerTrips.value.filter(t => t.status === 2).length,
-      dotColor: 'bg-emerald-500'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.Complete).length,
     },
     {
       value: 'cancelled_renter' as const,
       label: 'Khách hủy chuyến',
-      count: ownerTrips.value.filter(t => t.status === 3).length,
-      dotColor: 'bg-rose-400'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.UserCancel).length,
     },
     {
       value: 'cancelled_owner' as const,
       label: 'Chủ xe từ chối',
-      count: ownerTrips.value.filter(t => t.status === 4).length,
-      dotColor: 'bg-rose-600'
+      count: ownerTrips.value.filter(t => t.status === TripStatus.OwnerCancel).length,
     },
   ];
 });
@@ -357,45 +355,29 @@ onMounted(() => {
 // Filtering based on current active tab
 const filteredTrips = computed(() => {
   if (activeFilter.value === 'pending') {
-    return ownerTrips.value.filter(t => t.status === 5);
+    return ownerTrips.value.filter(t => t.status === TripStatus.Pending);
+  } else if (activeFilter.value === 'waiting_payment') {
+    return ownerTrips.value.filter(t => t.status === TripStatus.WaitingPayment);
   } else if (activeFilter.value === 'confirmed') {
-    return ownerTrips.value.filter(t => t.status === 0);
+    return ownerTrips.value.filter(t => t.status === TripStatus.Confirmed);
   } else if (activeFilter.value === 'active') {
-    return ownerTrips.value.filter(t => t.status === 1);
+    return ownerTrips.value.filter(t => t.status === TripStatus.Ongoing);
   } else if (activeFilter.value === 'completed') {
-    return ownerTrips.value.filter(t => t.status === 2);
+    return ownerTrips.value.filter(t => t.status === TripStatus.Complete);
   } else if (activeFilter.value === 'cancelled_renter') {
-    return ownerTrips.value.filter(t => t.status === 3);
+    return ownerTrips.value.filter(t => t.status === TripStatus.UserCancel);
   } else {
-    return ownerTrips.value.filter(t => t.status === 4);
+    return ownerTrips.value.filter(t => t.status === TripStatus.OwnerCancel);
   }
 });
 
 // Helper labels and classes
 function statusLabel(status: number) {
-  return ['Đã xác nhận', 'Đang diễn ra', 'Đã hoàn thành', 'Khách hủy chuyến', 'Chủ xe từ chối', 'Chờ duyệt'][status] ?? '—';
+  return TripStatusLabel[status as TripStatus] ?? '—';
 }
 
 function statusClass(status: number) {
-  return [
-    'bg-slate-100 text-slate-600 border border-slate-200',    // 0: Đã xác nhận
-    'bg-amber-50 text-amber-600 border border-amber-200',    // 1: Đang diễn ra
-    'bg-emerald-50 text-emerald-600 border border-emerald-100', // 2: Đã hoàn thành
-    'bg-red-50 text-red-500 border border-red-100',          // 3: Khách hủy chuyến
-    'bg-rose-50 text-rose-500 border border-rose-100',       // 4: Chủ xe từ chối
-    'bg-amber-50 text-amber-600 border border-amber-200',    // 5: Chờ duyệt
-  ][status] ?? 'bg-slate-100 text-slate-500';
-}
-
-function statusDot(status: number) {
-  return [
-    'bg-slate-400',
-    'bg-amber-500 animate-pulse',
-    'bg-emerald-500',
-    'bg-red-400',
-    'bg-rose-500',
-    'bg-amber-500 animate-pulse',
-  ][status] ?? 'bg-slate-400';
+  return TripStatusBadgeClass[status as TripStatus] ?? 'bg-slate-100 text-slate-500';
 }
 
 function formatDate(dt: string) {

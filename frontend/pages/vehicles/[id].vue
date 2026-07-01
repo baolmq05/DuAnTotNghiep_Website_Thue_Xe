@@ -887,6 +887,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted, watch, nextTick } from "vue";
 import { useRoute } from "#app";
+import { TripStatus } from "~/config/trip-status";
 import { carService } from "~/services/car.service";
 import { favoriteService } from "~/services/favorite.service";
 import { notificationService } from "~/services/notification.service";
@@ -1609,7 +1610,7 @@ const similarCars = computed(() => {
 const hasActiveBooking = computed(() => {
   if (!user.value || !car.value?.trips) return false;
   return car.value.trips.some((trip: any) => 
-    trip.user_id === user.value.id && [0, 1, 5].includes(Number(trip.status))
+    trip.user_id === user.value.id && [TripStatus.Pending, TripStatus.WaitingPayment, TripStatus.Confirmed, TripStatus.Ongoing].includes(Number(trip.status))
   );
 });
 </script>

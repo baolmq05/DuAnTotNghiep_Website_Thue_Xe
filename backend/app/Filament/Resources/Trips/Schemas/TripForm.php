@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Trips\Schemas;
 
+use App\Enum\TripStatus;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -55,11 +56,13 @@ class TripForm
                 Select::make('status')
                     ->label('Trạng thái')
                     ->options([
-                        0 => 'Chưa bắt đầu',
-                        1 => 'Đang diễn ra',
-                        2 => 'Đã hoàn thành',
-                        3 => 'Đã hủy bởi người dùng',
-                        4 => 'Đã hủy bởi chủ xe',
+                        TripStatus::Pending->value => 'Chờ duyệt',
+                        TripStatus::WaitingPayment->value => 'Chờ thanh toán',
+                        TripStatus::Confirmed->value => 'Đã xác nhận',
+                        TripStatus::Ongoing->value => 'Đang diễn ra',
+                        TripStatus::Complete->value => 'Đã hoàn thành',
+                        TripStatus::UserCancel->value => 'Người dùng hủy',
+                        TripStatus::OwnerCancel->value => 'Chủ xe hủy',
                     ])
                     ->default(0)
                     ->required(),

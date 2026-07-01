@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Enum\TripStatus;
 use App\Models\Car;
 use App\Models\Trip;
 use App\Models\CarBrand;
@@ -53,8 +54,12 @@ class CarController extends Controller
             $startDate = Carbon::parse($request->startDate);
             $endDate = Carbon::parse($request->endDate);
 
-            // Tìm các xe có chuyến đi (trip) đang hoạt động giao thoa với khoảng thời gian này
-            $busyCarIds = Trip::whereIn('status', [0, 1, 5]) // 0: chưa bắt đầu, 1: đang diễn ra, 5: chờ duyệt
+            // Tìm các xe có chuyến đi (trip) đang hoạt động / chờ duyệt giao thoa với khoảng thời gian này
+            $busyCarIds = Trip::whereIn('status', [
+                    TripStatus::Pending->value,
+                    TripStatus::Confirmed->value,
+                    TripStatus::Ongoing->value,
+                ])
                 ->where(function ($q) use ($startDate, $endDate) {
                     $q->where('start_at', '<=', $endDate)
                         ->where('end_at', '>=', $startDate);
@@ -118,7 +123,7 @@ class CarController extends Controller
             ->withAvg('reviews', 'rating')
             ->withCount([
                 'trips' => function ($q) {
-                    $q->where('status', 2); // Chỉ đếm các chuyến đi đã hoàn thành thành công
+                    $q->where('status', TripStatus::Complete->value); // Chỉ đếm các chuyến đi đã hoàn thành thành công
                 }
             ]);
 
@@ -153,14 +158,18 @@ class CarController extends Controller
                 $q->select('id', 'name', 'avatar');
             },
             'trips' => function ($q) {
-                $q->whereIn('status', [0, 1, 5])
+                $q->whereIn('status', [
+                    TripStatus::Pending->value,
+                    TripStatus::Confirmed->value,
+                    TripStatus::Ongoing->value,
+                ])
                     ->select('id', 'car_id', 'user_id', 'start_at', 'end_at', 'status');
             }
         ])
             ->withAvg('reviews', 'rating')
             ->withCount([
                 'trips' => function ($q) {
-                    $q->where('status', 2); // Chuyến đi đã hoàn thành
+                    $q->where('status', TripStatus::Complete->value); // Chuyến đi đã hoàn thành
                 }
             ])
             ->find($id);

@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enum\TripStatus;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
@@ -479,7 +480,7 @@ class ZaloPayService
 
                     ]);
 
-                    $trip->status = 1;
+                    $trip->status = TripStatus::Ongoing->value;
 
                     $trip->save();
 

@@ -49,7 +49,7 @@
               <p class="text-gray-500 text-sm">Ngày sinh</p>
 
               <p class="font-medium mt-2">
-                {{ user?.DOB ? new Date(user.DOB).toLocaleDateString('vi-VN') : 'Chưa cậpnhật' }}</p>
+                {{ user?.DOB ? new Date(user.DOB).toLocaleDateString('vi-VN') : 'Chưa cập nhật' }}</p>
             </div>
 
             <div class="bg-gray-50 rounded-xl p-4">

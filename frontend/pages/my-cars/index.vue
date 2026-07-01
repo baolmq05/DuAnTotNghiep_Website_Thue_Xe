@@ -105,28 +105,28 @@
               <span v-if="car.status === 1"
                 class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wider"
               >
-                <span class="relative flex h-2 w-2">
+                <!-- <span class="relative flex h-2 w-2">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
+                </span> -->
                 Đang hoạt động
               </span>
               <span v-else-if="car.status === 2"
                 class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider"
               >
-                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                <!-- <span class="w-2 h-2 rounded-full bg-amber-500"></span> -->
                 Chờ phê duyệt
               </span>
               <span v-else-if="car.status === 3"
                 class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider"
               >
-                <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                <!-- <span class="w-2 h-2 rounded-full bg-rose-500"></span> -->
                 Bị từ chối
               </span>
               <span v-else-if="car.status === 0"
                 class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider"
               >
-                <span class="w-2 h-2 rounded-full bg-slate-400"></span>
+                <!-- <span class="w-2 h-2 rounded-full bg-slate-400"></span> -->
                 Dừng hoạt động
               </span>
             </div>
@@ -192,7 +192,7 @@
             </div>
 
             <!-- Occupancy Rate Progress Bar -->
-            <div class="space-y-1.5">
+            <!-- <div class="space-y-1.5">
               <div class="flex justify-between items-center text-xs">
                 <span class="text-slate-400 font-semibold">Hiệu suất thuê tháng này</span>
                 <span class="font-bold text-[#1e4e57]">
@@ -205,7 +205,7 @@
                   :style="{ width: `${(car.activeDays / 30) * 100}%` }"
                 ></div>
               </div>
-            </div>
+            </div> -->
 
             <!-- Footer: Revenue -->
             <div class="flex justify-between items-center pt-3.5 border-t border-slate-100">

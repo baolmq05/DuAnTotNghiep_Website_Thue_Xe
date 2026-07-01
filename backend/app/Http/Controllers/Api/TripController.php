@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Trip;
 use App\Models\Car;
@@ -95,11 +96,11 @@ class TripController extends Controller
             ], 400);
         }
 
-        // Tạo chuyến đi với status là 5 (Chờ duyệt)
+        // Tạo chuyến đi với trạng thái Pending (Chờ duyệt)
         $trip = Trip::create([
             'cost' => $request->cost,
             'discount_amount' => $request->discount_amount ?? 0,
-            'status' => 5, // 5: Chờ duyệt
+            'status' => TripStatus::Pending->value,
             'trip_type' => $request->trip_type,
             'start_at' => $request->start_at,
             'end_at' => $request->end_at,
@@ -183,15 +184,15 @@ class TripController extends Controller
             ], 403);
         }
 
-        if ($trip->status !== 5) {
+        if ($trip->status !== TripStatus::Pending->value) {
             return response()->json([
                 'success' => false,
                 'message' => 'Yêu cầu này đã được xử lý.'
             ], 400);
         }
 
-        // Cập nhật trạng thái thành 0 (Chưa bắt đầu)
-        $trip->update(['status' => 0]);
+        // Cập nhật trạng thái thành Confirmed (Đã xác nhận)
+        $trip->update(['status' => TripStatus::Confirmed->value]);
 
         return response()->json([
             'success' => true,
@@ -230,7 +231,7 @@ class TripController extends Controller
             ], 403);
         }
 
-        if ($trip->status !== 5) {
+        if ($trip->status !== TripStatus::Pending->value) {
             return response()->json([
                 'success' => false,
                 'message' => 'Yêu cầu này đã được xử lý.'
@@ -239,8 +240,8 @@ class TripController extends Controller
 
         $reason = $request->input('reason', 'Chủ xe bận lịch đột xuất');
 
-        // Cập nhật trạng thái thành 4 (Đã từ chối / Đã hủy bởi chủ xe)
-        $trip->update(['status' => 4]);
+        // Cập nhật trạng thái thành OwnerCancel (Chủ xe hủy)
+        $trip->update(['status' => TripStatus::OwnerCancel->value]);
 
         // Tạo thông báo cho khách thuê
         \App\Models\Notification::create([

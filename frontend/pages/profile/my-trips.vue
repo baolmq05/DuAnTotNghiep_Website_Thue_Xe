@@ -38,12 +38,9 @@
                     <select v-model="filterStatus"
                         class="w-full appearance-none cursor-pointer rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-4 pr-9 text-sm text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10">
                         <option value="">Tất cả trạng thái</option>
-                        <option value="0">Chưa bắt đầu</option>
-                        <option value="1">Đang diễn ra</option>
-                        <option value="2">Đã hoàn thành</option>
-                        <option value="3">Đã hủy (bởi bạn)</option>
-                        <option value="4">Đã hủy (bởi chủ xe)</option>
-                        <option value="5">Đang chờ duyệt</option>
+                        <option v-for="opt in TripStatusOptions" :key="opt.value" :value="opt.value">
+                            {{ opt.label }}
+                        </option>
                     </select>
                     <i
                         class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
@@ -122,7 +119,7 @@
                                 <div class="space-y-2">
                                     <div class="flex flex-wrap items-center gap-2">
                                         <h3 class="font-bold text-slate-900 text-base max-sm:text-sm">{{ trip.car.name
-                                            }}
+                                        }}
                                         </h3>
                                         <span
                                             class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">{{
@@ -134,7 +131,6 @@
                                 <span
                                     class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs max-sm:text-[11px] font-bold"
                                     :class="statusClass(trip.status)">
-                                    <span class="h-1.5 w-1.5 rounded-full" :class="statusDot(trip.status)"></span>
                                     {{ statusLabel(trip.status) }}
                                 </span>
                             </div>
@@ -196,6 +192,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { TripStatus, TripStatusLabel, TripStatusBadgeClass, TripStatusOptions } from '~/config/trip-status'
 
 definePageMeta({
     layout: 'profile',
@@ -230,7 +227,7 @@ interface Trip {
     id: number
     cost: number
     discount_amount: number
-    status: number   // 0: chưa bắt đầu | 1: đang diễn ra | 2: hoàn thành | 3: hủy bởi user | 4: hủy bởi chủ xe
+    status: number   // 0: Chờ duyệt | 1: Chờ thanh toán | 2: Đã xác nhận | 3: Đang diễn ra | 4: Đã hoàn thành | 5: Người dùng hủy | 6: Chủ xe hủy
     trip_type: number // 0: theo ngày | 1: theo km
     start_at: string
     end_at: string
@@ -244,7 +241,7 @@ interface Trip {
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 const tabs = [
     { key: 'booked', label: 'Chuyến đã đặt', icon: 'fa-solid fa-car-side' },
-]
+] as const
 const activeTab = ref<'booked' | 'owner'>('booked')
 
 // ─── Filters ──────────────────────────────────────────────────────────────────
@@ -351,30 +348,12 @@ function applyFilters(list: Trip[]): Trip[] {
 const filteredBookedTrips = computed(() => applyFilters(bookedTrips.value))
 const filteredOwnerTrips = computed(() => applyFilters(ownerTrips.value))
 
-function statusLabel(status: number) {
-    return ['Chưa bắt đầu', 'Đang diễn ra', 'Đã hoàn thành', 'Đã hủy (bạn)', 'Đã hủy (chủ xe)', 'Chờ duyệt'][status] ?? '—'
+function statusLabel(status: any) {
+    return TripStatusLabel[Number(status) as TripStatus] ?? '—'
 }
 
-function statusClass(status: number) {
-    return [
-        'bg-slate-100 text-slate-600',       // 0
-        'bg-blue-50 text-blue-600',           // 1
-        'bg-emerald-50 text-emerald-600',     // 2
-        'bg-red-50 text-red-500',             // 3
-        'bg-orange-50 text-orange-500',       // 4
-        'bg-amber-50 text-amber-600 border border-amber-200', // 5 (chờ duyệt)
-    ][status] ?? 'bg-slate-100 text-slate-500'
-}
-
-function statusDot(status: number) {
-    return [
-        'bg-slate-400 animate-pulse',
-        'bg-blue-500 animate-pulse',
-        'bg-emerald-500',
-        'bg-red-400',
-        'bg-orange-400',
-        'bg-amber-500 animate-pulse',
-    ][status] ?? 'bg-slate-400'
+function statusClass(status: any) {
+    return TripStatusBadgeClass[Number(status) as TripStatus] ?? 'bg-slate-100 text-slate-500'
 }
 
 function formatDate(dt: string) {

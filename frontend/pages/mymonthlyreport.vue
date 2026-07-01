@@ -323,6 +323,7 @@ import { ref, onMounted, computed } from 'vue'
 import { walletService } from '~/services/wallet.service'
 import { authService } from '~/services/auth.service'
 import { useRouter } from 'vue-router'
+import { TripStatus } from '~/config/trip-status'
 
 const router = useRouter()
 
@@ -343,7 +344,7 @@ const summary = ref({
 })
 
 const completedTrips = computed(() => {
-    return transactions.value.filter(t => t.trip && t.trip.status !== 3 && t.trip.status !== 4)
+    return transactions.value.filter(t => t.trip && t.trip.status !== TripStatus.UserCancel && t.trip.status !== TripStatus.OwnerCancel)
 })
 
 const depositWithdrawals = computed(() => {
@@ -351,7 +352,7 @@ const depositWithdrawals = computed(() => {
 })
 
 const cancelledTrips = computed(() => {
-    return transactions.value.filter(t => t.trip && (t.trip.status === 3 || t.trip.status === 4))
+    return transactions.value.filter(t => t.trip && (t.trip.status === TripStatus.UserCancel || t.trip.status === TripStatus.OwnerCancel))
 })
 
 const formatCurrency = (value: number) => {

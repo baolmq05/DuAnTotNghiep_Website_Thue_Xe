@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Trips\Tables;
 
+use App\Enum\TripStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -50,20 +51,14 @@ class TripsTable
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Trạng thái')
-                    ->formatStateUsing(fn ($state): string => match ((int) $state) {
-                        0 => 'Chưa bắt đầu',
-                        1 => 'Đang diễn ra',
-                        2 => 'Đã hoàn thành',
-                        3 => 'Hủy bởi khách',
-                        4 => 'Hủy bởi chủ xe',
-                        default => 'Không xác định',
-                    })
+                    ->formatStateUsing(fn ($state): string => TripStatus::tryFrom((int) $state)?->label() ?? 'Không xác định')
                     ->color(fn ($state): string => match ((int) $state) {
-                        0 => 'gray',
-                        1 => 'info',
-                        2 => 'success',
-                        3 => 'danger',
-                        4 => 'danger',
+                        TripStatus::Pending->value => 'warning',
+                        TripStatus::WaitingPayment->value => 'info',
+                        TripStatus::Confirmed->value => 'gray',
+                        TripStatus::Ongoing->value => 'primary',
+                        TripStatus::Complete->value => 'success',
+                        TripStatus::UserCancel->value, TripStatus::OwnerCancel->value => 'danger',
                         default => 'gray',
                     })
                     ->badge()
@@ -97,11 +92,13 @@ class TripsTable
                 \Filament\Tables\Filters\SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
-                        0 => 'Chưa bắt đầu',
-                        1 => 'Đang diễn ra',
-                        2 => 'Đã hoàn thành',
-                        3 => 'Hủy bởi khách',
-                        4 => 'Hủy bởi chủ xe',
+                        TripStatus::Pending->value => 'Chờ duyệt',
+                        TripStatus::WaitingPayment->value => 'Chờ thanh toán',
+                        TripStatus::Confirmed->value => 'Đã xác nhận',
+                        TripStatus::Ongoing->value => 'Đang diễn ra',
+                        TripStatus::Complete->value => 'Đã hoàn thành',
+                        TripStatus::UserCancel->value => 'Người dùng hủy',
+                        TripStatus::OwnerCancel->value => 'Chủ xe hủy',
                     ]),
                 \Filament\Tables\Filters\SelectFilter::make('trip_type')
                     ->label('Loại thuê')

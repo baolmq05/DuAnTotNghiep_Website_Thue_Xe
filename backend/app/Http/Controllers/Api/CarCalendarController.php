@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Car;
@@ -71,7 +72,13 @@ class CarCalendarController extends Controller
             $query->whereHas('trips', function ($q) use ($now, $toDate) {
                 $q->where('start_at', '<=', $toDate)
                     ->where('end_at', '>=', $now)
-                    ->whereIn('status', [0, 1, 2, 3, 4]);
+                    ->whereIn('status', [
+                        TripStatus::Confirmed->value,
+                        TripStatus::Ongoing->value,
+                        TripStatus::Complete->value,
+                        TripStatus::UserCancel->value,
+                        TripStatus::OwnerCancel->value,
+                    ]);
             });
         }
 
@@ -83,21 +90,33 @@ class CarCalendarController extends Controller
         foreach ($cars as $car) {
             $tripsInPeriod = $car->trips->filter(function ($trip) use ($isFilteringDate, $now, $toDate) {
                 if (!$isFilteringDate) {
-                    return in_array($trip->status, [0, 1, 2, 3, 4]);
+                    return in_array($trip->status, [
+                        TripStatus::Confirmed->value,
+                        TripStatus::Ongoing->value,
+                        TripStatus::Complete->value,
+                        TripStatus::UserCancel->value,
+                        TripStatus::OwnerCancel->value,
+                    ]);
                 }
                 $tripStart = Carbon::parse($trip->start_at)->startOfDay();
                 $tripEnd = Carbon::parse($trip->end_at)->endOfDay();
-                return $tripStart <= $toDate && $tripEnd >= $now && in_array($trip->status, [0, 1, 2, 3, 4]);
+                return $tripStart <= $toDate && $tripEnd >= $now && in_array($trip->status, [
+                        TripStatus::Confirmed->value,
+                        TripStatus::Ongoing->value,
+                        TripStatus::Complete->value,
+                        TripStatus::UserCancel->value,
+                        TripStatus::OwnerCancel->value,
+                    ]);
             })->sortBy('start_at');
 
             if ($tripsInPeriod->isNotEmpty()) {
                 foreach ($tripsInPeriod as $trip) {
                     $note = 'Sẵn sàng đón khách';
-                    if ($trip->status == 1) $note = "Đang Có chuyến đi diễn ra";
-                    else if ($trip->status == 0) $note = "Lịch hẹn tiếp theo (Chờ giao)";
-                    else if ($trip->status == 2) $note = "Hoàn thành chuyến đi";
-                    else if ($trip->status == 3) $note = "Chuyến đi bị người dùng hủy";
-                    else if ($trip->status == 4) $note = "Chuyến đi bị chủ xe hủy";
+                    if ($trip->status == TripStatus::Ongoing->value) $note = "Đang Có chuyến đi diễn ra";
+                    else if ($trip->status == TripStatus::Confirmed->value) $note = "Lịch hẹn tiếp theo (Chờ giao)";
+                    else if ($trip->status == TripStatus::Complete->value) $note = "Hoàn thành chuyến đi";
+                    else if ($trip->status == TripStatus::UserCancel->value) $note = "Chuyến đi bị người dùng hủy";
+                    else if ($trip->status == TripStatus::OwnerCancel->value) $note = "Chuyến đi bị chủ xe hủy";
 
                     $thumbnailImage = $car->images->where('is_thumbnail', 1)->first() ?? $car->images->first();
 
@@ -110,7 +129,7 @@ class CarCalendarController extends Controller
                         'image' => $thumbnailImage->image_url ?? null,
                         'location' => $car->carLocation->address ?? 'Không rõ',
                         'manufactureYear' => Carbon::parse($car->manufacture_year)->format('Y'),
-                        'status' => $trip->status == 1 ? 1 : ($trip->status == 0 ? 2 : 0),
+                        'status' => $trip->status == TripStatus::Ongoing->value ? 1 : ($trip->status == TripStatus::Confirmed->value ? 2 : 0),
                         'trip_status' => $trip->status,
                         'bookedDates' => Carbon::parse($trip->start_at)->format('d/m') . ' - ' . Carbon::parse($trip->end_at)->format('d/m/Y'),
                         'note' => $note,
@@ -180,19 +199,25 @@ class CarCalendarController extends Controller
                 return $currentDay->between(
                     Carbon::parse($trip->start_at)->startOfDay(),
                     Carbon::parse($trip->end_at)->endOfDay()
-                ) && in_array($trip->status, [0, 1, 2, 3, 4]);
+                ) && in_array($trip->status, [
+                    TripStatus::Confirmed->value,
+                    TripStatus::Ongoing->value,
+                    TripStatus::Complete->value,
+                    TripStatus::UserCancel->value,
+                    TripStatus::OwnerCancel->value,
+                ]);
             });
 
             if ($tripOnDay) {
-                if ($tripOnDay->status == 1) {
+                if ($tripOnDay->status == TripStatus::Ongoing->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-emerald-500', 'tooltip' => 'Đang diễn ra'];
-                } else if ($tripOnDay->status == 0) {
+                } else if ($tripOnDay->status == TripStatus::Confirmed->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-amber-500', 'tooltip' => 'Chưa bắt đầu (Chờ giao)'];
-                } else if ($tripOnDay->status == 2) {
+                } else if ($tripOnDay->status == TripStatus::Complete->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-indigo-500', 'tooltip' => 'Đã hoàn thành'];
-                } else if ($tripOnDay->status == 3) {
+                } else if ($tripOnDay->status == TripStatus::UserCancel->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-purple-500', 'tooltip' => 'Đã hủy bởi người dùng'];
-                } else if ($tripOnDay->status == 4) {
+                } else if ($tripOnDay->status == TripStatus::OwnerCancel->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-rose-500', 'tooltip' => 'Đã hủy bởi chủ xe'];
                 }
             } else {
@@ -233,19 +258,19 @@ class CarCalendarController extends Controller
             $color = 'bg-gray-200';
             $tooltip = 'Trống lịch';
 
-            if ($trip->status == 1) {
+            if ($trip->status == TripStatus::Ongoing->value) {
                 $color = 'bg-emerald-500';
                 $tooltip = 'Đang diễn ra';
-            } else if ($trip->status == 0) {
+            } else if ($trip->status == TripStatus::Confirmed->value) {
                 $color = 'bg-amber-500';
                 $tooltip = 'Chưa bắt đầu (Chờ giao)';
-            } else if ($trip->status == 2) {
+            } else if ($trip->status == TripStatus::Complete->value) {
                 $color = 'bg-indigo-500';
                 $tooltip = 'Đã hoàn thành';
-            } else if ($trip->status == 3) {
+            } else if ($trip->status == TripStatus::UserCancel->value) {
                 $color = 'bg-purple-500';
                 $tooltip = 'Đã hủy bởi người dùng';
-            } else if ($trip->status == 4) {
+            } else if ($trip->status == TripStatus::OwnerCancel->value) {
                 $color = 'bg-rose-500';
                 $tooltip = 'Đã hủy bởi chủ xe';
             }

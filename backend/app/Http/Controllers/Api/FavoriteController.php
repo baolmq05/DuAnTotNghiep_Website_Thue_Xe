@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Enum\TripStatus;
 use App\Models\Favorite;
 use App\Models\FavoriteItem;
 use Illuminate\Http\Request;
@@ -35,7 +36,7 @@ class FavoriteController extends Controller
                     ])
                         ->withAvg('reviews', 'rating')
                         ->withCount(['trips' => function ($q) {
-                            $q->where('status', 2); // Chỉ đếm các chuyến đi đã hoàn thành thành công
+                            $q->where('status', TripStatus::Complete->value); // Chỉ đếm các chuyến đi đã hoàn thành thành công
                         }]);
                 }
             ])

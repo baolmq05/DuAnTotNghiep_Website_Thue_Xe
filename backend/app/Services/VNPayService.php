@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enum\TripStatus;
 use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
@@ -211,8 +212,8 @@ class VNPayService
                         'trip_id' => $trip->id
                     ]);
 
-                    // 3. Update trip status to ongoing/active (1)
-                    $trip->status = 1;
+                    // 3. Update trip status to ongoing/active
+                    $trip->status = TripStatus::Ongoing->value;
                     $trip->save();
 
                     Log::info("VNPay rental payment successful for trip {$tripId}, credited owner {$ownerId} amount {$amount}.");

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use App\Models\Transaction;
@@ -81,9 +82,9 @@ class WalletController extends Controller
 
             $rating = $rating ? round(floatval($rating), 1) : 5.0;
 
-            // Tính số chuyến đi thành công (status = 2) của các xe thuộc chủ xe
+            // Tính số chuyến đi thành công (status = 4) của các xe thuộc chủ xe
             $completedTripsCount = Trip::whereIn('car_id', $carIds)
-                ->where('status', 2)
+                ->where('status', TripStatus::Complete->value)
                 ->count();
 
             return response()->json([
