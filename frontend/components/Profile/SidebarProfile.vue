@@ -27,7 +27,7 @@ const mainMenus = [
   {
     title: "Quản lý cho thuê",
     icon: "ic:outline-directions-car",
-    href: "/my-cars",
+    href: "/my-cars/dashboard",
   },
   {
     title: "Xe yêu thích",

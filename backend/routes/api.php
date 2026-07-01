@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\MyTripController;
 use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
+use App\Http\Controllers\Api\DashboardController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -91,6 +92,8 @@ Route::group(['middleware' => 'api'], function () {
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);
 
     Route::get('car-calendar', [CarCalendarController::class, 'index']);
+    Route::get('dashboard', [DashboardController::class, 'index']);
+
 
     //Chat
     Route::get('conversations', [ChatController::class, 'index']);

@@ -10,6 +10,21 @@
         <div ref="tabWrapper"
           class="flex overflow-x-auto scrollbar-hide gap-8 cursor-grab select-none active:cursor-grabbing"
           @mousedown="startDragging" @mousemove="handleDragging" @mouseup="stopDragging" @mouseleave="stopDragging">
+
+        <NuxtLink to="/my-cars/dashboard"
+            class="py-5 text-slate-500 whitespace-nowrap hover:text-[#1e4e57] transition-colors border-b-2 border-transparent flex items-center gap-2 text-sm font-semibold"
+            active-class="!border-[#1e4e57] !text-[#1e4e57] !font-bold" @click="handleLinkClick">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+              class="text-current opacity-85">
+              <path d="M3 3v18h18"></path>
+              <rect x="6" y="12" width="3" height="6" rx="1"></rect>
+              <rect x="11" y="8" width="3" height="10" rx="1"></rect>
+              <rect x="16" y="5" width="3" height="13" rx="1"></rect>
+            </svg>
+            Thống kê
+          </NuxtLink>
+
           <NuxtLink to="/my-cars"
             class="py-5 text-slate-500 whitespace-nowrap hover:text-[#1e4e57] transition-colors border-b-2 border-transparent flex items-center gap-2 text-sm font-semibold"
             active-class="!border-[#1e4e57] !text-[#1e4e57] !font-bold" @click="handleLinkClick">
