@@ -23,9 +23,20 @@
         <!-- Avatar -->
         <div class="lg:col-span-4">
           <div class="flex flex-col items-center">
-            <img :src="user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'"
-              class="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border border-slate-100 shadow-sm"
-              alt="User Avatar" />
+            <div class="relative group">
+              <img :src="user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'"
+                class="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border border-slate-100 shadow-sm"
+                alt="User Avatar" />
+
+              <button type="button" @click="openAvatarEditModal"
+                class="absolute inset-0 rounded-full bg-slate-950/0 group-hover:bg-slate-950/45 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100 focus:outline-none">
+                <span
+                  class="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-lg">
+                  <Icon name="ic:outline-edit" />
+                  Sửa ảnh
+                </span>
+              </button>
+            </div>
 
             <h3 class="mt-4 text-xl md:text-2xl font-semibold text-center">
               {{ user?.name || 'Người dùng' }}
@@ -313,6 +324,61 @@
         </form>
       </div>
     </div>
+
+    <!-- Avatar Edit Modal -->
+    <div v-if="isAvatarEditModalOpen" class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+      <div class="absolute inset-0 bg-slate-950/60 backdrop-blur-sm" @click="closeAvatarEditModal"></div>
+
+      <div class="relative z-10 w-full max-w-md rounded-3xl bg-white shadow-2xl border border-slate-100 p-5 md:p-6">
+        <div class="flex items-start justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-xl font-black text-brand-dark">Sửa ảnh đại diện</h3>
+            <p class="mt-1 text-sm text-slate-500">Tải ảnh mới lên, sau đó bấm lưu để cập nhật ảnh hồ sơ.</p>
+          </div>
+
+          <button type="button" @click="closeAvatarEditModal"
+            class="h-10 w-10 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-colors flex items-center justify-center">
+            <Icon name="ic:outline-close" />
+          </button>
+        </div>
+
+        <div class="space-y-4 mb-5">
+          <div class="flex items-center justify-center">
+            <div
+              class="relative w-40 h-40 rounded-full overflow-hidden border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-brand-primary transition-colors"
+              @click="triggerAvatarFileInput">
+              <img v-if="avatarPreview" :src="avatarPreview" alt="Ảnh đại diện" class="w-full h-full object-cover" />
+
+              <div v-else class="flex flex-col items-center justify-center text-center px-4">
+                <Icon name="ic:outline-image" class="text-brand-primary" size="34" />
+                <span class="mt-2 text-xs font-semibold text-slate-500">Chọn ảnh đại diện</span>
+              </div>
+
+              <button type="button"
+                class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-slate-800 shadow-lg hover:bg-slate-50"
+                @click.stop="triggerAvatarFileInput">
+                Chọn file
+              </button>
+            </div>
+          </div>
+
+          <input ref="avatarFileInputRef" type="file" accept="image/*" class="hidden" @change="onAvatarFileChange" />
+        </div>
+
+        <div class="flex flex-col-reverse sm:flex-row gap-3 sm:justify-end">
+          <button type="button" @click="closeAvatarEditModal"
+            class="px-4 py-2.5 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-colors">
+            Hủy
+          </button>
+
+          <button type="button" @click="handleUpdateAvatar" :disabled="isUploadingAvatar"
+            class="px-4 py-2.5 rounded-xl bg-brand-primary text-white font-semibold hover:bg-brand-dark transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <Icon v-if="isUploadingAvatar" name="svg-spinners:ring-resize" class="w-4 h-4" />
+            <span>Lưu ảnh mới</span>
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -336,6 +402,7 @@ const { user, updateProfile, submitDrivingLicense } = useAuth()
 const { showToast } = useToast()
 
 const isEditModalOpen = ref(false)
+const isAvatarEditModalOpen = ref(false)
 const loadingCars = ref(true)
 // const userCars = ref<Car[]>([])
 
@@ -561,5 +628,117 @@ onMounted(async () => {
   // } finally {
   //   loadingCars.value = false
   // }
+
 })
+
+// ==========================================
+// AVATAR UPLOAD
+// ==========================================
+const isUploadingAvatar = ref(false)
+const avatarFileInputRef = ref<HTMLInputElement | null>(null)
+const avatarImageFile = ref<File | null>(null)
+const avatarPreview = ref<string>(user.value?.avatar || '')
+
+const triggerAvatarFileInput = () => {
+  avatarFileInputRef.value?.click()
+}
+
+const onAvatarFileChange = (event: Event) => {
+  const input = event.target as HTMLInputElement
+  if (!input.files || !input.files[0]) return
+
+  const file = input.files[0]
+  if (!file.type.startsWith('image/')) {
+    showToast('Vui lòng chọn một tệp hình ảnh hợp lệ.', 'error')
+    input.value = ''
+    return
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Dung lượng ảnh vượt quá 5MB.', 'error')
+    input.value = ''
+    return
+  }
+
+  avatarImageFile.value = file
+
+  if (avatarPreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(avatarPreview.value)
+  }
+
+  avatarPreview.value = URL.createObjectURL(file)
+  input.value = ''
+}
+
+const openAvatarEditModal = () => {
+  avatarPreview.value = user.value?.avatar || ''
+  avatarImageFile.value = null
+  isAvatarEditModalOpen.value = true
+}
+
+const closeAvatarEditModal = () => {
+  if (avatarPreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(avatarPreview.value)
+  }
+
+  avatarPreview.value = user.value?.avatar || ''
+  avatarImageFile.value = null
+  isAvatarEditModalOpen.value = false
+}
+
+const handleUpdateAvatar = async () => {
+  if (!avatarImageFile.value) {
+    showToast('Vui lòng chọn ảnh trước khi lưu.', 'error')
+    return
+  }
+
+  isUploadingAvatar.value = true
+  try {
+    const CLOUD_NAME = "djbobb5oe"
+    const UPLOAD_PRESET = "Drivio"
+
+    const cloudinaryData = new FormData()
+    cloudinaryData.append("file", avatarImageFile.value)
+    cloudinaryData.append("upload_preset", UPLOAD_PRESET)
+
+    const response = await $fetch<any>(
+      `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      {
+        method: "POST",
+        body: cloudinaryData,
+      }
+    )
+
+    const finalAvatarUrl = response.secure_url || ''
+
+    // 2. Gọi API cập nhật profile lên backend database (dùng chung hàm updateProfile có sẵn của bạn)
+    const res = await updateProfile({
+      name: user.value?.name || '',
+      phone: user.value?.phone || '',
+      gender: user.value?.gender !== undefined ? user.value?.gender : 1,
+      DOB: user.value?.DOB || '',
+      avatar: finalAvatarUrl // Truyền field avatar mới lên Server DB
+    })
+
+    if (res.success) {
+      showToast("Cập nhật ảnh đại diện thành công!", "success")
+      closeAvatarEditModal()
+
+      // 3. Cập nhật thủ công vào global state và LocalStorage nếu composable useAuth chưa tự làm
+      if (user.value) {
+        user.value.avatar = finalAvatarUrl
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_INFO", JSON.stringify(user.value))
+        }
+      }
+    } else {
+      showToast(res.message || "Không thể lưu ảnh đại diện vào hệ thống.", "error")
+    }
+  } catch (error) {
+    console.error("Lỗi cập nhật ảnh đại diện:", error)
+    showToast("Đã xảy ra lỗi trong quá trình upload ảnh.", "error")
+  } finally {
+    isUploadingAvatar.value = false
+  }
+}
 </script>

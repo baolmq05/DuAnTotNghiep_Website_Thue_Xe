@@ -139,11 +139,13 @@ class AuthController extends Controller
             'phone' => 'nullable|string|max:15|unique:users,phone,' . $user->id,
             'gender' => 'nullable|integer|in:0,1,2',
             'DOB' => 'nullable|date_format:Y-m-d',
+            'avatar' => 'nullable|string|max:2048',
         ], [
             'name.required' => 'Họ và tên không được để trống.',
             'phone.unique' => 'Số điện thoại này đã được sử dụng.',
             'gender.in' => 'Giới tính không hợp lệ.',
             'DOB.date_format' => 'Ngày sinh không đúng định dạng YYYY-MM-DD.',
+            'avatar.max' => 'Đường dẫn ảnh đại diện quá dài.',
         ]);
 
         if ($validator->fails()) {
@@ -153,7 +155,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $user->update($request->only('name', 'phone', 'gender', 'DOB'));
+        $user->update($request->only('name', 'phone', 'gender', 'DOB', 'avatar'));
 
         return response()->json([
             'success' => true,
