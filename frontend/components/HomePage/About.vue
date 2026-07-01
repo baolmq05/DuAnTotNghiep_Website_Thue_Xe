@@ -23,10 +23,11 @@
 						giá cả phải chăng.
 					</p>
 
-					<button
-						class="cursor-pointer hover:opacity-85 bg-brand-primary text-white px-8 py-4 rounded-lg transition-colors duration-200">
+					<NuxtLink
+						to="/about"
+						class="cursor-pointer hover:opacity-85 bg-brand-primary text-white px-8 py-4 rounded-lg transition-colors duration-200 inline-block">
 						Tìm hiểu thêm
-					</button>
+					</NuxtLink>
 				</div>
 			</div>
 		</div>

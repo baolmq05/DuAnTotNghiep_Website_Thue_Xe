@@ -1,101 +1,172 @@
 <template>
-  <div class="glass-search-bar shadow-xl rounded-2xl md:rounded-full p-4 md:p-3 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:gap-1">
-    
-    <!-- Field 1: Địa điểm -->
-    <div class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-brand-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-      </svg>
-      <div class="flex-grow min-w-0">
-        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Địa điểm</label>
-        <input 
-          v-model="location"
-          type="text" 
-          placeholder="Bạn muốn đi đâu?" 
-          class="block w-full bg-transparent border-0 p-0 text-sm font-semibold text-slate-800 placeholder-slate-500 focus:ring-0 focus:outline-none"
-        />
-      </div>
-    </div>
-
-    <!-- Divider (Desktop) -->
-    <div class="hidden md:block h-8 w-px bg-slate-300/60"></div>
-
-    <!-- Field 2: Ngày nhận -->
-    <div @click="isDatePickerOpen = true" class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <div class="flex-grow min-w-0">
-        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ngày nhận</label>
-        <div class="block w-full text-sm font-semibold truncate" :class="formattedStart ? 'text-slate-800' : 'text-slate-400'">
-          {{ formattedStart || 'Chọn ngày nhận xe' }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Divider (Desktop) -->
-    <div class="hidden md:block h-8 w-px bg-slate-300/60"></div>
-
-    <!-- Field 3: Ngày trả -->
-    <div @click="isDatePickerOpen = true" class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-      </svg>
-      <div class="flex-grow min-w-0">
-        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Ngày trả</label>
-        <div class="block w-full text-sm font-semibold truncate" :class="formattedEnd ? 'text-slate-800' : 'text-slate-400'">
-          {{ formattedEnd || 'Chọn ngày trả xe' }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Divider (Desktop) -->
-    <div class="hidden md:block h-8 w-px bg-slate-300/60"></div>
-
-    <!-- Field 4: Dòng xe -->
-    <div class="flex-1 min-w-0 px-4 py-2 md:py-1 flex items-center gap-3 hover:bg-white/20 rounded-xl md:rounded-full transition-colors duration-200 cursor-pointer">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-      </svg>
-      <div class="flex-grow min-w-0">
-        <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider">Dòng xe</label>
-        <select 
-          v-model="carType"
-          class="block w-full bg-transparent border-0 p-0 pr-8 text-sm font-semibold text-slate-800 focus:ring-0 focus:outline-none appearance-none cursor-pointer"
-        >
-          <option value="">Tất cả các dòng</option>
-          <option value="4">Xe 4 chỗ</option>
-          <option value="7">Xe 7 chỗ</option>
-          <option value="ev">Xe điện</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- Search Button -->
-    <button 
-      @click="handleSearch"
-      type="button" 
-      class="bg-brand-primary hover:bg-brand-dark text-white font-semibold py-3.5 px-8 rounded-xl md:rounded-full transition-all duration-200 shadow-md shadow-brand-primary/20 active:scale-95 flex items-center justify-center gap-2 flex-shrink-0"
+  <div
+    class="rounded-[10px] bg-[#FAF6F0] shadow-xl border border-white/40 p-2 lg:p-3 relative z-40"
+  >
+    <div
+      class="grid grid-cols-1 lg:grid-cols-[1.5fr_auto_1fr_auto_1fr_auto_1.1fr_auto] items-center"
     >
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-      </svg>
-      <span>Tìm xe</span>
-    </button>
 
+      <!-- Địa điểm nhận xe -->
+      <div class="flex items-center gap-3 px-4 lg:px-3 xl:px-5 py-4 hover:bg-black/5 rounded-2xl transition cursor-pointer">
+        <Icon
+          name="heroicons:map-pin"
+          class="h-6 w-6 text-slate-700 shrink-0"
+        />
+        <div class="flex flex-col flex-grow min-w-0">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500/80 mb-0.5">
+            Địa điểm nhận xe
+          </label>
+          <div class="relative">
+            <input
+              v-model="location"
+              type="text"
+              placeholder="Chọn hoặc nhập địa điểm..."
+              class="w-full bg-transparent text-[14px] font-bold text-slate-800 focus:outline-none placeholder:text-slate-400/80 pr-5"
+              @focus="showSuggestions = true"
+              @blur="handleBlur"
+            />
+            <Icon
+              name="heroicons:chevron-down"
+              class="h-4 w-4 text-slate-500 absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none"
+            />
+
+            <!-- Suggestions list -->
+            <div
+              v-if="showSuggestions && filteredProvinces.length > 0"
+              class="absolute left-0 top-full z-50 mt-2 max-h-[180px] overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg min-w-[220px] lg:min-w-[260px]"
+            >
+              <button
+                v-for="province in filteredProvinces"
+                :key="province"
+                type="button"
+                @mousedown="selectProvince(province)"
+                class="w-full px-4 py-2 text-left text-sm font-semibold text-slate-700 hover:bg-slate-100 transition z-50"
+              >
+                {{ province }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden lg:block w-px bg-slate-300/60 h-10 self-center mx-1"></div>
+
+      <!-- Ngày nhận xe -->
+      <div
+        @click="isDatePickerOpen=true"
+        class="flex items-center gap-3 px-4 lg:px-3 xl:px-5 py-4 hover:bg-black/5 rounded-2xl transition cursor-pointer"
+      >
+        <Icon
+          name="heroicons:calendar"
+          class="h-6 w-6 text-slate-700 shrink-0"
+        />
+        <div class="flex flex-col flex-grow min-w-0">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500/80 mb-0.5">
+            Ngày nhận xe
+          </label>
+          <div class="flex items-center justify-between relative">
+            <span class="text-[14px] font-bold text-slate-800 truncate pr-5">
+              {{ formattedStart || 'Chọn ngày' }}
+            </span>
+            <Icon
+              name="heroicons:chevron-down"
+              class="h-4 w-4 text-slate-500 absolute right-0 pointer-events-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden lg:block w-px bg-slate-300/60 h-10 self-center mx-1"></div>
+
+      <!-- Ngày trả xe -->
+      <div
+        @click="isDatePickerOpen=true"
+        class="flex items-center gap-3 px-4 lg:px-3 xl:px-5 py-4 hover:bg-black/5 rounded-2xl transition cursor-pointer"
+      >
+        <Icon
+          name="heroicons:calendar"
+          class="h-6 w-6 text-slate-700 shrink-0"
+        />
+        <div class="flex flex-col flex-grow min-w-0">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500/80 mb-0.5">
+            Ngày trả xe
+          </label>
+          <div class="flex items-center justify-between relative">
+            <span class="text-[14px] font-bold text-slate-800 truncate pr-5">
+              {{ formattedEnd || 'Chọn ngày' }}
+            </span>
+            <Icon
+              name="heroicons:chevron-down"
+              class="h-4 w-4 text-slate-500 absolute right-0 pointer-events-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Divider -->
+      <div class="hidden lg:block w-px bg-slate-300/60 h-10 self-center mx-1"></div>
+
+      <!-- Loại xe -->
+      <div
+        class="flex items-center gap-3 px-4 lg:px-3 xl:px-5 py-4 hover:bg-black/5 rounded-2xl transition cursor-pointer"
+      >
+        <Icon
+          name="lucide:car"
+          class="h-6 w-6 text-slate-700 shrink-0"
+        />
+        <div class="flex flex-col flex-grow min-w-0">
+          <label class="text-[11px] font-bold uppercase tracking-wider text-slate-500/80 mb-0.5">
+            Loại xe
+          </label>
+          <div class="flex items-center justify-between relative">
+            <select
+              v-model="carType"
+              class="w-full bg-transparent text-[14px] font-bold text-slate-800 focus:outline-none cursor-pointer pr-5 appearance-none"
+            >
+              <option value="">Tất cả loại xe</option>
+              <option value="4">Xe 4 chỗ</option>
+              <option value="7">Xe 7 chỗ</option>
+              <option value="ev">Xe điện</option>
+            </select>
+            <Icon
+              name="heroicons:chevron-down"
+              class="h-4 w-4 text-slate-500 absolute right-0 pointer-events-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Button -->
+      <div
+        class="flex items-center justify-center p-2 lg:pl-4"
+      >
+        <button
+          @click="handleSearch"
+          class="flex h-14 w-full lg:w-auto items-center justify-center gap-2 rounded-2xl bg-brand-dark px-8 text-[16px] font-bold text-white shadow-md transition hover:scale-[1.02] hover:bg-slate-900"
+        >
+          <Icon
+            name="heroicons:magnifying-glass"
+            class="h-5 w-5"
+          />
+          Tìm xe
+        </button>
+      </div>
+    </div>
   </div>
-  <DatePickerModal 
-    :is-open="isDatePickerOpen" 
-    :initial-start="selectedStart || undefined" 
-    :initial-end="selectedEnd || undefined" 
-    @close="isDatePickerOpen = false" 
+
+  <DatePickerModal
+    :is-open="isDatePickerOpen"
+    :initial-start="selectedStart || undefined"
+    :initial-end="selectedEnd || undefined"
+    @close="isDatePickerOpen = false"
     @apply="handleApplyDates"
   />
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from '#app'
 import DatePickerModal from '~/components/Shared/DatePickerModal.vue'
 
@@ -106,6 +177,51 @@ const location = ref((route.query.location as string) || '')
 const carType = ref((route.query.carType as string) || '')
 
 const isDatePickerOpen = ref(false)
+const provinces = ref<string[]>([])
+const showSuggestions = ref(false)
+
+const loadProvinces = async () => {
+  try {
+    const res = await fetch('https://provinces.open-api.vn/api/v2/')
+    if (!res.ok) throw new Error('API request failed')
+    const data = await res.json()
+    provinces.value = data.map((p: any) => {
+      // Dọn dẹp tên dạng "Thành phố Cần Thơ" -> "Cần Thơ"
+      let name = p.name.replace(/^(Thành phố|Tỉnh)\s+/i, '')
+      if (name === 'Thừa Thiên Huế') return 'Huế'
+      return name
+    })
+  } catch (error) {
+    console.error('Error fetching provinces:', error)
+    // Fallback list of provinces
+    provinces.value = [
+      'Hồ Chí Minh', 'Hà Nội', 'Đà Nẵng', 'Bình Dương', 'Đồng Nai',
+      'Cần Thơ', 'Hải Phòng', 'Khánh Hòa', 'Lâm Đồng', 'Quảng Ninh',
+      'Huế', 'Bà Rịa - Vũng Tàu', 'Đà Lạt', 'Nha Trang'
+    ]
+  }
+}
+
+const filteredProvinces = computed(() => {
+  const query = location.value.toLowerCase().trim()
+  if (!query) return provinces.value
+  return provinces.value.filter(p => p.toLowerCase().includes(query))
+})
+
+const selectProvince = (province: string) => {
+  location.value = province
+  showSuggestions.value = false
+}
+
+const handleBlur = () => {
+  setTimeout(() => {
+    showSuggestions.value = false
+  }, 200)
+}
+
+onMounted(() => {
+  loadProvinces()
+})
 
 const formatDateString = (date: Date | null | undefined): string | undefined => {
   if (!date) return undefined
@@ -155,11 +271,12 @@ const handleSearch = () => {
 </script>
 
 <style scoped>
-/* Removing standard browser arrow for select dropdown to style nicely */
 select {
-  background-image: url("data:image/svg+xml;utf8,<svg fill='%231e293b' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
-  background-repeat: no-repeat;
-  background-position-x: 95%;
-  background-position-y: 50%;
+    appearance: none;
+    background: none;
+    border: none;
+}
+select:focus {
+    outline: none;
 }
 </style>

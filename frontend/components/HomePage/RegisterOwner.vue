@@ -73,15 +73,17 @@
 						</div>
 					</div>
 
-					<div>
-						<button
-							class="cursor-pointer hover:opacity-85 border border-slate-800 text-slate-800 px-8 py-4 rounded-lg mr-2 transition-all duration-200">
+					<div class="flex flex-wrap gap-3 items-center">
+						<NuxtLink
+							to="/about"
+							class="inline-block text-center cursor-pointer hover:opacity-85 border border-slate-800 text-slate-800 px-6 py-3.5 rounded-lg transition-all duration-200 text-sm font-semibold">
 							Tìm hiểu ngay
-						</button>
-						<button
-							class="cursor-pointer hover:opacity-85 bg-brand-primary text-white px-8 py-4 rounded-lg transition-all duration-200">
+						</NuxtLink>
+						<NuxtLink
+							to="/car-register"
+							class="inline-block text-center cursor-pointer hover:opacity-85 bg-brand-primary text-white px-6 py-3.5 rounded-lg transition-all duration-200 text-sm font-semibold">
 							Đăng ký xe
-						</button>
+						</NuxtLink>
 					</div>
 				</div>
 
