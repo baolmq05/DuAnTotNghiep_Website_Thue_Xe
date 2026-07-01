@@ -73,9 +73,13 @@
               <select v-model="filter.statusFilter"
                 class="w-full appearance-none text-sm rounded-xl border border-gray-200 px-3 py-2.5 outline-none focus:border-[#53cf84] font-medium bg-white text-slate-700">
                 <option value="all">Tất cả trạng thái lịch</option>
-                <option value="1">Đang đi chuyến</option>
-                <option value="2">Chờ giao xe / Lịch hẹn</option>
-                <option value="0">Đang trống lịch / Đã hoàn thành / Hủy</option>
+                <option value="0">Chờ duyệt</option>
+                <option value="1">Chờ thanh toán</option>
+                <option value="2">Chờ giao xe</option>
+                <option value="3">Đang đi chuyến</option>
+                <option value="4">Đã hoàn thành</option>
+                <option value="5">Người dùng hủy</option>
+                <option value="6">Chủ xe hủy</option>
               </select>
               <Icon name="ic:round-keyboard-arrow-down"
                 class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size="18" />
@@ -112,16 +116,30 @@
         </div>
 
         <div class="pt-3 border-t border-gray-100 flex flex-wrap gap-4 text-xs font-medium text-slate-600">
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-emerald-500"></span> Đang diễn ra
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-400"></span> Chờ duyệt
           </div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-amber-500"></span> Chưa bắt đầu (Chờ
-            giao)</div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-indigo-500"></span> Đã hoàn thành
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-orange-400"></span> Chờ thanh toán
           </div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-purple-500"></span> Người dùng hủy
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span> Chưa bắt đầu (Chờ giao)
           </div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-rose-500"></span> Chủ xe hủy</div>
-          <div class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-gray-200"></span> Trống lịch</div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Đang diễn ra
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-indigo-500"></span> Đã hoàn thành
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-purple-500"></span> Người dùng hủy
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-rose-500"></span> Chủ xe hủy
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-gray-200"></span> Trống lịch
+          </div>
         </div>
       </div>
 
@@ -453,19 +471,31 @@ watch(() => filter.brandFilter, () => {
   filter.typeFilter = 'all';
 });
 
-const getStatusText = (status: number, note: string) => {
-  if (status === 1) return 'Đang đi chuyến';
-  if (status === 2) return 'Chờ giao xe';
-  if (note.includes('hoàn thành')) return 'Đã xong cuốc';
-  if (note.includes('hủy')) return 'Đã hủy lịch';
+const getStatusText = (status: number | null, note: string) => {
+  if (status === null || status === undefined) return 'Trống lịch';
+  
+  const statusNum = Number(status);
+  if (statusNum === 0) return 'Chờ duyệt';
+  if (statusNum === 1) return 'Chờ thanh toán';
+  if (statusNum === 2) return 'Chờ giao xe'; 
+  if (statusNum === 3) return 'Đang đi chuyến'; 
+  if (statusNum === 4) return 'Đã xong chuyến'; 
+  if (statusNum === 5 || statusNum === 6) return 'Đã hủy lịch'; 
+  
   return 'Trống lịch';
 };
 
-const getStatusBadgeClass = (status: number, note: string) => {
-  if (status === 1) return 'bg-emerald-50 text-emerald-600 border border-emerald-200';
-  if (status === 2) return 'bg-amber-50 text-amber-600 border border-amber-200';
-  if (note.includes('hoàn thành')) return 'bg-indigo-50 text-indigo-600 border border-indigo-200';
-  if (note.includes('hủy')) return 'bg-rose-50 text-rose-600 border border-rose-200';
+const getStatusBadgeClass = (status: number | null, note: string) => {
+  if (status === null || status === undefined) return 'bg-slate-100 text-slate-600 border border-slate-200';
+  
+  const statusNum = Number(status);
+  if (statusNum === 0) return 'bg-amber-50 text-amber-500 border border-amber-200';
+  if (statusNum === 1) return 'bg-orange-50 text-orange-500 border border-orange-200'; 
+  if (statusNum === 2) return 'bg-amber-50 text-amber-600 border border-amber-200';
+  if (statusNum === 3) return 'bg-emerald-50 text-emerald-600 border border-emerald-200'; 
+  if (statusNum === 4) return 'bg-indigo-50 text-indigo-600 border border-indigo-200'; 
+  if (statusNum === 5 || statusNum === 6) return 'bg-rose-50 text-rose-600 border border-rose-200';
+  
   return 'bg-slate-100 text-slate-600 border border-slate-200';
 };
 </script>
