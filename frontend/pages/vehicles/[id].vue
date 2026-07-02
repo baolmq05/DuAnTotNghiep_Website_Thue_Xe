@@ -882,6 +882,147 @@
       @apply="handleApplyDates"
     />
   </div>
+
+  <!-- ════════════════════════════════════════════════════════════
+         MODAL CẬP NHẬT THÔNG TIN NHANH (TÍCH HỢP LOGIC UPLOAD CỦA PROFILE)
+         ════════════════════════════════════════════════════════════ -->
+    <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+      <!-- Màn đen mờ phía sau (Overlay) -->
+      <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" @click="isUpdateModalOpen = false"></div>
+      
+      <!-- Khung nội dung Modal -->
+      <div class="relative bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl border border-slate-100/80 z-10 flex flex-col max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-in fade-in zoom-in-95 no-scrollbar">
+        
+        <!-- Nút đóng nhanh -->
+        <button @click="isUpdateModalOpen = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+          <Icon name="ic:outline-close" size="20" />
+        </button>
+
+        <!-- Tiêu đề Modal -->
+        <div class="mb-5">
+          <h3 class="text-xl font-black text-brand-dark flex items-center gap-2">
+            <Icon name="ic:outline-stars" class="text-brand-primary" size="24" />
+            Xác thực thông tin thuê xe
+          </h3>
+          <p class="text-xs text-slate-500 mt-1 font-medium">
+            Vui lòng hoàn thiện các thông tin còn thiếu bên dưới để tiếp tục chuyến đi của bạn.
+          </p>
+        </div>
+
+        <!-- Form Xử lý cập nhật -->
+        <form @submit.prevent="submitQuickUpdate" class="space-y-5">
+          
+          <!-- KHU VỰC 1: SỐ ĐIỆN THOẠI (Chỉ hiển thị nếu tài khoản chưa có) -->
+          <div v-if="missingFields.phone" class="space-y-1.5">
+            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+              Số điện thoại <span class="text-rose-500">*</span>
+            </label>
+            <input 
+              type="text" 
+              v-model="quickUpdateForm.phone" 
+              placeholder="Nhập số điện thoại của bạn"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white focus:ring-2 focus:ring-brand-primary/5 transition-all"
+              
+            />
+          </div>
+
+          <!-- KHU VỰC 2: GIẤY PHÉP LÁI XE (Chỉ hiển thị nếu chưa có hoặc bị từ chối) -->
+          <div v-if="missingFields.drivingLicense" class="space-y-4 pt-1">
+            <div class="border-t border-dashed border-slate-200 my-2"></div>
+            
+            <h4 class="text-xs font-extrabold text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
+              <Icon name="ic:outline-credit-card" class="text-emerald-500" size="18" />
+              Thông tin Giấy phép lái xe
+            </h4>
+
+            <!-- Trường Số GPLX -->
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số GPLX</label>
+              <input 
+                type="text" 
+                v-model="quickUpdateForm.driving_license_number" 
+                placeholder="Nhập số GPLX ghi trên thẻ"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
+                
+              />
+            </div>
+
+            <!-- Trường Họ và Tên -->
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Họ và tên</label>
+              <input 
+                type="text" 
+                v-model="quickUpdateForm.full_name" 
+                placeholder="Nhập họ và tên đầy đủ viết hoa"
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
+                
+              />
+            </div>
+
+            <!-- Trường Ngày Sinh -->
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ngày sinh</label>
+              <input 
+                type="date" 
+                v-model="quickUpdateForm.DOB" 
+                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
+                
+              />
+            </div>
+
+            <!-- Vùng Kéo thả & Upload ảnh bằng lái (Bê nguyên cấu trúc mượt mà từ Profile sang) -->
+            <div class="space-y-1.5">
+              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ảnh mặt trước GPLX</label>
+              
+              <div 
+                @click="triggerLicenseFileInput" 
+                @dragover.prevent="isLicenseDragging = true"
+                @dragleave.prevent="isLicenseDragging = false" 
+                @drop.prevent="onLicenseDrop"
+                class="h-[160px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all bg-slate-50/50"
+                :class="isLicenseDragging ? 'border-brand-primary bg-brand-primary/5 shadow-inner' : (licenseImagePreview ? 'border-solid border-slate-200 bg-white' : 'border-slate-300 hover:border-brand-primary')"
+              >
+                <!-- Hiển thị Preview ảnh khi người dùng chọn file -->
+                <img v-if="licenseImagePreview" :src="licenseImagePreview" class="w-full h-full object-contain absolute inset-0 p-1" alt="Preview GPLX" />
+                
+                <!-- Giao diện mặc định khi chưa chọn file -->
+                <div v-else class="flex flex-col items-center p-4 text-center">
+                  <Icon name="ic:outline-cloud-upload" size="36" class="text-green-500 mb-1.5" />
+                  <p class="text-xs text-slate-600 font-bold">Kéo thả ảnh vào đây hoặc nhấp để chọn file</p>
+                  <p class="text-[10px] text-slate-400 mt-1 font-medium">Chấp nhận JPG, PNG dung lượng tối đa 5MB</p>
+                </div>
+
+                <!-- Input file bị ẩn chạy ngầm dưới nền -->
+                <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*" class="hidden" />
+              </div>
+            </div>
+          </div>
+
+          <!-- NÚT THAO TÁC (ACTIONS BUTTON) -->
+          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+            <!-- Nút Hủy -->
+            <button 
+              type="button" 
+              @click="isUpdateModalOpen = false"
+              class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-colors focus:outline-none text-xs tracking-wider uppercase"
+            >
+              Hủy bỏ
+            </button>
+            
+            <!-- Nút Xác nhận & Lưu đơn -->
+            <button 
+              type="submit" 
+              :disabled="isUpdating"
+              class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-xs tracking-wider uppercase shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Icon v-if="isUpdating" name="svg-spinners:ring-resize" class="w-4 h-4" />
+              <span>{{ isUpdating ? 'Đang lưu...' : 'Xác nhận & Thuê xe' }}</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+    </div>
 </template>
 
 <script lang="ts" setup>
@@ -897,7 +1038,7 @@ definePageMeta({ layout: "vehicle-detail" });
 
 const route = useRoute();
 const carId = route.params.id as string;
-const { user } = useAuth();
+const { user, updateProfile, submitDrivingLicense } = useAuth();
 const { showToast } = useToast();
 const { openLogin } = useAuthModal();
 
@@ -1091,37 +1232,65 @@ const handleBooking = async () => {
     return
   }
 
+  const drivingLicense = user.value.driving_license
+
+if (drivingLicense && drivingLicense.status === 0) {
+  showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+  return
+}
+
+const isPhoneMissing = !user.value.phone
+const isLicenseMissing = !drivingLicense || drivingLicense.status === 2
+
+if (isPhoneMissing || isLicenseMissing) {
+  missingFields.value = { phone: isPhoneMissing, drivingLicense: isLicenseMissing }
+  
+  // Điền sẵn data cũ (nếu có) vào form modal
+  quickUpdateForm.value.phone = user.value.phone || ''
+  quickUpdateForm.value.driving_license_number = drivingLicense?.driving_license_number || ''
+  quickUpdateForm.value.full_name = drivingLicense?.full_name || ''
+  quickUpdateForm.value.DOB = drivingLicense?.DOB || ''
+  
+  // Reset trạng thái file ảnh tạm
+  licenseImagePreview.value = ''
+  licenseImageFile.value = null
+  
+  // Bật modal lên và dừng luồng xử lý đơn hàng tại đây
+  isUpdateModalOpen.value = true
+  return
+}
+
   // Kiểm tra số điện thoại
-  if (!user.value.phone) {
-    showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'warning')
-    setTimeout(() => {
-      navigateTo('/profile')
-    }, 2000)
-    return
-  }
+  // if (!user.value.phone) {
+  //   showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'warning')
+  //   setTimeout(() => {
+  //     navigateTo('/profile')
+  //   }, 2000)
+  //   return
+  // }
 
   // Kiểm tra giấy phép lái xe
-  const drivingLicense = user.value.driving_license
-  if (!drivingLicense) {
-    showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'warning')
-    setTimeout(() => {
-      navigateTo('/profile')
-    }, 2000)
-    return
-  }
+  // const drivingLicense = user.value.driving_license
+  // if (!drivingLicense) {
+  //   showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'warning')
+  //   setTimeout(() => {
+  //     navigateTo('/profile')
+  //   }, 2000)
+  //   return
+  // }
 
-  if (drivingLicense.status === 0) {
-    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
-    return
-  }
+  // if (drivingLicense.status === 0) {
+  //   showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+  //   return
+  // }
 
-  if (drivingLicense.status === 2) {
-    showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'warning')
-    setTimeout(() => {
-      navigateTo('/profile')
-    }, 2000)
-    return
-  }
+  // if (drivingLicense.status === 2) {
+  //   showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'warning')
+  //   setTimeout(() => {
+  //     navigateTo('/profile')
+  //   }, 2000)
+  //   return
+  // }
 
   if (drivingLicense.status !== 1) {
     showToast('Giấy phép lái xe của bạn không hợp lệ.', 'error')
@@ -1648,6 +1817,198 @@ const hasActiveBooking = computed(() => {
     trip.user_id === user.value.id && [TripStatus.Pending, TripStatus.WaitingPayment, TripStatus.Confirmed, TripStatus.Ongoing].includes(Number(trip.status))
   );
 });
+
+// ============================================================================
+// bổ sung các state & hàm xử lý cho Modal cập nhật nhanh SĐT + GPLX
+// ============================================================================
+
+
+const isUpdateModalOpen = ref(false);
+const isUpdating = ref(false);
+const missingFields = ref({ phone: false, drivingLicense: false });
+
+// Form lưu trữ data tạm trên Modal
+const quickUpdateForm = ref({
+  phone: '',
+  driving_license_number: '',
+  full_name: '',
+  DOB: ''
+});
+
+// State quản lý việc kéo thả & upload ảnh GPLX
+const isLicenseDragging = ref(false);
+const licenseFileInputRef = ref<HTMLInputElement | null>(null);
+const licenseImageFile = ref<File | null>(null);
+const licenseImagePreview = ref<string>('');
+
+// Các hàm xử lý kích hoạt File Input & Kéo thả ảnh
+const triggerLicenseFileInput = () => {
+  if (licenseFileInputRef.value) licenseFileInputRef.value.click();
+};
+
+const onLicenseFileChange = (e: Event) => {
+  const input = e.target as HTMLInputElement;
+  if (input.files && input.files[0]) setLicenseFile(input.files[0]);
+};
+
+const onLicenseDrop = (e: DragEvent) => {
+  isLicenseDragging.value = false;
+  if (e.dataTransfer?.files && e.dataTransfer.files[0]) setLicenseFile(e.dataTransfer.files[0]);
+};
+
+const setLicenseFile = (file: File) => {
+  if (!file.type.startsWith('image/')) {
+    showToast('Vui lòng chọn một tệp hình ảnh hợp lệ.', 'error');
+    return;
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Dung lượng ảnh vượt quá 5MB.', 'error');
+    return;
+  }
+  licenseImageFile.value = file;
+  licenseImagePreview.value = URL.createObjectURL(file);
+};
+
+// Hàm xử lý lưu Form từ Modal lên Database
+const submitQuickUpdate = async () => {
+  if (missingFields.value.drivingLicense && !user.value?.driving_license && !licenseImageFile.value) {
+    showToast('Vui lòng tải lên ảnh mặt trước bằng lái xe.', 'error');
+    return;
+  }
+
+  isUpdating.value = true;
+  try {
+    // ════════════════════════════════════════════════════════════
+    //  BẮT LỖI SỐ ĐIỆN THOẠI (Nếu đang hiển thị ô nhập SĐT)
+    // ════════════════════════════════════════════════════════════
+    if (missingFields.value.phone) {
+      const phoneInput = quickUpdateForm.value.phone.trim();
+      
+      if (!phoneInput) {
+        showToast('Vui lòng không để trống Số điện thoại.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+      
+      const phoneRegex = /^0\d{9}$/;
+      if (!phoneRegex.test(phoneInput)) {
+        showToast('Số điện thoại không hợp lệ! Phải bắt đầu bằng số 0 và có đúng 10  số.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+
+      //  KHÔI PHỤC API: Bắn request cập nhật SĐT lên Database hệ thống
+      const profileRes = await updateProfile({
+        name: user.value.name || '',
+        phone: phoneInput,
+        gender: user.value.gender !== undefined ? user.value.gender : 1,
+        DOB: user.value.DOB || ''
+      });
+
+      if (profileRes.success) {
+        user.value.phone = phoneInput;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_INFO", JSON.stringify(user.value));
+        }
+      } else {
+        showToast(profileRes.message || 'Cập nhật số điện thoại thất bại.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+    }
+
+    // ════════════════════════════════════════════════════════════
+    //  BẮT LỖI GIẤY PHÉP LÁI XE (Nếu đang hiển thị form GPLX)
+    // ════════════════════════════════════════════════════════════
+    if (missingFields.value.drivingLicense) {
+      const licenseNumber = quickUpdateForm.value.driving_license_number.trim();
+      const fullName = quickUpdateForm.value.full_name.trim();
+      const dob = quickUpdateForm.value.DOB;
+
+      if (!licenseNumber || !fullName || !dob) {
+        showToast('Vui lòng điền đầy đủ thông tin Họ tên, Số GPLX và Ngày sinh.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+
+      const licenseRegex = /^\d{9,12}$/;
+      if (!licenseRegex.test(licenseNumber)) {
+        showToast('Số GPLX không hợp lệ! Độ dài chuẩn phải từ 9 đến 12 chữ số.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+    }
+
+    // 2. Tải ảnh lên Cloudinary & Lưu Giấy phép lái xe lên DB nếu đang thiếu
+    if (missingFields.value.drivingLicense) {
+      let imageUrl = user.value?.driving_license?.image || '';
+
+      if (licenseImageFile.value) {
+        const CLOUD_NAME = "djbobb5oe";
+        const UPLOAD_PRESET = "Drivio";
+
+        const cloudinaryData = new FormData();
+        cloudinaryData.append("file", licenseImageFile.value);
+        cloudinaryData.append("upload_preset", UPLOAD_PRESET);
+
+        const response = await $fetch<any>(
+          `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+          { method: "POST", body: cloudinaryData }
+        );
+
+        imageUrl = response.secure_url;
+
+        if (licenseImagePreview.value.startsWith('blob:')) {
+          URL.revokeObjectURL(licenseImagePreview.value);
+        }
+      }
+
+      const formData = new FormData();
+      formData.append('driving_license_number', quickUpdateForm.value.driving_license_number);
+      formData.append('full_name', quickUpdateForm.value.full_name);
+      formData.append('DOB', quickUpdateForm.value.DOB);
+      formData.append('image', imageUrl);
+
+      const licenseRes = await submitDrivingLicense(formData);
+      if (licenseRes.success) {
+        user.value.driving_license = {
+          driving_license_number: quickUpdateForm.value.driving_license_number,
+          full_name: quickUpdateForm.value.full_name,
+          DOB: quickUpdateForm.value.DOB,
+          image: imageUrl,
+          status: 0 // Quay về trạng thái Chờ duyệt
+        };
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_INFO", JSON.stringify(user.value));
+        }
+      } else {
+        showToast(licenseRes.message || 'Gửi duyệt bằng lái xe thất bại.', 'error');
+        isUpdating.value = false;
+        return;
+      }
+    }
+
+    showToast('Cập nhật thông tin thành công! Hãy nhấn nút đặt xe lại nha.', 'success');
+    isUpdateModalOpen.value = false;
+
+  } catch (err) {
+    console.error('Lỗi khi cập nhật nhanh:', err);
+    showToast('Đã xảy ra lỗi, vui lòng thử lại.', 'error');
+  } finally {
+    isUpdating.value = false;
+  }
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+/* Ẩn thanh cuộn cho Chrome, Safari, Opera và các trình duyệt dùng Webkit */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Ẩn thanh cuộn cho IE, Edge và Firefox */
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE và Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+</style>
