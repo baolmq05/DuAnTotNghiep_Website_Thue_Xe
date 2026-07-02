@@ -212,8 +212,8 @@ class VNPayService
                         'trip_id' => $trip->id
                     ]);
 
-                    // 3. Update trip status to ongoing/active
-                    $trip->status = TripStatus::Ongoing->value;
+                    // 3. Update trip status to Confirmed/active
+                    $trip->status = TripStatus::Confirmed->value;
                     $trip->save();
 
                     Log::info("VNPay rental payment successful for trip {$tripId}, credited owner {$ownerId} amount {$amount}.");

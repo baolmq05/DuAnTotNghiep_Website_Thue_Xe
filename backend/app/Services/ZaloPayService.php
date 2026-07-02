@@ -480,7 +480,7 @@ class ZaloPayService
 
                     ]);
 
-                    $trip->status = TripStatus::Ongoing->value;
+                    $trip->status = TripStatus::Confirmed->value;
 
                     $trip->save();
 

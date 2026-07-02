@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->decimal('cost', 10, 2)->comment('chi phí chuyến đi')->unsigned();
             $table->decimal('discount_amount', 10, 2)->comment('số tiền giảm giá')->unsigned()->default(0);
-            $table->tinyInteger('status')->comment('trạng thái chuyến đi: 0 - chưa bắt đầu, 1 - đang diễn ra, 2 - đã hoàn thành, 3 - đã hủy bởi người dùng, 4 - đã hủy bởi chủ xe')->default(0);
+            $table->tinyInteger('status')->comment('trạng thái chuyến đi:	0 - Chờ duyệt, 1 - Chờ thanh toán, 2 - Đã xác nhận, 3 - Đang diễn ra, 4 - Đã hoàn thành, 5 - Người dùng hủy, 6 - Chủ xe hủy')->default(0);
             $table->tinyInteger('trip_type')->comment('loại chuyến đi: 0 - thuê theo ngày, 1 - thuê theo km')->default(0);
             $table->dateTime('start_at')->comment('thời gian bắt đầu chuyến đi');
             $table->dateTime('end_at')->comment('thời gian kết thúc chuyến đi');

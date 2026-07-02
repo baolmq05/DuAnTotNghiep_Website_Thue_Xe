@@ -191,8 +191,8 @@ class TripController extends Controller
             ], 400);
         }
 
-        // Cập nhật trạng thái thành Confirmed (Đã xác nhận)
-        $trip->update(['status' => TripStatus::Confirmed->value]);
+        // Cập nhật trạng thái thành WaitingPayment (Chờ thanh toán)
+        $trip->update(['status' => TripStatus::WaitingPayment->value]);
 
         return response()->json([
             'success' => true,
