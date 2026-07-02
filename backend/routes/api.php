@@ -80,6 +80,7 @@ Route::group(['middleware' => 'api'], function () {
     Route::delete('favorites/{car_id}', [FavoriteController::class, 'destroy']);
 
     Route::post('cars', [CarController::class, 'store']);
+    Route::put('cars/{id}', [CarController::class, 'update']);
 
     Route::get('trips', [TripController::class, 'index']);
     Route::post('trips', [TripController::class, 'store']);

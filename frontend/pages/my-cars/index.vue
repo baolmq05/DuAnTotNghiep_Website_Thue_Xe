@@ -208,13 +208,23 @@
             </div> -->
 
             <!-- Footer: Revenue -->
-            <div class="flex justify-between items-center pt-3.5 border-t border-slate-100">
+            <div class="flex justify-between items-center pt-3.5 border-t border-slate-100 mt-auto">
               <div>
                 <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Doanh thu tháng này</p>
                 <p class="font-black text-[#1e4e57] mt-0.5 text-base lg:text-lg">
                   {{ formatPrice(car.revenue) }}
                 </p>
               </div>
+              <NuxtLink
+                :to="`/my-cars/edit/${car.id}`"
+                class="px-4 py-2 text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#163a41] rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                </svg>
+                Chỉnh sửa
+              </NuxtLink>
             </div>
           </div>
         </div>
@@ -303,6 +313,7 @@ const formattedCars = computed(() => {
     }
 
     return {
+      id: car.id,
       name: car.name,
       licensePlate: car.license_plate,
       image: carImage,

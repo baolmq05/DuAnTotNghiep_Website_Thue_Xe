@@ -36,6 +36,15 @@ export interface DeliveryOption {
     updated_at?: string;
 }
 
+export interface UsageLimit {
+    id: number;
+    max_daily_distance: number;
+    extra_distance_fee: number;
+    status: number;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface CarBrandRegister {
     id: number;
     brand_name: string;
@@ -87,9 +96,11 @@ export interface Car {
     updated_at?: string;
     car_location?: CarLocation;
     delivery_option?: DeliveryOption;
+    usage_limit?: UsageLimit;
     car_brand?: CarBrand;
     car_type?: CarType;
     images?: CarImage[];
+    features?: CarFeatureRegister[];
     reviews_avg_rating?: string | number | null;
     trips_count?: number;
     owner?: {
@@ -179,6 +190,17 @@ export class CarService extends BaseService {
         return this.request<{ success: boolean; message: string; data: any }>(this.endpoint, {
             method: "POST",
             body: formData,
+            useAuth: true
+        });
+    }
+
+    /**
+     * Cập nhật thông tin xe
+     */
+    async updateCar(id: string | number, payload: any): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`${this.endpoint}/${id}`, {
+            method: "PUT",
+            body: payload,
             useAuth: true
         });
     }
