@@ -256,4 +256,139 @@ class TripController extends Controller
             'data' => $trip
         ]);
     }
+
+    /**
+     * API Lấy chi tiết chuyến đi
+     * GET /api/trips/{id}
+     */
+    public function show($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with([
+            'car.carLocation',
+            'car.images',
+            'car.carBrand',
+            'car.carType',
+            'car.owner',
+            'user',
+            'images'
+        ])->find($id);
+
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền: phải là renter (user_id) hoặc owner của xe (car->user_id)
+        if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền xem thông tin chuyến đi này.'
+            ], 403);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $trip
+        ]);
+    }
+
+    /**
+     * API Bắt đầu chuyến đi (upload ảnh trước chuyến đi & đổi trạng thái sang 3 - Ongoing)
+     * POST /api/trips/{id}/start
+     */
+    public function startTrip(Request $request, $id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền: renter hoặc owner
+        if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        if ($trip->status !== TripStatus::Confirmed->value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chuyến đi không ở trạng thái Đã xác nhận để bắt đầu.'
+            ], 400);
+        }
+
+        // Xác thực ảnh tải lên từ cloud
+        $validator = Validator::make($request->all(), [
+            'images' => 'required|array|min:1',
+            'images.*' => 'required|string|url',
+        ], [
+            'images.required' => 'Bạn phải tải lên ít nhất 1 ảnh xe trước khi bắt đầu chuyến đi.',
+            'images.min' => 'Bạn phải tải lên ít nhất 1 ảnh xe trước khi bắt đầu chuyến đi.',
+            'images.*.url' => 'Đường dẫn hình ảnh không hợp lệ.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $imageUrls = $request->input('images');
+            foreach ($imageUrls as $index => $url) {
+                // Lưu vào bảng trip_images
+                \App\Models\TripImage::create([
+                    'trip_id' => $trip->id,
+                    'image_url' => $url,
+                    'type' => 0, // Trước chuyến đi
+                    'is_thumbnail' => $index === 0 ? 1 : 0,
+                ]);
+            }
+
+            // Cập nhật trạng thái chuyến đi thành Ongoing (3)
+            $trip->update(['status' => TripStatus::Ongoing->value]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Bắt đầu chuyến đi thành công!',
+                'data' => $trip->load(['car', 'images'])
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi bắt đầu chuyến đi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

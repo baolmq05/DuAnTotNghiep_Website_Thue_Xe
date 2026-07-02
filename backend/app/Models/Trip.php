@@ -18,4 +18,10 @@ class Trip extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function images(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TripImage::class);
+    }
 }
+

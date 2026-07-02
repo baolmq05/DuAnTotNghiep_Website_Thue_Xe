@@ -558,7 +558,7 @@
                       <p
                         class="text-sm font-extrabold text-brand-dark mt-0.5"
                       >
-                        {{ formattedStart }}
+                        {{ formattedStart || 'Chọn thời gian' }}
                       </p>
                     </div>
                     <div
@@ -572,7 +572,7 @@
                       <p
                         class="text-sm font-extrabold text-brand-dark mt-0.5"
                       >
-                        {{ formattedEnd }}
+                        {{ formattedEnd || 'Chọn thời gian' }}
                       </p>
                     </div>
                   </div>
@@ -611,7 +611,7 @@
                       @click="receiveMethod = 'delivery'"
                       :title="(!car?.delivery_option || car.delivery_option.status !== 1) ? 'Chủ xe không hỗ trợ giao xe tận nơi' : ''"
                     >
-                      <i class="fa-solid fa-truck text-[10px]"></i>
+                      <Icon name="lucide:truck" class="w-3.5 h-3.5" />
                       Giao xe tận nơi
                     </button>
                   </div>
@@ -651,7 +651,7 @@
                         class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 pr-10 outline-none transition text-xs font-semibold text-slate-700 focus:border-[#1e4e57] focus:ring-2 focus:ring-[#1e4e57]/10"
                       >
                       <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
-                        <i class="fa-solid fa-location-dot text-sm"></i>
+                        <Icon name="lucide:map-pin" class="w-4 h-4" />
                       </div>
 
                       <!-- Suggestions Dropdown -->
@@ -690,8 +690,8 @@
                       </div>
 
                       <!-- Warning if too far -->
-                      <div v-if="isDistanceTooFar" class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100">
-                        <i class="fa-solid fa-triangle-exclamation mr-1"></i>
+                      <div v-if="isDistanceTooFar" class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100 flex items-center justify-center gap-1">
+                        <Icon name="lucide:triangle-alert" class="w-4 h-4" />
                         Vị trí quá xa! Chủ xe chỉ giao tối đa {{ car?.delivery_option?.max_distance }} km.
                       </div>
                     </div>
@@ -1067,6 +1067,24 @@ const calculatedDeliveryFee = computed(() => {
 })
 
 const handleBooking = async () => {
+  if (!selectedStart.value || !selectedEnd.value) {
+    showToast('Vui lòng chọn thời gian nhận và trả xe.', 'warning')
+    return
+  }
+
+  // Kiểm tra trùng lịch bận
+  if (disabledDates.value.length > 0) {
+    const start = selectedStart.value
+    const end = selectedEnd.value
+    const overlap = disabledDates.value.some((range: any) => {
+      return start <= range.end && end >= range.start
+    })
+    if (overlap) {
+      showToast('Thời gian thuê trùng với lịch xe đã bận. Vui lòng chọn thời gian khác.', 'error')
+      return
+    }
+  }
+
   if (!user.value) {
     showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'warning')
     openLogin()
@@ -1246,6 +1264,22 @@ const disabledDates = computed(() => {
   })
   console.log("Mapped disabledDates:", mapped)
   return mapped
+})
+
+// Check if default dates overlap with busy dates on load
+watch(disabledDates, (newDisabled) => {
+  if (selectedStart.value && selectedEnd.value && newDisabled.length > 0) {
+    const start = selectedStart.value
+    const end = selectedEnd.value
+    const overlap = newDisabled.some((range: any) => {
+      return start <= range.end && end >= range.start
+    })
+    if (overlap) {
+      showToast('Lưu ý: Thời gian mặc định trùng với lịch bận của xe. Vui lòng chọn lịch khác!', 'warning')
+      selectedStart.value = null
+      selectedEnd.value = null
+    }
+  }
 })
 
 const rentalDays = computed(() => {
@@ -1514,7 +1548,7 @@ const hostStats = [
 ];
 
 const priceDetails = computed(() => {
-  if (!car.value) return [];
+  if (!car.value || !selectedStart.value || !selectedEnd.value) return [];
   const unitPrice = car.value.unit_price;
   const insuranceFee = Math.round(unitPrice * 0.09); // Phí bảo hiểm 9%
   const deliveryFeeVal = calculatedDeliveryFee.value;
@@ -1545,12 +1579,13 @@ const priceDetails = computed(() => {
 });
 
 const totalSavings = computed(() => {
-  if (!car.value) return 0;
+  if (!car.value || !selectedStart.value || !selectedEnd.value) return 0;
   return (car.value.discount_value || 0) * rentalDays.value;
 });
 
 const totalPrice = computed(() => {
   if (!car.value) return 0;
+  if (!selectedStart.value || !selectedEnd.value) return 0;
   const unitPrice = car.value.unit_price;
   const insuranceFee = Math.round(unitPrice * 0.09);
   const deliveryFeeVal = calculatedDeliveryFee.value;

@@ -255,6 +255,27 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Lấy thông tin chi tiết một chuyến đi
+     */
+    async getTripById(id: number | string): Promise<{ success: boolean; data: any }> {
+        return this.request<{ success: boolean; data: any }>(`trips/${id}`, {
+            method: "GET",
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Bắt đầu chuyến đi (tải ảnh lên và đổi trạng thái)
+     */
+    async startTrip(id: number | string, payload: any): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/start`, {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();

@@ -13,7 +13,7 @@
                 :class="activeTab === tab.key
                     ? 'bg-white text-[#1e4e57] shadow-sm shadow-slate-200'
                     : 'text-slate-500 hover:text-slate-700'">
-                <i :class="tab.icon" class="text-xs"></i>
+                <Icon :name="tab.icon" class="w-4 h-4" />
                 {{ tab.label }}
                 <span class="inline-flex items-center justify-center rounded-full px-2 py-0.5 text-[10px] font-black"
                     :class="activeTab === tab.key ? 'bg-[#1e4e57]/10 text-[#1e4e57]' : 'bg-slate-200 text-slate-500'">
@@ -25,8 +25,8 @@
         <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <!-- Row 1: Search -->
             <div class="relative">
-                <i
-                    class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <Icon
+                    name="lucide:search" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" />
                 <input v-model="searchQuery" type="text" placeholder="Tìm theo tên xe, biển số..."
                     class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10" />
             </div>
@@ -42,8 +42,8 @@
                             {{ opt.label }}
                         </option>
                     </select>
-                    <i
-                        class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    <Icon
+                        name="lucide:chevron-down" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 </div>
 
                 <!-- Trip Type Filter -->
@@ -54,8 +54,8 @@
                         <option value="0">Thuê theo ngày</option>
                         <option value="1">Thuê theo km</option>
                     </select>
-                    <i
-                        class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    <Icon
+                        name="lucide:chevron-down" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 </div>
 
                 <!-- Sort -->
@@ -67,14 +67,14 @@
                         <option value="cost_asc">Giá tăng dần</option>
                         <option value="cost_desc">Giá giảm dần</option>
                     </select>
-                    <i
-                        class="fa-solid fa-chevron-down pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                    <Icon
+                        name="lucide:chevron-down" class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 </div>
 
                 <!-- Clear filters button -->
                 <button v-if="hasActiveFilters" @click="clearFilters"
                     class="flex items-center justify-center gap-1.5 rounded-xl border border-red-200 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-100 shrink-0">
-                    <i class="fa-solid fa-xmark text-xs"></i>
+                    <Icon name="lucide:x" class="w-3.5 h-3.5" />
                     Xóa lọc
                 </button>
             </div>
@@ -92,7 +92,7 @@
                 class="space-y-4 max-lg:space-y-0 max-lg:grid max-lg:gap-5 md:grid-cols-2">
                 <p v-if="filteredBookedTrips.length === 0"
                     class="rounded-2xl border border-dashed border-slate-200 py-16 text-center text-sm text-slate-400">
-                    <i class="fa-regular fa-calendar-xmark mb-3 block text-3xl text-slate-300"></i>
+                    <Icon name="lucide:calendar-off" class="mb-3 mx-auto block w-8 h-8 text-slate-300" />
                     Không tìm thấy chuyến nào phù hợp với bộ lọc.
                 </p>
 
@@ -106,9 +106,9 @@
                                 class="absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
                             <!-- Trip type badge -->
                             <span
-                                class="absolute left-3 top-3 rounded-lg px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-black/20 bg-[#1e4e57]">
-                                <i :class="trip.trip_type === 0 ? 'fa-solid fa-calendar-days' : 'fa-solid fa-road'"
-                                    class="mr-1.5"></i>
+                                class="absolute left-3 top-3 rounded-lg px-3 py-1.5 text-xs font-bold text-white shadow-md shadow-black/20 bg-[#1e4e57] flex items-center gap-1.5">
+                                <Icon :name="trip.trip_type === 0 ? 'lucide:calendar' : 'lucide:route'"
+                                    class="w-3.5 h-3.5" />
                                 {{ trip.trip_type === 0 ? 'Thuê theo ngày' : 'Thuê theo km' }}
                             </span>
                         </div>
@@ -140,7 +140,7 @@
                                 <div class="flex-1 rounded-lg bg-slate-50 px-3 py-2">
                                     <p
                                         class="mb-0.5 flex items-center gap-1 text-[11px] max-sm:text-[10px] text-slate-400">
-                                        <i class="fa-regular fa-clock"></i>Bắt đầu
+                                        <Icon name="lucide:clock" class="w-3 h-3" />Bắt đầu
                                     </p>
                                     <p class="text-sm max-sm:text-xs font-semibold text-slate-700">{{
                                         formatDate(trip.start_at) }}</p>
@@ -148,7 +148,7 @@
                                 <div class="flex-1 rounded-lg bg-slate-50 px-3 py-2">
                                     <p
                                         class="mb-0.5 flex items-center gap-1 text-[11px] max-sm:text-[10px] text-slate-400">
-                                        <i class="fa-regular fa-flag"></i>Kết thúc
+                                        <Icon name="lucide:flag" class="w-3 h-3" />Kết thúc
                                     </p>
                                     <p class="text-sm max-sm:text-xs font-semibold text-slate-700">{{
                                         formatDate(trip.end_at) }}</p>
@@ -175,7 +175,7 @@
                                 </div>
 
                                 <div class="flex items-center gap-2">
-                                    <button
+                                    <button @click="navigateTo('/trips/' + trip.id)"
                                         class="rounded-xl bg-[#1e4e57] px-4 py-2 text-xs font-bold text-white transition hover:bg-[#286874]">
                                         Chi tiết
                                     </button>
@@ -240,7 +240,7 @@ interface Trip {
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 const tabs = [
-    { key: 'booked', label: 'Chuyến đã đặt', icon: 'fa-solid fa-car-side' },
+    { key: 'booked', label: 'Chuyến đã đặt', icon: 'lucide:car' },
 ] as const
 const activeTab = ref<'booked' | 'owner'>('booked')
 
