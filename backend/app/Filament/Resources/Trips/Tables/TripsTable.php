@@ -8,7 +8,9 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\DatePicker;
 class TripsTable
 {
     public static function configure(Table $table): Table
@@ -83,13 +85,13 @@ class TripsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('car_id')
+                SelectFilter::make('car_id')
                     ->label('Xe thuê')
                     ->relationship('car', 'name'),
-                \Filament\Tables\Filters\SelectFilter::make('user_id')
+                SelectFilter::make('user_id')
                     ->label('Khách hàng')
                     ->relationship('user', 'name'),
-                \Filament\Tables\Filters\SelectFilter::make('status')
+                SelectFilter::make('status')
                     ->label('Trạng thái')
                     ->options([
                         TripStatus::Pending->value => 'Chờ duyệt',
@@ -100,12 +102,25 @@ class TripsTable
                         TripStatus::UserCancel->value => 'Người dùng hủy',
                         TripStatus::OwnerCancel->value => 'Chủ xe hủy',
                     ]),
-                \Filament\Tables\Filters\SelectFilter::make('trip_type')
+                SelectFilter::make('trip_type')
                     ->label('Loại thuê')
                     ->options([
                         0 => 'Thuê theo ngày',
                         1 => 'Thuê theo km',
                     ]),
+                Filter::make('trip_duration')
+                    ->label('Thời gian chuyến đi')
+                    ->form([
+                        DatePicker::make('start_at')
+                            ->label('Ngày bắt đầu'),
+                        DatePicker::make('end_at')
+                            ->label('Ngày kết thúc'),
+                    ])
+                    ->query(function ($query, array $data) {
+                        return $query
+                            ->when($data['start_at'], fn($q) => $q->whereDate('start_at', '>=', $data['start_at']))
+                            ->when($data['end_at'], fn($q) => $q->whereDate('end_at', '<=', $data['end_at']));
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),
