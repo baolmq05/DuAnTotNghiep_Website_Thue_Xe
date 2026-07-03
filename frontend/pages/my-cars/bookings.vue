@@ -151,6 +151,30 @@
                 </div>
               </div>
             </div>
+
+            <!-- Extension Info Block -->
+            <div v-if="trip.status === TripStatus.WaitingExtension" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 mt-3 text-xs text-indigo-900 space-y-2">
+              <p class="font-bold flex items-center gap-1.5 text-indigo-700">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-650 shrink-0">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                  <line x1="16" y1="2" x2="16" y2="6"></line>
+                  <line x1="8" y1="2" x2="8" y2="6"></line>
+                  <line x1="3" y1="10" x2="21" y2="10"></line>
+                  <line x1="12" y1="14" x2="12" y2="20"></line>
+                  <line x1="9" y1="17" x2="15" y2="17"></line>
+                </svg>
+                Yêu cầu gia hạn thêm ngày:
+              </p>
+              <div class="flex flex-col gap-1 mt-1 font-medium">
+                <div>
+                  <span class="text-slate-500 font-semibold">Ngày trả xe đề xuất mới:</span>
+                  <p class="font-bold text-indigo-950 text-sm mt-0.5">{{ formatDate(trip.extended_end_at) }}</p>
+                </div>
+                <div class="text-[10px] text-indigo-600 bg-indigo-100/50 px-2.5 py-1 rounded-lg border border-indigo-200/40 w-fit mt-1">
+                  Thời gian gia hạn thêm: {{ duration(trip.end_at, trip.extended_end_at) }}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -173,6 +197,28 @@
               <polyline points="20 6 9 17 4 12"></polyline>
             </svg>
             Xác nhận cho thuê
+          </button>
+        </div>
+
+        <!-- Confirm / Reject Action buttons for WaitingExtension -->
+        <div v-else-if="trip.status === TripStatus.WaitingExtension" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+          <button @click="openRejectExtensionDialog(trip)"
+            class="flex-1 py-3 px-4 border border-rose-200 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] transition-all text-xs font-bold text-rose-600 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+            Từ chối gia hạn
+          </button>
+
+          <button @click="confirmExtension(trip)"
+            class="flex-1 py-3 px-4 bg-[#1e4e57] hover:bg-[#163a41] active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-[#1e4e57]/15 transform">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            Đồng ý gia hạn
           </button>
         </div>
       </div>
@@ -262,7 +308,7 @@ const chatService = new ChatService();
 const { showToast } = useToast();
 const loading = ref(true);
 const ownerTrips = ref<any[]>([]);
-const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
+const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'waiting_extension' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
 
 // Modal States
 const showRejectModal = ref(false);
@@ -291,6 +337,11 @@ const filterTabs = computed(() => {
       value: 'active' as const,
       label: 'Đang diễn ra',
       count: ownerTrips.value.filter(t => t.status === TripStatus.Ongoing).length,
+    },
+    {
+      value: 'waiting_extension' as const,
+      label: 'Chờ gia hạn',
+      count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension).length,
     },
     {
       value: 'completed' as const,
@@ -362,6 +413,8 @@ const filteredTrips = computed(() => {
     return ownerTrips.value.filter(t => t.status === TripStatus.Confirmed);
   } else if (activeFilter.value === 'active') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Ongoing);
+  } else if (activeFilter.value === 'waiting_extension') {
+    return ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension);
   } else if (activeFilter.value === 'completed') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Complete);
   } else if (activeFilter.value === 'cancelled_renter') {
@@ -416,9 +469,19 @@ const confirmTrip = async (trip: any) => {
   }
 };
 
+const isRejectingExtension = ref(false);
+
 const openRejectDialog = (trip: any) => {
   selectedTripForReject.value = trip;
   rejectReason.value = '';
+  isRejectingExtension.value = false;
+  showRejectModal.value = true;
+};
+
+const openRejectExtensionDialog = (trip: any) => {
+  selectedTripForReject.value = trip;
+  rejectReason.value = '';
+  isRejectingExtension.value = true;
   showRejectModal.value = true;
 };
 
@@ -426,9 +489,10 @@ const closeRejectDialog = () => {
   showRejectModal.value = false;
   selectedTripForReject.value = null;
   rejectReason.value = '';
+  isRejectingExtension.value = false;
 };
 
-// Từ chối yêu cầu thuê xe lên API backend
+// Từ chối yêu cầu thuê xe hoặc gia hạn lên API backend
 const submitRejection = async () => {
   if (!rejectReason.value.trim()) {
     showToast('Vui lòng nhập lý do từ chối.', 'error');
@@ -440,20 +504,42 @@ const submitRejection = async () => {
     const renterName = selectedTripForReject.value.renter.name;
 
     try {
-      const res = await carService.rejectTrip(tripId, rejectReason.value);
+      let res;
+      if (isRejectingExtension.value) {
+        res = await carService.rejectExtension(tripId, rejectReason.value);
+      } else {
+        res = await carService.rejectTrip(tripId, rejectReason.value);
+      }
+
       if (res && res.success) {
-        showToast(`Đã từ chối yêu cầu thuê xe của ${renterName} thành công.`, 'success');
+        showToast('Đã từ chối yêu cầu thành công.', 'success');
         await loadOwnerTrips(); // Tải lại danh sách từ server
       } else {
         showToast(res.message || 'Từ chối yêu cầu thất bại.', 'error');
       }
     } catch (err: any) {
-      console.error('Lỗi khi từ chối chuyến đi:', err);
+      console.error('Lỗi khi từ chối:', err);
       showToast(err.response?._data?.message || 'Có lỗi xảy ra khi từ chối.', 'error');
     }
   }
 
   closeRejectDialog();
+};
+
+// Phê duyệt yêu cầu gia hạn
+const confirmExtension = async (trip: any) => {
+  try {
+    const res = await carService.approveExtension(trip.id);
+    if (res && res.success) {
+      showToast(`Đã duyệt yêu cầu gia hạn cho chuyến đi của ${trip.renter.name} thành công.`, 'success');
+      await loadOwnerTrips(); // Tải lại danh sách từ server
+    } else {
+      showToast(res.message || 'Duyệt gia hạn thất bại.', 'error');
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi phê duyệt gia hạn:', err);
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi duyệt gia hạn.', 'error');
+  }
 };
 
 // Khởi tạo cuộc hội thoại chat và chuyển hướng sang trang chats

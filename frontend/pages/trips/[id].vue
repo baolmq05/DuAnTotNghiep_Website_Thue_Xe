@@ -269,8 +269,8 @@
           </button>
         </div>
 
-        <!-- CASE 2: Trip is Ongoing (status = 3) or Completed (status = 4) - Display uploaded photos -->
-        <div v-else-if="trip.status === 3 || trip.status === 4" class="space-y-4">
+        <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4) or Waiting Extension (status = 7) - Display uploaded photos -->
+        <div v-else-if="trip.status === 3 || trip.status === 4 || trip.status === 7" class="space-y-4">
           <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
             <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
             Ảnh xe trước chuyến đi đã tải lên
@@ -293,13 +293,52 @@
             Không tìm thấy ảnh xe trước chuyến đi
           </div>
 
-          <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5">
-            <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-amber-600" />
+          <!-- Trip is ongoing (status = 3) -->
+          <div v-if="trip.status === 3" class="space-y-3">
+            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5">
+              <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-amber-600" />
+              <div class="leading-relaxed">
+                <p class="font-bold">Đang trong chuyến hành trình</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Chuyến đi đang diễn ra an toàn. Vui lòng liên hệ với chủ xe nếu có bất kỳ sự cố hay phát sinh nào trong quá trình di chuyển.
+                </p>
+              </div>
+            </div>
+            
+            <button 
+              @click="openExtensionModal" 
+              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5"
+            >
+              <Icon name="lucide:calendar-plus" class="w-4 h-4" />
+              Gia hạn chuyến đi
+            </button>
+          </div>
+
+          <!-- Trip is completed (status = 4) -->
+          <div v-else-if="trip.status === 4" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex items-start gap-2.5">
+            <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
             <div class="leading-relaxed">
-              <p class="font-bold">Đang trong chuyến hành trình</p>
+              <p class="font-bold">Chuyến đi đã kết thúc</p>
               <p class="mt-0.5 font-medium opacity-90">
-                Chuyến đi đang diễn ra an toàn. Vui lòng liên hệ với chủ xe nếu có bất kỳ sự cố hay phát sinh nào trong quá trình di chuyển.
+                Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! Chuyến đi đã được hoàn thành thành công.
               </p>
+            </div>
+          </div>
+
+          <!-- Trip is waiting for extension approval (status = 7) -->
+          <div v-else-if="trip.status === 7" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex items-start gap-2.5">
+            <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-600" />
+            <div class="leading-relaxed flex-grow">
+              <p class="font-bold">Đang chờ chủ xe duyệt gia hạn</p>
+              <p class="mt-0.5 font-medium opacity-90">
+                Yêu cầu gia hạn thêm ngày đang chờ chủ xe phê duyệt.
+              </p>
+              <div v-if="trip.extended_end_at" class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
+                <div>
+                  <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề xuất:</span>
+                  <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.extended_end_at) }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -430,6 +469,85 @@
       @close="showZaloPayModal = false"
     />
 
+    <!-- Extension Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showExtensionModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+          <div @click="showExtensionModal = false" class="absolute inset-0 cursor-pointer"></div>
+          <div class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up" @click.stop>
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Icon name="lucide:calendar-plus" class="w-5 h-5 text-[#1e4e57]" />
+                Yêu cầu gia hạn chuyến đi
+              </h3>
+              <button @click="showExtensionModal = false" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4 text-xs">
+              <p class="text-slate-500 font-medium">Bạn có thể chọn số ngày muốn gia hạn thêm. Đơn giá thuê của xe là <span class="font-bold text-slate-800">{{ formatCurrency(trip?.car?.unit_price) }} / ngày</span>.</p>
+              
+              <div class="space-y-1.5">
+                <label class="block font-bold text-slate-700">Số ngày gia hạn thêm:</label>
+                <div class="flex items-center gap-3">
+                  <button 
+                    type="button" 
+                    @click="adjustExtensionDays(-1)" 
+                    class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 hover:bg-slate-200 active:scale-95 transition"
+                  >
+                    <Icon name="lucide:minus" class="w-4 h-4" />
+                  </button>
+                  <span class="w-12 text-center text-base font-black text-slate-800">{{ extensionDays }}</span>
+                  <button 
+                    type="button" 
+                    @click="adjustExtensionDays(1)" 
+                    class="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center font-bold text-slate-700 hover:bg-slate-200 active:scale-95 transition"
+                  >
+                    <Icon name="lucide:plus" class="w-4 h-4" />
+                  </button>
+                  <span class="text-slate-400 font-medium">ngày</span>
+                </div>
+              </div>
+
+              <!-- Cost Summary Box -->
+              <div class="bg-slate-50 border border-slate-100 rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between text-slate-500 font-medium">
+                  <span>Ngày trả xe hiện tại:</span>
+                  <span class="font-bold text-slate-700">{{ formatDate(trip?.end_at) }}</span>
+                </div>
+                <div class="flex justify-between text-slate-500 font-medium">
+                  <span>Ngày trả xe mới:</span>
+                  <span class="font-bold text-emerald-600">{{ formatDate(newEndAtDate) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex gap-3 mt-6">
+              <button 
+                @click="showExtensionModal = false" 
+                class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl"
+              >
+                Hủy
+              </button>
+              <button 
+                @click="submitExtensionRequest" 
+                :disabled="submittingExtension"
+                class="flex-1 py-2.5 bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5"
+              >
+                <Icon v-if="submittingExtension" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <span v-else>Xác nhận gia hạn</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -465,6 +583,47 @@ const previewImageUrl = ref('')
 
 // Payment state & handlers
 const showPaymentSelector = ref(false)
+
+// Extension request states
+const showExtensionModal = ref(false)
+const extensionDays = ref(1)
+const submittingExtension = ref(false)
+
+const openExtensionModal = () => {
+  extensionDays.value = 1
+  showExtensionModal.value = true
+}
+
+const adjustExtensionDays = (val: number) => {
+  extensionDays.value = Math.max(1, extensionDays.value + val)
+}
+
+const newEndAtDate = computed(() => {
+  if (!trip.value || !trip.value.end_at) return ''
+  const currentEnd = new Date(trip.value.end_at)
+  currentEnd.setDate(currentEnd.getDate() + extensionDays.value)
+  return currentEnd.toISOString()
+})
+
+const submitExtensionRequest = async () => {
+  submittingExtension.value = true
+  try {
+    const tripId = route.params.id as string
+    const res = await carService.requestExtension(tripId, { extended_days: extensionDays.value })
+    if (res && res.success) {
+      showToast('Đã gửi yêu cầu gia hạn chuyến đi thành công!', 'success')
+      showExtensionModal.value = false
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Gửi yêu cầu gia hạn thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi gửi yêu cầu gia hạn:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi gửi yêu cầu gia hạn.', 'error')
+  } finally {
+    submittingExtension.value = false
+  }
+}
 const showVNPayModal = ref(false)
 const showZaloPayModal = ref(false)
 

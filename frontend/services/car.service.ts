@@ -276,6 +276,38 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Gửi yêu cầu gia hạn chuyến đi
+     */
+    async requestExtension(id: number | string, payload: { extended_days: number }): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-request`, {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Chủ xe duyệt yêu cầu gia hạn
+     */
+    async approveExtension(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-approve`, {
+            method: "PUT",
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Chủ xe từ chối yêu cầu gia hạn
+     */
+    async rejectExtension(id: number | string, reason: string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-reject`, {
+            method: "PUT",
+            body: { reason },
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();
