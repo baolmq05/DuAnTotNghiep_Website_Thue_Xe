@@ -25,11 +25,6 @@ const mainMenus = [
     href: "/profile",
   },
   {
-    title: "Quản lý cho thuê",
-    icon: "ic:outline-directions-car",
-    href: "/my-cars/dashboard",
-  },
-  {
     title: "Xe yêu thích",
     icon: "ic:outline-favorite-border",
     href: "/profile/favorite",
@@ -47,12 +42,7 @@ const mainMenus = [
 ];
 
 const filteredMainMenus = computed(() => {
-  return mainMenus.filter(item => {
-    if (item.href === "/my-cars") {
-      return user.value && (user.value.role_id === 3 || user.value.role_id === 1);
-    }
-    return true;
-  });
+  return mainMenus;
 });
 
 const settingMenus = [

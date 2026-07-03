@@ -9,6 +9,7 @@ use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class DrivingLicensesTable
 {
@@ -20,7 +21,7 @@ class DrivingLicensesTable
                     ->label('Họ và tên')
                     ->searchable(),
                 ImageColumn::make('image')
-                    ->label(new \Illuminate\Support\HtmlString('Ảnh giấy phép lái xe<style>.hover-zoom-image:hover { transform: scale(4.5); z-index: 99999 !important; position: relative !important; box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3); cursor: zoom-in; } .hover-zoom-image { transition: all 0.2s ease-in-out; } td:has(.hover-zoom-image:hover), td:has(.hover-zoom-image:hover) * { overflow: visible !important; z-index: 9999 !important; }</style>'))
+                    ->label(new HtmlString('Ảnh giấy phép lái xe<style>.hover-zoom-image{transition:0.2s}.hover-zoom-image:hover{transform:scale(2.8);z-index:999999!important;position:relative!important;border-radius:8px!important;box-shadow:0 10px 15px rgba(0,0,0,0.3);cursor:zoom-in}tr:has(.hover-zoom-image:hover){position:relative!important;z-index:9998!important}td:has(.hover-zoom-image:hover){position:relative!important;z-index:9999!important}table:has(.hover-zoom-image:hover) th,table:has(.hover-zoom-image:hover) td:not(:has(.hover-zoom-image:hover)){z-index:1!important}*:has(.hover-zoom-image:hover){overflow:visible!important}</style>'))
                     ->circular()
                     ->extraImgAttributes([
                         'class' => 'hover-zoom-image',

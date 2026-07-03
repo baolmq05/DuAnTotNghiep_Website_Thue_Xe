@@ -138,7 +138,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 
 const { openLogin, openRegister } = useAuthModal()
 const { user, isLoggedIn } = useAuth()
@@ -147,22 +147,32 @@ const { unreadCount, fetchNotifications } = useNotifications()
 const isScrolled = ref(false)
 const activeTab = ref(0)
 
-const navItems = [
+const isOwner = computed(() => {
+  return isLoggedIn.value && user.value && (user.value.role_id === 3 || user.value.role_id === 1)
+})
+
+const navItems = computed(() => [
   { text: 'Trang chủ', to: '/' },
   { text: 'Về Drivio', to: '/about' },
   { text: 'Bài viết', to: '/blogs' },
-  { text: 'Trở thành chủ xe', to: '/car-register' },
-  { text: 'Chính Sách', to: '/policy' }
-]
+  { text: 'Chính Sách', to: '/policy' },
+  isOwner.value
+    ? { text: 'Quản lý xe', to: '/my-cars/dashboard' }
+    : { text: 'Trở thành chủ xe', to: '/car-register' },
 
-const bottomNavItems = [
+])
+
+const bottomNavItems = computed(() => [
   { text: 'Trang chủ', icon: 'home', to: '/' },
   { text: 'Về Drivio', icon: 'info', to: '/about' },
   { text: 'Bài viết', icon: 'blog', to: '/blogs' },
-  { text: 'Chủ xe', icon: 'host', to: '/car-register' },
   { text: 'Tài khoản', icon: 'account' },
   { text: 'Chính Sách', icon: 'policy', to: '/policy' },
-]
+  isOwner.value
+    ? { text: 'Quản lý xe', icon: 'host', to: '/my-cars/dashboard' }
+    : { text: 'Chủ xe', icon: 'host', to: '/car-register' },
+
+])
 // mở modal
 const showNotificationModal = ref(false);
 const route = useRoute();
