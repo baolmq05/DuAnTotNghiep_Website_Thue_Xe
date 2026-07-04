@@ -193,7 +193,8 @@
 
               <div class="max-w-lg">
                 <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                  <p class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                  <p v-if="activeConvId === 'bot'" class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
+                  <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 ml-1">
                   {{ activeConvId === 'bot' ? 'Chatbot Drivio' : activeHost?.other_user?.name }} • {{ msg.time }}
