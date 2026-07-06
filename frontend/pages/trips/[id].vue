@@ -151,6 +151,21 @@
                 <span class="text-base font-bold text-slate-800">Thành tiền</span>
                 <span class="text-2xl font-black text-[#1e4e57]">{{ formatCurrency(trip.cost - trip.discount_amount) }}</span>
               </div>
+              
+              <!-- Payment status and deposit details -->
+              <div v-if="trip.transactions && trip.transactions.length > 0" class="pt-3 border-t border-dashed border-slate-100 space-y-2 animate-fade-in">
+                <div class="flex justify-between items-center text-sm font-medium">
+                  <span class="text-slate-500">Đã đặt cọc / thanh toán:</span>
+                  <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <Icon name="lucide:check-circle" class="w-3.5 h-3.5" />
+                    {{ paidPercent }}% ({{ formatCurrency(totalPaid) }})
+                  </span>
+                </div>
+                <div v-if="paidPercent < 95" class="flex justify-between text-xs font-semibold leading-normal bg-amber-50/50 border border-amber-100 p-2.5 rounded-xl mt-1 text-slate-500">
+                  <span class="text-amber-800">Còn lại cần trả chủ xe:</span>
+                  <span class="text-amber-900 font-bold">{{ formatCurrency((trip.cost - trip.discount_amount) - totalPaid) }}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -352,13 +367,13 @@
           <template v-else-if="trip.status === 1">
             <Icon name="lucide:credit-card" class="text-sky-500 mb-2 mx-auto block w-6 h-6" />
             <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ thanh toán đặt cọc.</p>
-            <button 
-              @click="showPaymentSelector = true" 
-              class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-sky-600/10 cursor-pointer mx-auto flex items-center gap-1.5 active:scale-[0.98]"
+            <nuxt-link 
+              :to="`/payment?trip_id=${trip.id}`" 
+              class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-sky-600/10 cursor-pointer mx-auto flex items-center gap-1.5 active:scale-[0.98] inline-flex"
             >
               <Icon name="lucide:wallet" class="w-4 h-4" />
               Thanh toán ngay
-            </button>
+            </nuxt-link>
           </template>
           <template v-else-if="trip.status === 5 || trip.status === 6">
             <Icon name="lucide:ban" class="text-rose-500 mb-2 mx-auto block w-6 h-6" />
@@ -387,87 +402,7 @@
       </Transition>
     </Teleport>
 
-    <!-- Payment Method Selector Modal -->
-    <Teleport to="body">
-      <Transition name="fade">
-        <div v-if="showPaymentSelector" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
-          <div @click="showPaymentSelector = false" class="absolute inset-0 cursor-pointer"></div>
-          <div class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up" @click.stop>
-            <!-- Header -->
-            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-                <Icon name="lucide:wallet" class="w-5 h-5 text-[#1e4e57]" />
-                Chọn phương thức thanh toán
-              </h3>
-              <button @click="showPaymentSelector = false" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
-                <Icon name="lucide:x" class="w-4 h-4" />
-              </button>
-            </div>
 
-            <!-- Content / Choices -->
-            <div class="space-y-4">
-              <p class="text-xs text-slate-500">Vui lòng chọn cổng thanh toán để thực hiện đặt cọc cho chuyến đi này:</p>
-              
-              <!-- Option 1: VNPay -->
-              <div 
-                @click="selectPaymentGateway('vnpay')"
-                class="flex items-center justify-between p-4 rounded-2xl border border-slate-205 hover:border-[#1e4e57] hover:bg-[#1e4e57]/5 cursor-pointer transition-all group"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
-                    <span class="flex items-center gap-0.5 font-extrabold tracking-wider text-sm text-[#286874] uppercase">
-                      VN<span class="text-[#e05638]">Pay</span>
-                    </span>
-                  </div>
-                  <div>
-                    <h4 class="text-sm font-bold text-slate-800 group-hover:text-[#1e4e57]">Cổng thanh toán VNPay</h4>
-                    <p class="text-[11px] text-slate-400">Hỗ trợ ATM nội địa, QR Code, Thẻ quốc tế</p>
-                  </div>
-                </div>
-                <Icon name="lucide:chevron-right" class="w-5 h-5 text-slate-400 group-hover:text-[#1e4e57] group-hover:translate-x-1 transition-all" />
-              </div>
-
-              <!-- Option 2: ZaloPay -->
-              <div 
-                @click="selectPaymentGateway('zalopay')"
-                class="flex items-center justify-between p-4 rounded-2xl border border-slate-205 hover:border-[#007aff] hover:bg-[#007aff]/5 cursor-pointer transition-all group"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center shadow-sm">
-                    <span class="font-extrabold tracking-tight text-sm text-[#007aff]">ZaloPay</span>
-                  </div>
-                  <div>
-                    <h4 class="text-sm font-bold text-slate-800 group-hover:text-[#007aff]">Ví điện tử ZaloPay</h4>
-                    <p class="text-[11px] text-slate-400">Hỗ trợ ví ZaloPay, QR Code, thẻ ngân hàng</p>
-                  </div>
-                </div>
-                <Icon name="lucide:chevron-right" class="w-5 h-5 text-slate-400 group-hover:text-[#007aff] group-hover:translate-x-1 transition-all" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
-
-    <!-- VNPay Payment Modal -->
-    <VNPayPaymentModal
-      v-if="trip"
-      :isOpen="showVNPayModal"
-      :amount="trip.cost - trip.discount_amount"
-      paymentType="rental"
-      :tripId="trip.id"
-      @close="showVNPayModal = false"
-    />
-
-    <!-- ZaloPay Payment Modal -->
-    <ZaloPayPaymentModal
-      v-if="trip"
-      :isOpen="showZaloPayModal"
-      :amount="trip.cost - trip.discount_amount"
-      paymentType="rental"
-      :tripId="trip.id"
-      @close="showZaloPayModal = false"
-    />
 
     <!-- Extension Modal -->
     <Teleport to="body">
@@ -558,8 +493,6 @@ import { carService } from '~/services/car.service'
 import { useToast } from '~/composables/useToast'
 import { TripStatusLabel, TripStatusBadgeClass } from '~/config/trip-status'
 import ImageUpload from '~/components/ImageUpload/ImageUpload.vue'
-import VNPayPaymentModal from '~/components/payment/VNPayPaymentModal.vue'
-import ZaloPayPaymentModal from '~/components/payment/ZaloPayPaymentModal.vue'
 
 definePageMeta({
   layout: 'profile-no-sidebar'
@@ -581,8 +514,7 @@ const imageUploadRef = ref<any>(null)
 const showPreviewModal = ref(false)
 const previewImageUrl = ref('')
 
-// Payment state & handlers
-const showPaymentSelector = ref(false)
+
 
 // Extension request states
 const showExtensionModal = ref(false)
@@ -597,6 +529,18 @@ const openExtensionModal = () => {
 const adjustExtensionDays = (val: number) => {
   extensionDays.value = Math.max(1, extensionDays.value + val)
 }
+
+const totalPaid = computed(() => {
+  if (!trip.value || !trip.value.transactions) return 0
+  return trip.value.transactions.reduce((sum: number, tx: any) => sum + Number(tx.amount || 0), 0)
+})
+
+const paidPercent = computed(() => {
+  if (!trip.value || totalPaid.value === 0) return 0
+  const total = trip.value.cost - trip.value.discount_amount
+  if (total === 0) return 0
+  return Math.round((totalPaid.value / total) * 100)
+})
 
 const newEndAtDate = computed(() => {
   if (!trip.value || !trip.value.end_at) return ''
@@ -624,17 +568,7 @@ const submitExtensionRequest = async () => {
     submittingExtension.value = false
   }
 }
-const showVNPayModal = ref(false)
-const showZaloPayModal = ref(false)
 
-const selectPaymentGateway = (gateway: 'vnpay' | 'zalopay') => {
-  showPaymentSelector.value = false
-  if (gateway === 'vnpay') {
-    showVNPayModal.value = true
-  } else {
-    showZaloPayModal.value = true
-  }
-}
 
 const openImageModal = (url: string) => {
   previewImageUrl.value = url
@@ -709,11 +643,11 @@ onMounted(() => {
 
 // Helper functions
 function statusLabel(status: number) {
-  return TripStatusLabel[status] ?? 'Không xác định'
+  return (TripStatusLabel as any)[status] ?? 'Không xác định'
 }
 
 function statusClass(status: number) {
-  return TripStatusBadgeClass[status] ?? 'bg-slate-100 text-slate-500'
+  return (TripStatusBadgeClass as any)[status] ?? 'bg-slate-100 text-slate-500'
 }
 
 function formatDate(dt: string) {

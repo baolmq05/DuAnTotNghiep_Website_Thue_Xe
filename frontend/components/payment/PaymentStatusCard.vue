@@ -75,15 +75,24 @@
         <!-- Redirect actions -->
         <div class="mt-8 flex flex-col gap-2.5">
             <button
+                v-if="getTripId"
+                @click="goToTrip"
+                class="w-full h-11 rounded-lg bg-[#286874] text-white font-bold text-sm hover:bg-[#1d4f59] transition shadow-sm focus:outline-none flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            >
+                <Icon name="lucide:car" class="w-4.5 h-4.5" />
+                Xem chi tiết chuyến đi
+            </button>
+            <button
                 @click="goToWallet"
-                class="w-full h-11 rounded-lg bg-[#286874] text-white font-bold text-sm hover:bg-[#1d4f59] transition shadow-sm focus:outline-none flex items-center justify-center gap-1.5"
+                class="w-full h-11 rounded-lg border border-slate-205 font-bold text-sm hover:bg-slate-50 transition focus:outline-none flex items-center justify-center gap-1.5 active:scale-[0.98]"
+                :class="getTripId ? 'text-slate-600' : 'bg-[#286874] text-white hover:bg-[#1d4f59] border-none shadow-sm'"
             >
                 <Icon name="lucide:wallet" class="w-4 h-4" />
                 Vào ví của tôi
             </button>
             <button
                 @click="goToHome"
-                class="w-full h-11 rounded-lg border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition focus:outline-none"
+                class="w-full h-11 rounded-lg border border-slate-205 text-slate-600 font-bold text-sm hover:bg-slate-50 transition focus:outline-none flex items-center justify-center active:scale-[0.98]"
             >
                 Về trang chủ
             </button>
@@ -135,6 +144,12 @@ const formatCurrency = (value: number) => {
 const formatCurrentDate = () => {
     const d = new Date()
     return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+}
+
+const goToTrip = () => {
+    if (getTripId.value) {
+        router.push(`/trips/${getTripId.value}`)
+    }
 }
 
 const goToWallet = () => {

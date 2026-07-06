@@ -278,7 +278,8 @@ class TripController extends Controller
             'car.carType',
             'car.owner',
             'user',
-            'images'
+            'images',
+            'transactions'
         ])->find($id);
 
         if (!$trip) {
