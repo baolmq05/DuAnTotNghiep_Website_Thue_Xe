@@ -156,6 +156,7 @@ const navItems = computed(() => [
   { text: 'Về Drivio', to: '/about' },
   { text: 'Bài viết', to: '/blogs' },
   { text: 'Chính Sách', to: '/policy' },
+  { text: 'Liên hệ', to: '/contact' },
   isOwner.value
     ? { text: 'Quản lý xe', to: '/my-cars/dashboard' }
     : { text: 'Trở thành chủ xe', to: '/car-register' },

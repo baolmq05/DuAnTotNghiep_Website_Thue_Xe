@@ -80,13 +80,13 @@
 
         <ul class="space-y-2 text-sm text-gray-300">
           <li>
-            <NuxtLink to="/">
+            <NuxtLink to="/contact">
               Contact us
             </NuxtLink>
           </li>
 
           <li>
-            <NuxtLink to="/">
+            <NuxtLink to="/contact">
               Liên hệ & Hỗ trợ
             </NuxtLink>
           </li>
