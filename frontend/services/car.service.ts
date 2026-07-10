@@ -308,6 +308,28 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Hoàn thành chuyến đi (tải ảnh trả xe và đổi trạng thái)
+     */
+    async completeTrip(id: number | string, payload: { images: string[] }): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/complete`, {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Gửi đánh giá cho chuyến đi
+     */
+    async submitReview(tripId: number | string, payload: { rating: number; comment?: string }): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${tripId}/reviews`, {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();

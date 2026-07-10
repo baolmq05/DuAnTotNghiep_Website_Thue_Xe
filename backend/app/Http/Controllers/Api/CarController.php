@@ -124,7 +124,9 @@ class CarController extends Controller
                 $q->select('id', 'name', 'avatar');
             }
         ])
-            ->withAvg('reviews', 'rating')
+            ->withAvg(['reviews' => function ($q) {
+                $q->where('review_type', 1);
+            }], 'rating')
             ->withCount([
                 'trips' => function ($q) {
                     $q->where('status', TripStatus::Complete->value); // Chỉ đếm các chuyến đi đã hoàn thành thành công
@@ -158,6 +160,9 @@ class CarController extends Controller
             'owner' => function ($q) {
                 $q->select('id', 'name', 'avatar', 'phone', 'gender');
             },
+            'reviews' => function ($q) {
+                $q->where('review_type', 1);
+            },
             'reviews.reviewer' => function ($q) {
                 $q->select('id', 'name', 'avatar');
             },
@@ -171,7 +176,9 @@ class CarController extends Controller
                     ->select('id', 'car_id', 'user_id', 'start_at', 'end_at', 'status');
             }
         ])
-            ->withAvg('reviews', 'rating')
+            ->withAvg(['reviews' => function ($q) {
+                $q->where('review_type', 1);
+            }], 'rating')
             ->withCount([
                 'trips' => function ($q) {
                     $q->where('status', TripStatus::Complete->value); // Chuyến đi đã hoàn thành

@@ -308,6 +308,31 @@
             Không tìm thấy ảnh xe trước chuyến đi
           </div>
 
+          <!-- After Trip Images (only for Completed status) -->
+          <div v-if="trip.status === 4" class="pt-4 border-t border-slate-100 space-y-4">
+            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
+              <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
+              Ảnh xe khi trả xe đã tải lên
+            </p>
+            
+            <div v-if="afterTripImages.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div 
+                v-for="(imgUrl, index) in afterTripImages" 
+                :key="index"
+                class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm aspect-video bg-slate-50 group relative cursor-pointer"
+                @click="openImageModal(imgUrl)"
+              >
+                <img :src="imgUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Car state after trip" />
+                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <span class="text-white text-[10px] bg-black/60 px-2 py-1 rounded-md font-bold">Xem ảnh lớn</span>
+                </div>
+              </div>
+            </div>
+            <div v-else class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-medium">
+              Không tìm thấy ảnh xe khi trả xe
+            </div>
+          </div>
+
           <!-- Trip is ongoing (status = 3) -->
           <div v-if="trip.status === 3" class="space-y-3">
             <div class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5">
@@ -330,13 +355,43 @@
           </div>
 
           <!-- Trip is completed (status = 4) -->
-          <div v-else-if="trip.status === 4" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex items-start gap-2.5">
-            <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
-            <div class="leading-relaxed">
-              <p class="font-bold">Chuyến đi đã kết thúc</p>
-              <p class="mt-0.5 font-medium opacity-90">
-                Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! Chuyến đi đã được hoàn thành thành công.
-              </p>
+          <div v-else-if="trip.status === 4" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex flex-col gap-3 w-full">
+            <div class="flex items-start gap-2.5">
+              <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
+              <div class="leading-relaxed">
+                <p class="font-bold">Chuyến đi đã kết thúc</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! Chuyến đi đã được hoàn thành thành công.
+                </p>
+              </div>
+            </div>
+
+            <!-- Review section for renter -->
+            <div class="mt-1 pt-3 border-t border-emerald-250/30">
+              <div v-if="renterReview" class="bg-white border border-emerald-100 rounded-xl p-3 text-slate-700 space-y-1.5 shadow-sm">
+                <div class="flex items-center gap-1.5">
+                  <span class="font-bold text-xs text-slate-800">Đánh giá của bạn về chủ xe:</span>
+                  <div class="flex items-center gap-0.5">
+                    <Icon v-for="star in 5" :key="star" 
+                      name="lucide:star" 
+                      class="w-3.5 h-3.5" 
+                      :class="star <= renterReview.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'" />
+                  </div>
+                </div>
+                <p class="text-slate-600 italic text-[11px] font-medium" v-if="renterReview.comment">
+                  "{{ renterReview.comment }}"
+                </p>
+                <p class="text-slate-400 text-[10px]" v-else>Không có bình luận.</p>
+              </div>
+              
+              <button 
+                v-else
+                @click="openReviewModal" 
+                class="py-2 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5"
+              >
+                <Icon name="lucide:star" class="w-4 h-4" />
+                Đánh giá chủ xe & chuyến đi
+              </button>
             </div>
           </div>
 
@@ -476,6 +531,77 @@
               >
                 <Icon v-if="submittingExtension" name="lucide:loader-2" class="animate-spin w-4 h-4" />
                 <span v-else>Xác nhận gia hạn</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Review Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showReviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+          <div @click="showReviewModal = false" class="absolute inset-0 cursor-pointer"></div>
+          <div class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up" @click.stop>
+            
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Icon name="lucide:star" class="w-5 h-5 text-amber-500 fill-amber-500" />
+                Đánh giá chủ xe & Chuyến đi
+              </h3>
+              <button @click="showReviewModal = false" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4 text-xs">
+              <p class="text-slate-500 font-medium">Chia sẻ trải nghiệm chuyến đi của bạn để giúp cải thiện dịch vụ của chúng tôi.</p>
+              
+              <!-- Star selection -->
+              <div class="space-y-2 flex flex-col items-center py-2">
+                <label class="block font-bold text-slate-700 text-center">Số sao đánh giá:</label>
+                <div class="flex items-center gap-2">
+                  <button 
+                    v-for="star in 5" 
+                    :key="star"
+                    type="button" 
+                    @click="reviewRating = star"
+                    class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-350 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none"
+                  >
+                    <Icon 
+                      name="lucide:star" 
+                      class="w-8 h-8" 
+                      :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'" 
+                    />
+                  </button>
+                </div>
+                <span class="font-bold text-[#1e4e57] text-[11px] mt-1">
+                  {{ ratingLabel(reviewRating) }}
+                </span>
+              </div>
+
+              <!-- Comment input -->
+              <div class="space-y-1.5">
+                <label class="block font-bold text-slate-700">Ý kiến đóng góp (tùy chọn):</label>
+                <textarea 
+                  v-model="reviewComment" 
+                  rows="4"
+                  placeholder="Chia sẻ thêm thông tin về tình trạng xe, độ nhiệt tình của chủ xe..."
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"
+                ></textarea>
+              </div>
+
+              <!-- Submit button -->
+              <button 
+                @click="submitTripReview"
+                :disabled="reviewRating === 0 || submittingReview"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              >
+                <Icon v-if="submittingReview" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <span v-else>Gửi đánh giá</span>
               </button>
             </div>
           </div>
@@ -702,6 +828,65 @@ const handleStartTrip = async () => {
     showToast(err.response?._data?.message || 'Có lỗi xảy ra khi bắt đầu chuyến đi.', 'error')
   } finally {
     uploading.value = false
+  }
+}
+
+const afterTripImages = computed(() => {
+  if (!trip.value || !trip.value.images) return []
+  return trip.value.images.filter((img: any) => img.type === 1).map((img: any) => img.image_url)
+})
+
+const renterReview = computed(() => {
+  if (!trip.value || !trip.value.reviews) return null;
+  return trip.value.reviews.find((r: any) => r.review_type === 1);
+})
+
+const showReviewModal = ref(false)
+const reviewRating = ref(5)
+const reviewComment = ref('')
+const submittingReview = ref(false)
+
+const openReviewModal = () => {
+  reviewRating.value = 5
+  reviewComment.value = ''
+  showReviewModal.value = true
+}
+
+const ratingLabel = (rating: number) => {
+  switch (rating) {
+    case 1: return 'Rất kém 😠';
+    case 2: return 'Kém 🙁';
+    case 3: return 'Bình thường 😐';
+    case 4: return 'Tốt 🙂';
+    case 5: return 'Tuyệt vời 🥰';
+    default: return 'Chọn số sao';
+  }
+}
+
+const submitTripReview = async () => {
+  if (reviewRating.value === 0) {
+    showToast('Vui lòng chọn số sao đánh giá.', 'error')
+    return
+  }
+  submittingReview.value = true
+  try {
+    const tripId = route.params.id as string
+    const res = await carService.submitReview(tripId, {
+      rating: reviewRating.value,
+      comment: reviewComment.value
+    })
+    if (res && res.success) {
+      showToast('Gửi đánh giá thành công!', 'success')
+      showReviewModal.value = false
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Gửi đánh giá thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi gửi đánh giá:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi gửi đánh giá.', 'error')
+  } finally {
+    submittingReview.value = false
   }
 }
 </script>

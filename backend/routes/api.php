@@ -91,6 +91,8 @@ Route::group(['middleware' => 'api'], function () {
     Route::post('trips/{id}/extension-request', [TripController::class, 'requestExtension']);
     Route::put('trips/{id}/extension-approve', [TripController::class, 'approveExtension']);
     Route::put('trips/{id}/extension-reject', [TripController::class, 'rejectExtension']);
+    Route::post('trips/{id}/complete', [TripController::class, 'completeTrip']);
+    Route::post('trips/{id}/reviews', [TripController::class, 'storeReview']);
     Route::get('my-trips', [MyTripController::class, 'index']);
 
     Route::post('promotions', [PromotionController::class, 'store']);

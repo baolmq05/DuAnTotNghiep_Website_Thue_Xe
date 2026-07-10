@@ -74,10 +74,10 @@ class WalletController extends Controller
             $taxDeducted = intval($completedTripsChange * 0.1);
             $ownerIncome = $completedTripsChange - $taxDeducted;
 
-            // Tính toán rating của chủ xe (trung bình cộng rating các đánh giá loại 0 của các xe thuộc chủ xe)
+            // Tính toán rating của chủ xe (trung bình cộng rating các đánh giá loại 1 của các xe thuộc chủ xe)
             $carIds = Car::where('user_id', $user->id)->pluck('id');
             $rating = Review::whereIn('car_id', $carIds)
-                ->where('review_type', 0)
+                ->where('review_type', 1)
                 ->avg('rating');
 
             $rating = $rating ? round(floatval($rating), 1) : 5.0;

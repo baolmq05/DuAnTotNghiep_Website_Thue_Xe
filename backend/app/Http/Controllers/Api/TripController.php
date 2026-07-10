@@ -133,7 +133,7 @@ class TripController extends Controller
 
         // Chuyến đã đặt (Renter)
         $bookedTrips = Trip::where('user_id', $user->id)
-            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType'])
+            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'reviews.reviewer'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -141,7 +141,7 @@ class TripController extends Controller
         $ownerTrips = Trip::whereHas('car', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
-            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'user'])
+            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'user', 'reviews.reviewer'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -279,7 +279,8 @@ class TripController extends Controller
             'car.owner',
             'user',
             'images',
-            'transactions'
+            'transactions',
+            'reviews.reviewer'
         ])->find($id);
 
         if (!$trip) {
@@ -643,6 +644,218 @@ class TripController extends Controller
             'message' => 'Đã từ chối yêu cầu gia hạn chuyến đi!',
             'data' => $trip
         ]);
+    }
+
+    /**
+     * API Hoàn thành chuyến đi
+     * POST /api/trips/{id}/complete
+     */
+    public function completeTrip(Request $request, $id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền: renter hoặc owner
+        if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        // Trạng thái chuyến đi phải là Ongoing (3) hoặc WaitingExtension (7)
+        if ($trip->status !== TripStatus::Ongoing->value && $trip->status !== TripStatus::WaitingExtension->value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chuyến đi không ở trạng thái Đang diễn ra để hoàn thành.'
+            ], 400);
+        }
+
+        // Xác thực ảnh tải lên từ cloud
+        $validator = Validator::make($request->all(), [
+            'images' => 'required|array|min:1',
+            'images.*' => 'required|string|url',
+        ], [
+            'images.required' => 'Bạn phải tải lên ít nhất 1 ảnh xe khi trả xe.',
+            'images.min' => 'Bạn phải tải lên ít nhất 1 ảnh xe khi trả xe.',
+            'images.*.url' => 'Đường dẫn hình ảnh không hợp lệ.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $imageUrls = $request->input('images');
+            foreach ($imageUrls as $index => $url) {
+                // Lưu vào bảng trip_images
+                \App\Models\TripImage::create([
+                    'trip_id' => $trip->id,
+                    'image_url' => $url,
+                    'type' => 1, // Sau chuyến đi
+                    'is_thumbnail' => 0,
+                ]);
+            }
+
+            // Cập nhật trạng thái chuyến đi thành Complete (4)
+            $trip->update(['status' => TripStatus::Complete->value]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            // Tạo thông báo cho bên còn lại
+            $notifyUser = $trip->user_id === $user->id ? $trip->car->user_id : $trip->user_id;
+            \App\Models\Notification::create([
+                'user_id' => $notifyUser,
+                'message' => "Chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã hoàn thành. Hãy để lại đánh giá của bạn!",
+                'is_read' => '0',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hoàn thành chuyến đi thành công!',
+                'data' => $trip->load(['car', 'images', 'reviews.reviewer'])
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi hoàn thành chuyến đi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API Gửi đánh giá cho chuyến đi
+     * POST /api/trips/{id}/reviews
+     */
+    public function storeReview(Request $request, $id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        // Kiểm tra quyền: renter hoặc owner
+        if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        // Chỉ cho phép đánh giá khi chuyến đi đã hoàn thành (status = 4)
+        if ($trip->status !== TripStatus::Complete->value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chuyến đi phải hoàn thành mới có thể đánh giá.'
+            ], 400);
+        }
+
+        // Xác thực
+        $validator = Validator::make($request->all(), [
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string|max:1000',
+        ], [
+            'rating.required' => 'Bạn chưa chọn số sao đánh giá.',
+            'rating.integer' => 'Số sao đánh giá phải là số nguyên.',
+            'rating.min' => 'Số sao đánh giá tối thiểu là 1 sao.',
+            'rating.max' => 'Số sao đánh giá tối đa là 5 sao.',
+            'comment.max' => 'Bình luận không được vượt quá 1000 ký tự.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu không hợp lệ.',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        // Xác định review_type và target_id
+        if ($trip->user_id === $user->id) {
+            // Renter đánh giá Owner
+            $reviewType = 1;
+            $targetId = $trip->car->user_id;
+        } else {
+            // Owner đánh giá Renter
+            $reviewType = 0;
+            $targetId = $trip->user_id;
+        }
+
+        // Kiểm tra xem đã đánh giá chưa (tránh trùng lặp)
+        $exists = \App\Models\Review::where('trip_id', $trip->id)
+            ->where('reviewer_id', $user->id)
+            ->where('review_type', $reviewType)
+            ->exists();
+
+        if ($exists) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn đã gửi đánh giá cho chuyến đi này rồi.'
+            ], 400);
+        }
+
+        try {
+            $review = \App\Models\Review::create([
+                'trip_id' => $trip->id,
+                'reviewer_id' => $user->id,
+                'target_id' => $targetId,
+                'car_id' => $trip->car_id,
+                'rating' => $request->input('rating'),
+                'comment' => $request->input('comment'),
+                'review_type' => $reviewType
+            ]);
+
+            // Tạo thông báo cho người được đánh giá
+            \App\Models\Notification::create([
+                'user_id' => $targetId,
+                'message' => "Bạn đã nhận được đánh giá {$request->input('rating')} sao cho chuyến đi #{$trip->id}.",
+                'is_read' => '0',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gửi đánh giá thành công!',
+                'data' => $review->load('reviewer')
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi gửi đánh giá.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 }
 

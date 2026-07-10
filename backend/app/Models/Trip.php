@@ -28,5 +28,11 @@ class Trip extends Model
     {
         return $this->hasMany(Transaction::class);
     }
+
+    public function reviews(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
 }
+
 
