@@ -19,7 +19,7 @@
       <button @click="scrollLeft" :disabled="currentIndex === 0" class="hidden md:flex absolute left-0 top-1/2 -translate-y-1/2 z-20
         w-10 h-10 rounded-full bg-white shadow-lg items-center justify-center
         disabled:opacity-30">
-        ❮
+        <
       </button>
 
       <!-- View -->
@@ -33,10 +33,28 @@
           <div v-for="promo in promotions" :key="promo.id" class="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
 
             <div class="rounded-3xl overflow-hidden shadow hover:shadow-xl
-              transition duration-300 cursor-pointer group bg-white" @click="openModal(promo)">
+              transition duration-300 cursor-pointer group bg-white relative" @click="openModal(promo)">
 
               <img :src="promo.image"
                 class="w-full h-[220px] object-cover group-hover:scale-105 transition duration-500">
+
+              <div class="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent"></div>
+
+              <div class="absolute inset-x-0 bottom-0 p-5 text-white space-y-2">
+                <div class="flex items-center gap-2 text-xs font-medium text-white/80">
+                  <Icon name="ri:time-line" class="w-4 h-4" />
+                  <span>{{ formatDate(promo.startDate) }} - {{ formatDate(promo.endDate) }}</span>
+                </div>
+
+                <h3 class="text-lg font-bold leading-6">
+                  {{ promo.name }}
+                </h3>
+
+                <p class="text-sm text-white/85 leading-6"
+                  style="line-clamp: 2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                  {{ promo.description }}
+                </p>
+              </div>
 
             </div>
 

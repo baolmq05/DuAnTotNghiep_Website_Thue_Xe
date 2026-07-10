@@ -295,6 +295,7 @@
               <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Giới tính</label>
               <select v-model="editForm.gender"
                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all">
+                <option :value="null" disabled selected>Chọn giới tính</option>
                 <option :value="1">Nam</option>
                 <option :value="0">Nữ</option>
                 <option :value="2">Khác</option>

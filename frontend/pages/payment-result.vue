@@ -27,6 +27,10 @@ import { useVNPay } from '~/composables/useVNPay'
 import { useZaloPay } from '~/composables/useZaloPay'
 import PaymentStatusCard from '~/components/payment/PaymentStatusCard.vue'
 
+definePageMeta({
+    layout: 'profile-no-sidebar',
+})
+
 const route = useRoute()
 const { verifyPayment: verifyVNPay } = useVNPay()
 const { verifyPayment: verifyZaloPay } = useZaloPay()

@@ -138,24 +138,34 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:15|unique:users,phone,' . $user->id,
             'gender' => 'nullable|integer|in:0,1,2',
-            'DOB' => 'nullable|date_format:Y-m-d',
+            'DOB' => 'nullable|date',
             'avatar' => 'nullable|string|max:2048',
         ], [
             'name.required' => 'Họ và tên không được để trống.',
             'phone.unique' => 'Số điện thoại này đã được sử dụng.',
             'gender.in' => 'Giới tính không hợp lệ.',
-            'DOB.date_format' => 'Ngày sinh không đúng định dạng YYYY-MM-DD.',
+            'DOB.date' => 'Ngày sinh không đúng định dạng ngày tháng.',
             'avatar.max' => 'Đường dẫn ảnh đại diện quá dài.',
         ]);
 
         if ($validator->fails()) {
+            \Illuminate\Support\Facades\Log::info('Validation failed in updateProfile: ', [
+                'request' => $request->all(),
+                'errors' => $validator->errors()->toArray()
+            ]);
             return response()->json([
                 'success' => false,
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
         }
 
-        $user->update($request->only('name', 'phone', 'gender', 'DOB', 'avatar'));
+        $data = $request->only('name', 'phone', 'gender', 'DOB', 'avatar');
+        if (!empty($data['DOB'])) {
+            $data['DOB'] = \Carbon\Carbon::parse($data['DOB'])->format('Y-m-d');
+        }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true,
@@ -278,7 +288,7 @@ class AuthController extends Controller
                 \Illuminate\Validation\Rule::unique('driving_licenses', 'driving_license_number')->ignore($user->driving_license_id)
             ],
             'full_name' => 'required|string|max:255',
-            'DOB' => 'required|date_format:Y-m-d',
+            'DOB' => 'required|date',
             'image' => [
                 $user->driving_license_id ? 'nullable' : 'required',
                 function ($attribute, $value, $fail) use ($request) {
@@ -303,13 +313,14 @@ class AuthController extends Controller
             'driving_license_number.unique' => 'Số GPLX này đã tồn tại trên hệ thống.',
             'full_name.required' => 'Họ và tên không được để trống.',
             'DOB.required' => 'Ngày sinh không được để trống.',
-            'DOB.date_format' => 'Ngày sinh không đúng định dạng YYYY-MM-DD.',
+            'DOB.date' => 'Ngày sinh không đúng định dạng ngày tháng.',
             'image.required' => 'Ảnh bằng lái xe không được để trống.',
         ]);
 
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
+                'message' => $validator->errors()->first(),
                 'errors' => $validator->errors()
             ], 422);
         }
@@ -320,7 +331,7 @@ class AuthController extends Controller
             $drivingLicenseData = [
                 'driving_license_number' => $request->input('driving_license_number'),
                 'full_name' => $request->input('full_name'),
-                'DOB' => $request->input('DOB'),
+                'DOB' => \Carbon\Carbon::parse($request->input('DOB'))->format('Y-m-d'),
                 'status' => 0, // Chờ duyệt
             ];
 
