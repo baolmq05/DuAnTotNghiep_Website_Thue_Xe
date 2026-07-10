@@ -10,6 +10,9 @@ class AgentConversation extends Model
 {
     protected $table = 'agent_conversations';
 
+    protected $keyType = 'string';
+    public $incrementing = false;
+
     protected $fillable = [
         'id',
         'user_id',
