@@ -92,16 +92,8 @@ const submit = async () => {
                 </div>
 
                 <h3 class="mt-6 text-xl font-bold text-slate-900">
-                    Kéo & thả ảnh vào đây
+                    Tải ảnh lên
                 </h3>
-
-                <p class="mt-2 text-slate-500 text-center">
-                    hoặc
-                    <span class="font-semibold text-brand-primary">
-                        nhấn để chọn ảnh từ máy tính
-                    </span>
-                </p>
-
                 <button type="button"
                     class="mt-6 rounded-xl bg-brand-primary px-6 py-3 font-semibold text-white shadow hover:opacity-90 transition">
                     Chọn hình ảnh
@@ -116,8 +108,8 @@ const submit = async () => {
             <div v-for="(image, index) in images" :key="index"
                 class="group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 cursor-pointer"
                 :class="image.isThumbnail
-                        ? 'border-brand-primary shadow-lg shadow-brand-primary/20'
-                        : 'border-slate-200 hover:border-brand-primary/40'
+                    ? 'border-brand-primary shadow-lg shadow-brand-primary/20'
+                    : 'border-slate-200 hover:border-brand-primary/40'
                     " @click="setThumbnail(index)">
                 <!-- Image -->
                 <img :src="image.url" :alt="`Ảnh ${index + 1}`"
