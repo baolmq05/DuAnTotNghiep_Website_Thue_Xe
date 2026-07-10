@@ -22,9 +22,32 @@ class GoogleAuthController extends Controller
             ], 400);
         }
         try {
-            // sử dụng thư viện Google vừa cài để xác thực Token
-            $client = new Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
-            $payload = $client->verifyIdToken($idToken);
+            $payload = null;
+            
+            // Một JWT (ID Token) hợp lệ bắt buộc phải có đúng 3 phân đoạn phân tách bằng dấu chấm (.)
+            $isJwt = (count(explode('.', $idToken)) === 3);
+
+            // Bổ sung local bypass xác thực token cho môi trường phát triển (local)
+            if (app()->environment('local') && (
+                !$isJwt || 
+                str_starts_with($idToken, 'web_fallback_token_')
+            )) {
+                $email = $request->input('email');
+                $name = $request->input('name') ?? 'Google Local Test';
+                if ($email) {
+                    $payload = [
+                        'email' => $email,
+                        'name' => $name
+                    ];
+                }
+            }
+
+            // Nếu không thuộc diện bypass ở local, xác thực token chuẩn với Google
+            if (!$payload) {
+                $client = new Client(['client_id' => env('GOOGLE_CLIENT_ID')]);
+                $payload = $client->verifyIdToken($idToken);
+            }
+
             if ($payload) {
                 $email = $payload['email'];
                 $name = $payload['name'];
