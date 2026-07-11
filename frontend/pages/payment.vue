@@ -44,8 +44,8 @@
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Option A: Deposit 40% -->
-              <div @click="paymentRatio = 0.4"
+              <!-- Option A: Deposit 40% (Hidden for extension payment) -->
+              <div v-if="!isExtension" @click="paymentRatio = 0.4"
                 class="relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-[#1e4e57]/50"
                 :class="paymentRatio === 0.4 ? 'border-[#1e4e57] bg-[#1e4e57]/5 shadow-sm' : 'border-slate-200 bg-white'">
                 <div class="absolute top-4 right-4 w-5 h-5 rounded-full border flex items-center justify-center"
@@ -56,12 +56,11 @@
                   <h4 class="text-sm font-bold text-slate-800">Đặt cọc 40%</h4>
                   <p class="text-xs text-slate-400">Trả trước một phần để giữ xe</p>
                   <div class="text-lg font-black text-[#1e4e57] pt-2">
-                    {{ formatCurrency(amountToPay) }}
+                    {{ formatCurrency((trip.cost - trip.discount_amount) * 0.4) }}
                   </div>
                   <p
                     class="text-[11px] text-slate-500 pt-2 border-t border-dashed border-slate-200/60 mt-3 leading-normal">
-                    Còn lại: <strong>{{ formatCurrency((trip.cost - trip.discount_amount) * 0.6) }}</strong> (thanh toán
-                    trực tiếp cho chủ xe khi nhận xe)
+                    Còn lại: <strong>{{ formatCurrency((trip.cost - trip.discount_amount) * 0.6) }}</strong> (thanh toán trực tiếp cho chủ xe khi nhận xe)
                   </p>
                 </div>
               </div>
@@ -69,7 +68,10 @@
               <!-- Option B: Full Payment 100% -->
               <div @click="paymentRatio = 1"
                 class="relative border-2 rounded-2xl p-5 cursor-pointer transition-all duration-200 hover:border-[#1e4e57]/50"
-                :class="paymentRatio === 1 ? 'border-[#1e4e57] bg-[#1e4e57]/5 shadow-sm' : 'border-slate-200 bg-white'">
+                :class="[
+                  paymentRatio === 1 ? 'border-[#1e4e57] bg-[#1e4e57]/5 shadow-sm' : 'border-slate-200 bg-white',
+                  isExtension ? 'md:col-span-2' : ''
+                ]">
                 <div class="absolute top-4 right-4 w-5 h-5 rounded-full border flex items-center justify-center"
                   :class="paymentRatio === 1 ? 'border-[#1e4e57] bg-[#1e4e57]' : 'border-slate-300 bg-white'">
                   <div v-if="paymentRatio === 1" class="w-2 h-2 rounded-full bg-white"></div>
@@ -78,11 +80,12 @@
                   <h4 class="text-sm font-bold text-slate-800">Thanh toán 100%</h4>
                   <p class="text-xs text-slate-400">Thanh toán toàn bộ hóa đơn</p>
                   <div class="text-lg font-black text-[#1e4e57] pt-2">
-                    {{ formatCurrency(trip.cost - trip.discount_amount) }}
+                    {{ formatCurrency(isExtension ? trip.latest_extension?.extension_amount : (trip.cost - trip.discount_amount)) }}
                   </div>
                   <p
                     class="text-[11px] text-slate-500 pt-2 border-t border-dashed border-slate-200/60 mt-3 leading-normal">
-                    Bạn không cần phải thanh toán thêm tại quầy khi nhận xe
+                    <span v-if="isExtension" class="text-[#1e4e57] font-semibold">Hoàn tất gia hạn chuyến đi</span>
+                    <span v-else>Bạn không cần phải thanh toán thêm tại quầy khi nhận xe</span>
                   </p>
                 </div>
               </div>
@@ -175,17 +178,52 @@
                   <span class="text-slate-700 text-right">{{ formatDate(trip.start_at) }}</span>
                 </div>
                 <div class="flex justify-between items-center">
-                  <span class="text-slate-400">Trả xe:</span>
+                  <span class="text-slate-400">{{ isExtension ? 'Hạn trả xe ban đầu:' : 'Trả xe:' }}</span>
                   <span class="text-slate-700 text-right">{{ formatDate(trip.end_at) }}</span>
                 </div>
-                <div class="flex justify-between items-center pt-2 border-t border-dashed border-slate-200/60">
+                <div v-if="isExtension" class="flex justify-between items-center text-[#d97706] font-bold pt-2 border-t border-dashed border-slate-200/60">
+                  <span>Hạn trả xe mới:</span>
+                  <span class="text-right">{{ formatDate(trip.latest_extension?.end_date) }}</span>
+                </div>
+                <div v-else class="flex justify-between items-center pt-2 border-t border-dashed border-slate-200/60">
                   <span class="text-slate-400">Tổng thời gian:</span>
                   <span class="text-slate-700 font-bold">{{ duration(trip.start_at, trip.end_at) }}</span>
                 </div>
               </div>
 
-              <!-- Price Breakdown -->
-              <div class="space-y-2 text-xs font-semibold text-slate-600 pt-2">
+              <!-- Price Breakdown for Extension -->
+              <div v-if="isExtension" class="space-y-2 text-xs font-semibold text-slate-600 pt-2">
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Số ngày gia hạn:</span>
+                  <span>{{ trip.latest_extension?.extended_days }} ngày</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-slate-400">Thời gian trả xe ban đầu:</span>
+                  <span>{{ formatDate(trip.end_at) }}</span>
+                </div>
+                <div class="flex justify-between text-[#d97706]">
+                  <span class="text-slate-400">Thời gian trả xe mới:</span>
+                  <span class="font-bold text-right">{{ formatDate(trip.latest_extension?.end_date) }}</span>
+                </div>
+
+                <div class="border-t border-slate-100 pt-3 flex justify-between items-baseline">
+                  <span class="text-xs font-bold text-slate-800">Tổng phí gia hạn (100%):</span>
+                  <span class="text-base font-extrabold text-slate-800">{{ formatCurrency(trip.latest_extension?.extension_amount) }}</span>
+                </div>
+
+                <div class="bg-[#1e4e57]/5 rounded-2xl p-4 space-y-2 mt-4 border border-[#1e4e57]/10">
+                  <div class="flex justify-between items-center">
+                    <span class="text-xs font-bold text-slate-700">Số tiền cần thanh toán:</span>
+                    <span class="text-lg font-black text-[#1e4e57]">{{ formatCurrency(amountToPay) }}</span>
+                  </div>
+                  <div class="text-[10px] text-slate-500 italic mt-1 leading-normal">
+                    * Lưu ý: Thanh toán 100% phí gia hạn để hoàn tất gia hạn chuyến đi.
+                  </div>
+                </div>
+              </div>
+
+              <!-- Price Breakdown for Normal Rental -->
+              <div v-else class="space-y-2 text-xs font-semibold text-slate-600 pt-2">
                 <div class="flex justify-between">
                   <span class="text-slate-400">Đơn giá thuê:</span>
                   <span>{{ formatCurrency(trip.cost) }}</span>
@@ -257,15 +295,20 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 
 // Payment State
-const paymentRatio = ref(0.4) // 40% or 100%
+const paymentRatio = ref(1) // Mặc định 100% theo quy định bắt đầu chuyến
 const paymentGateway = ref<'vnpay' | 'zalopay'>('vnpay')
 const initiating = ref(false)
 
 const { initiatePayment: callVNPay } = useVNPay()
 const { initiatePayment: callZaloPay } = useZaloPay()
 
+const isExtension = computed(() => route.query.type === 'extension')
+
 const amountToPay = computed(() => {
   if (!trip.value) return 0
+  if (isExtension.value) {
+    return Number(trip.value.latest_extension?.extension_amount || 0)
+  }
   const total = trip.value.cost - trip.value.discount_amount
   return Math.round(total * paymentRatio.value)
 })
@@ -286,10 +329,17 @@ const fetchTripDetails = async (tripId: string) => {
     const res = await carService.getTripById(tripId)
     if (res && res.success && res.data) {
       const data = res.data
-      // Validate if the trip requires payment (status === 1)
-      if (data.status !== 1) {
-        error.value = 'Chuyến đi này hiện tại không ở trạng thái cần thanh toán.'
-        return
+      // Validate if the trip requires payment
+      if (isExtension.value) {
+        if (!data.latest_extension || data.latest_extension.status !== 2) {
+          error.value = 'Chuyến đi này hiện tại không có yêu cầu gia hạn nào ở trạng thái chờ thanh toán.'
+          return
+        }
+      } else {
+        if (data.status !== 1) {
+          error.value = 'Chuyến đi này hiện tại không ở trạng thái cần thanh toán.'
+          return
+        }
       }
       trip.value = data
     } else {
@@ -319,14 +369,22 @@ const handlePaymentSubmit = async () => {
   try {
     const amt = amountToPay.value
     const id = trip.value.id
-    if (paymentGateway.value === 'vnpay') {
-      await callVNPay(amt, 'rental', id)
+    if (isExtension.value) {
+      if (paymentGateway.value === 'vnpay') {
+        await callVNPay(amt, 'extension', id)
+      } else {
+        await callZaloPay(amt, 'extension', id)
+      }
     } else {
-      await callZaloPay(amt, 'rental', id)
+      if (paymentGateway.value === 'vnpay') {
+        await callVNPay(amt, 'rental', id)
+      } else {
+        await callZaloPay(amt, 'rental', id)
+      }
     }
   } catch (err: any) {
     console.error('Lỗi thanh toán:', err)
-    showToast(err.message || 'Thanh toán thất bại, vui lòng thử lại.', 'error')
+    showToast(err.response?._data?.message || err.message || 'Thanh toán thất bại, vui lòng thử lại.', 'error')
   } finally {
     initiating.value = false
   }
@@ -378,6 +436,7 @@ function duration(start: string, end: string) {
     transform: translateY(0);
   }
 }
+
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out forwards;
 }

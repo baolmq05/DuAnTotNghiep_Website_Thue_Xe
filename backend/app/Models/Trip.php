@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Trip extends Model
 {
     //
-    protected $fillable = ['cost', 'discount_amount', 'status', 'trip_type', 'start_at', 'end_at', 'car_id', 'user_id', 'delivery_address', 'delivery_location', 'extended_end_at'];
+    protected $fillable = ['cost', 'discount_amount', 'status', 'trip_type', 'start_at', 'end_at', 'car_id', 'user_id', 'delivery_address', 'delivery_location'];
 
     public function car(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -33,6 +33,14 @@ class Trip extends Model
     {
         return $this->hasMany(Review::class);
     }
+
+    public function extensions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TripExtension::class);
+    }
+
+    public function latestExtension(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(TripExtension::class)->latestOfMany();
+    }
 }
-
-

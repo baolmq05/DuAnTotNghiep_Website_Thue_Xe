@@ -140,6 +140,15 @@ class VNPayService
                 'user_id' => isset($parts[2]) ? intval($parts[2]) : null,
             ];
         }
+
+        if ($type === 'ext' || $type === 'extension') {
+            return [
+                'type' => 'extension',
+                'trip_id' => isset($parts[1]) ? intval($parts[1]) : null,
+                'extension_id' => isset($parts[2]) ? intval($parts[2]) : null,
+                'owner_id' => isset($parts[3]) ? intval($parts[3]) : null,
+            ];
+        }
         
         return ['type' => 'unknown'];
     }
@@ -278,6 +287,64 @@ class VNPayService
                     ]);
 
                     Log::info("VNPay penalty payment successful for trip {$tripId}, user {$userId}, amount {$amount}.");
+                    break;
+
+                case 'ext':
+                case 'extension':
+                    $tripId = $meta['trip_id'] ?? null;
+                    $extensionId = $meta['extension_id'] ?? null;
+                    $ownerId = $meta['owner_id'] ?? null;
+
+                    $trip = Trip::with('car')->find($tripId);
+                    if (!$trip) {
+                        Log::error("VNPay processPayment - Trip ID {$tripId} not found.");
+                        return [
+                            'success' => false,
+                            'code' => '01',
+                            'message' => 'Không tìm thấy chuyến đi.'
+                        ];
+                    }
+                    $extension = \App\Models\TripExtension::find($extensionId);
+                    if (!$extension || $extension->status == 3) {
+                        return [
+                            'success' => true,
+                            'code' => '00',
+                            'message' => 'Gia hạn đã được xác nhận trước đó.'
+                        ];
+                    }
+
+                    $owner = User::find($ownerId ?? ($trip->car->user_id ?? 0));
+                    if ($owner) {
+                        if (!$owner->wallet_id) {
+                            $wallet = Wallet::create(['amount' => 0]);
+                            $owner->wallet_id = $wallet->id;
+                            $owner->save();
+                        } else {
+                            $wallet = $owner->wallet;
+                        }
+                        $wallet->increment('amount', $amount);
+                    }
+
+                    Transaction::create([
+                        'user_id' => $trip->user_id,
+                        'transaction_code' => $vnpTransactionNo,
+                        'amount' => $amount,
+                        'prepay' => 0,
+                        'trip_id' => $trip->id
+                    ]);
+
+                    $extension->update(['status' => 3]);
+                    $trip->update([
+                        'end_at' => $extension->end_date,
+                        'extended_end_at' => null,
+                        'cost' => $trip->cost + $amount,
+                    ]);
+
+                    \App\Models\Notification::create([
+                        'user_id' => $trip->car->user_id ?? ($owner->id ?? 0),
+                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua VNPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                        'is_read' => '0',
+                    ]);
                     break;
 
                 default:

@@ -80,7 +80,6 @@ class CarCalendarController extends Controller
                         TripStatus::Complete->value,        // 4 - đã hoàn thành
                         TripStatus::UserCancel->value,      // 5 - người dùng hủy
                         TripStatus::OwnerCancel->value,     // 6 - chủ xe hủy
-                        TripStatus::WaitingExtension->value, // 7 - chờ gia hạn
                     ]);
             });
         }
@@ -101,7 +100,6 @@ class CarCalendarController extends Controller
                         TripStatus::Complete->value,
                         TripStatus::UserCancel->value,
                         TripStatus::OwnerCancel->value,
-                        TripStatus::WaitingExtension->value,
                     ]);
                 }
                 $tripStart = Carbon::parse($trip->start_at)->startOfDay();
@@ -114,7 +112,6 @@ class CarCalendarController extends Controller
                     TripStatus::Complete->value,
                     TripStatus::UserCancel->value,
                     TripStatus::OwnerCancel->value,
-                    TripStatus::WaitingExtension->value,
                 ]);
             })->sortBy('start_at');
 
@@ -125,7 +122,6 @@ class CarCalendarController extends Controller
                     else if ($trip->status == TripStatus::WaitingPayment->value) $note = "Chuyến đi chờ thanh toán";
                     else if ($trip->status == TripStatus::Confirmed->value) $note = "Lịch hẹn tiếp theo (Chờ giao)";
                     else if ($trip->status == TripStatus::Ongoing->value) $note = "Đang có chuyến đi diễn ra";
-                    else if ($trip->status == TripStatus::WaitingExtension->value) $note = "Chuyến đi chờ gia hạn";
                     else if ($trip->status == TripStatus::Complete->value) $note = "Hoàn thành chuyến đi";
                     else if ($trip->status == TripStatus::UserCancel->value) $note = "Chuyến đi bị người dùng hủy";
                     else if ($trip->status == TripStatus::OwnerCancel->value) $note = "Chuyến đi bị chủ xe hủy";
@@ -219,7 +215,6 @@ class CarCalendarController extends Controller
                     TripStatus::Complete->value,
                     TripStatus::UserCancel->value,
                     TripStatus::OwnerCancel->value,
-                    TripStatus::WaitingExtension->value,
                 ]);
             });
 
@@ -232,8 +227,6 @@ class CarCalendarController extends Controller
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-amber-500', 'tooltip' => 'Chưa bắt đầu (Chờ giao)'];
                 } else if ($tripOnDay->status == TripStatus::Ongoing->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-emerald-500', 'tooltip' => 'Đang diễn ra'];
-                } else if ($tripOnDay->status == TripStatus::WaitingExtension->value) {
-                    $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-indigo-400', 'tooltip' => 'Chờ gia hạn'];
                 } else if ($tripOnDay->status == TripStatus::Complete->value) {
                     $timeline[] = ['label' => $day, 'date_num' => $currentDay->day, 'color' => 'bg-indigo-500', 'tooltip' => 'Đã hoàn thành'];
                 } else if ($tripOnDay->status == TripStatus::UserCancel->value) {
@@ -291,9 +284,6 @@ class CarCalendarController extends Controller
             } else if ($trip->status == TripStatus::Ongoing->value) {
                 $color = 'bg-emerald-500';
                 $tooltip = 'Đang diễn ra';
-            } else if ($trip->status == TripStatus::WaitingExtension->value) {
-                $color = 'bg-indigo-400';
-                $tooltip = 'Chờ gia hạn';
             } else if ($trip->status == TripStatus::Complete->value) {
                 $color = 'bg-indigo-500';
                 $tooltip = 'Đã hoàn thành';

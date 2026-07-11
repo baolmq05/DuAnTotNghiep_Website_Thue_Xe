@@ -26,7 +26,7 @@ export class PaymentService extends BaseService {
 
     async createZaloPayPayment(
         amount: number,
-        paymentType: "rental" | "deposit" | "penalty",
+        paymentType: "rental" | "deposit" | "penalty" | "extension",
         tripId?: number
     ): Promise<ZaloPayCreateResponse> {
         return this.request<ZaloPayCreateResponse>("auth/zalopay/create-payment", {
@@ -42,7 +42,7 @@ export class PaymentService extends BaseService {
 
     async createVNPayPayment(
         amount: number,
-        paymentType: "rental" | "deposit" | "penalty",
+        paymentType: "rental" | "deposit" | "penalty" | "extension",
         tripId?: number
     ): Promise<VNPayCreateResponse> {
         return this.request<VNPayCreateResponse>("auth/vnpay/create-payment", {

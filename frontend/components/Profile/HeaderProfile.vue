@@ -8,12 +8,6 @@
         <!-- Left: Logo -->
         <div class="flex-shrink-0">
           <NuxtLink to="/" class="flex items-center gap-2 group focus:outline-none">
-            <!-- Stylized modern D-shaped logo -->
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
-              class="w-8 h-8 text-brand-light fill-current drop-shadow-[0_2px_8px_rgba(254,227,206,0.2)] transition-transform duration-300 group-hover:scale-105">
-              <path d="M20 15h30c20 0 35 15 35 35s-15 35-35 35H20V15zm16 16v38h14c10 0 18-8 18-19s-8-19-18-19H36z" />
-              <circle cx="50" cy="50" r="10" class="text-brand-accent" />
-            </svg>
             <span
               class="text-2xl font-black tracking-wider text-white group-hover:text-brand-light transition-colors duration-200">
               DRIVIO

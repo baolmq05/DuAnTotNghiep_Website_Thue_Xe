@@ -59,7 +59,6 @@ class CarController extends Controller
                     TripStatus::Pending->value,
                     TripStatus::Confirmed->value,
                     TripStatus::Ongoing->value,
-                    TripStatus::WaitingExtension->value,
                 ])
                 ->where(function ($q) use ($startDate, $endDate) {
                     $q->where('start_at', '<=', $endDate)
@@ -171,7 +170,6 @@ class CarController extends Controller
                     TripStatus::Pending->value,
                     TripStatus::Confirmed->value,
                     TripStatus::Ongoing->value,
-                    TripStatus::WaitingExtension->value,
                 ])
                     ->select('id', 'car_id', 'user_id', 'start_at', 'end_at', 'status');
             }

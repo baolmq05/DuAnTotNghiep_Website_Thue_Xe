@@ -127,12 +127,19 @@
                                     </div>
                                 </div>
 
-                                <!-- Status Badge -->
-                                <span
-                                    class="inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs max-sm:text-[11px] font-bold"
-                                    :class="statusClass(trip.status)">
-                                    {{ statusLabel(trip.status) }}
-                                </span>
+                                <!-- Badges Container -->
+                                <div class="flex flex-wrap items-center gap-2 mb-1 shrink-0">
+                                    <span
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs max-sm:text-[9px] font-bold"
+                                        :class="statusClass(trip.status)">
+                                        {{ statusLabel(trip.status) }}
+                                    </span>
+                                    <span v-if="trip.latest_extension"
+                                        class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs max-sm:text-[9px] font-bold border"
+                                        :class="extensionStatusClass(trip.latest_extension.status)">
+                                        {{ extensionStatusLabel(trip.latest_extension.status) }}
+                                    </span>
+                                </div>
                             </div>
 
                             <!-- Time grid -->
@@ -236,6 +243,7 @@ interface Trip {
     // Joined
     car: Car
     renter?: { name: string; phone: string }
+    latest_extension?: any
 }
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
@@ -372,5 +380,25 @@ function duration(start: string, end: string) {
 
 function formatCurrency(amount: number) {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount)
+}
+
+function extensionStatusLabel(status?: number) {
+    switch (status) {
+        case 1: return 'Gia hạn: Chờ duyệt'
+        case 2: return 'Gia hạn: Chờ thanh toán'
+        case 3: return 'Gia hạn: Thành công'
+        case 4: return 'Gia hạn: Bị từ chối'
+        default: return ''
+    }
+}
+
+function extensionStatusClass(status?: number) {
+    switch (status) {
+        case 1: return 'bg-indigo-50 border-indigo-200 text-indigo-700'
+        case 2: return 'bg-amber-50 border-amber-200 text-amber-700'
+        case 3: return 'bg-emerald-50 border-emerald-200 text-emerald-700'
+        case 4: return 'bg-rose-50 border-rose-200 text-rose-700'
+        default: return 'bg-slate-100 border-slate-200 text-slate-600'
+    }
 }
 </script>

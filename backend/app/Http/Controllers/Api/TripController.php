@@ -133,7 +133,7 @@ class TripController extends Controller
 
         // Chuyến đã đặt (Renter)
         $bookedTrips = Trip::where('user_id', $user->id)
-            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'reviews.reviewer'])
+            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'reviews.reviewer', 'extensions', 'latestExtension'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -141,7 +141,7 @@ class TripController extends Controller
         $ownerTrips = Trip::whereHas('car', function ($q) use ($user) {
                 $q->where('user_id', $user->id);
             })
-            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'user', 'reviews.reviewer'])
+            ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'user', 'reviews.reviewer', 'extensions', 'latestExtension'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -287,7 +287,9 @@ class TripController extends Controller
             'user',
             'images',
             'transactions',
-            'reviews.reviewer'
+            'reviews.reviewer',
+            'extensions',
+            'latestExtension'
         ])->find($id);
 
         if (!$trip) {
@@ -434,30 +436,30 @@ class TripController extends Controller
         if ($trip->status !== TripStatus::Ongoing->value) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chuyến đi không ở trạng thái Đang diễn ra để yêu cầu gia hạn.'
+                'message' => 'Chuyến đi không ở trạng thái hợp lệ để yêu cầu gia hạn.'
             ], 400);
         }
 
-        $validator = Validator::make($request->all(), [
-            'extended_days' => 'required|integer|min:1',
-        ], [
-            'extended_days.required' => 'Vui lòng cung cấp số ngày cần gia hạn.',
-            'extended_days.integer' => 'Số ngày gia hạn phải là số nguyên.',
-            'extended_days.min' => 'Số ngày gia hạn tối thiểu là 1 ngày.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ.',
-                'errors' => $validator->errors()
-            ], 422);
+        // Nhận vào end_date từ lịch hoặc extended_days
+        $extendedEndAt = null;
+        if ($request->filled('end_date')) {
+            $extendedEndAt = \Carbon\Carbon::parse($request->input('end_date'));
+        } elseif ($request->filled('extended_days')) {
+            $extendedDays = (int)$request->input('extended_days');
+            if ($extendedDays <= 0) {
+                return response()->json(['success' => false, 'message' => 'Số ngày gia hạn không hợp lệ'], 422);
+            }
+            $extendedEndAt = \Carbon\Carbon::parse($trip->end_at)->addDays($extendedDays);
+        } else {
+            return response()->json(['success' => false, 'message' => 'Vui lòng cung cấp thời gian gia hạn mới (end_date)'], 422);
         }
 
-        $extendedDays = (int)$request->input('extended_days');
-        
-        // Tính toán ngày trả xe mới
-        $extendedEndAt = \Carbon\Carbon::parse($trip->end_at)->addDays($extendedDays);
+        if ($extendedEndAt->lte(\Carbon\Carbon::parse($trip->end_at))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Thời gian gia hạn mới phải sau thời gian kết thúc hiện tại.'
+            ], 400);
+        }
 
         // Kiểm tra xem xe có bị trùng lịch bận nào trong khoảng thời gian gia hạn [end_at, extendedEndAt] hay không
         $overlap = Trip::where('car_id', $trip->car_id)
@@ -466,8 +468,7 @@ class TripController extends Controller
                 TripStatus::Pending->value,
                 TripStatus::WaitingPayment->value,
                 TripStatus::Confirmed->value,
-                TripStatus::Ongoing->value,
-                TripStatus::WaitingExtension->value
+                TripStatus::Ongoing->value
             ])
             ->where(function ($query) use ($trip, $extendedEndAt) {
                 $query->where('start_at', '<', $extendedEndAt)
@@ -482,28 +483,43 @@ class TripController extends Controller
             ], 400);
         }
 
-        // Cập nhật trạng thái thành Chờ gia hạn (7) và lưu ngày đề xuất
-        $trip->update([
-            'status' => TripStatus::WaitingExtension->value,
-            'extended_end_at' => $extendedEndAt,
+        // Tính toán số tiền gia hạn (extension_amount)
+        if ($request->filled('extension_amount') && (float)$request->input('extension_amount') >= 0) {
+            $extensionAmount = (float)$request->input('extension_amount');
+        } else {
+            // Tính số ngày làm tròn lên
+            $diffMinutes = \Carbon\Carbon::parse($trip->end_at)->diffInMinutes($extendedEndAt);
+            $diffDays = max(1, ceil($diffMinutes / 1440));
+            $extensionAmount = $diffDays * ($trip->car->unit_price ?? 0);
+        }
+
+        // Tạo hoặc cập nhật bản ghi trong bảng trip_extensions với status = 1 (Đã gửi yêu cầu gia hạn)
+        $extension = \App\Models\TripExtension::create([
+            'trip_id' => $trip->id,
+            'extension_amount' => $extensionAmount,
+            'status' => 1,
+            'start_date' => $trip->end_at,
+            'end_date' => $extendedEndAt,
         ]);
+
+        // Yêu cầu gia hạn được lưu thông tin trong bảng trip_extensions (không sửa status của trip)
 
         // Tạo thông báo cho chủ xe
         \App\Models\Notification::create([
             'user_id' => $trip->car->user_id,
-            'message' => "Khách hàng {$user->name} đã gửi yêu cầu gia hạn thêm {$extendedDays} ngày (đến " . $extendedEndAt->format('H:i d/m/Y') . ") cho chuyến đi #{$trip->id} (xe {$trip->car->name}).",
+            'message' => "Khách hàng {$user->name} đã gửi yêu cầu gia hạn cho chuyến đi #{$trip->id} đến " . $extendedEndAt->format('H:i d/m/Y') . " (Phí gia hạn: " . number_format($extensionAmount) . " VNĐ).",
             'is_read' => '0',
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Gửi yêu cầu gia hạn thành công, đang chờ chủ xe duyệt!',
-            'data' => $trip
+            'data' => $trip->load(['car', 'images', 'extensions', 'latestExtension'])
         ]);
     }
 
     /**
-     * API Duyệt yêu cầu gia hạn chuyến đi
+     * API Duyệt yêu cầu gia hạn chuyến đi (Owner đồng ý -> chuyển status gia hạn sang 2 - Chờ thanh toán)
      * PUT /api/trips/{id}/extension-approve
      */
     public function approveExtension($id)
@@ -532,32 +548,24 @@ class TripController extends Controller
             ], 403);
         }
 
-        // Chuyến đi phải ở trạng thái Chờ gia hạn (7)
-        if ($trip->status !== TripStatus::WaitingExtension->value) {
+        $extension = $trip->extensions()->where('status', 1)->latest()->first();
+        if (!$extension) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không ở trạng thái Chờ gia hạn.'
+                'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ duyệt.'
             ], 400);
         }
 
-        if (empty($trip->extended_end_at)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Không có dữ liệu thời gian gia hạn đề xuất.'
-            ], 400);
-        }
+        $extendedEndAt = $extension->end_date;
 
-        $extendedEndAt = $trip->extended_end_at;
-
-        // Kiểm tra trùng lịch lần cuối trước khi cập nhật
+        // Kiểm tra trùng lịch lần cuối trước khi phê duyệt
         $overlap = Trip::where('car_id', $trip->car_id)
             ->where('id', '!=', $trip->id)
             ->whereIn('status', [
                 TripStatus::Pending->value,
                 TripStatus::WaitingPayment->value,
                 TripStatus::Confirmed->value,
-                TripStatus::Ongoing->value,
-                TripStatus::WaitingExtension->value
+                TripStatus::Ongoing->value
             ])
             ->where(function ($query) use ($trip, $extendedEndAt) {
                 $query->where('start_at', '<', $extendedEndAt)
@@ -572,29 +580,118 @@ class TripController extends Controller
             ], 400);
         }
 
-        // Cập nhật ngày kết thúc mới và trả trạng thái về Đang diễn ra (3)
-        $trip->update([
-            'end_at' => $extendedEndAt,
-            'extended_end_at' => null,
-            'status' => TripStatus::Ongoing->value
-        ]);
+        // Cập nhật trạng thái gia hạn thành 2 - Chờ thanh toán gia hạn
+        $extension->update(['status' => 2]);
 
         // Tạo thông báo cho khách thuê
         \App\Models\Notification::create([
             'user_id' => $trip->user_id,
-            'message' => "Yêu cầu gia hạn cho chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã được chủ xe chấp nhận. Thời hạn trả xe mới là " . date('H:i d/m/Y', strtotime($extendedEndAt)) . ".",
+            'message' => "Yêu cầu gia hạn chuyến đi #{$trip->id} (xe {$trip->car->name}) đã được chủ xe chấp nhận. Vui lòng thanh toán phí gia hạn (" . number_format($extension->extension_amount) . " VNĐ) để hoàn tất.",
             'is_read' => '0',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã duyệt yêu cầu gia hạn thành công!',
-            'data' => $trip
+            'message' => 'Đã duyệt yêu cầu gia hạn, chờ khách hàng thanh toán!',
+            'data' => $trip->load(['car', 'images', 'extensions', 'latestExtension'])
         ]);
     }
 
     /**
-     * API Từ chối yêu cầu gia hạn chuyến đi
+     * API Khách hàng thanh toán phí gia hạn (chuyển status gia hạn sang 3 - Đã gia hạn & cập nhật end_at chuyến đi)
+     * POST /api/trips/{id}/extension-pay
+     */
+    public function payExtension(Request $request, $id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        if ($trip->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        $extension = $trip->extensions()->where('status', 2)->latest()->first();
+        if (!$extension) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ thanh toán.'
+            ], 404);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            $amount = (float)$extension->extension_amount;
+
+            // Kiểm tra ví user và thực hiện thanh toán nếu có
+            if ($user->wallet_id && $amount > 0) {
+                $wallet = $user->wallet;
+                if ($wallet && $wallet->amount >= $amount) {
+                    $wallet->decrement('amount', $amount);
+                }
+            }
+
+            // Ghi nhận giao dịch thanh toán gia hạn
+            if ($amount > 0) {
+                \App\Models\Transaction::create([
+                    'user_id' => $user->id,
+                    'trip_id' => $trip->id,
+                    'amount' => $amount,
+                    'prepay' => 0,
+                    'transaction_code' => 'EXT_' . time() . '_' . $trip->id,
+                ]);
+            }
+
+            // Cập nhật trạng thái gia hạn thành 3 - Đã gia hạn
+            $extension->update(['status' => 3]);
+
+            // Cập nhật thời gian trả xe mới cho trip và cộng tiền gia hạn vào cost của trip
+            $trip->update([
+                'end_at' => $extension->end_date,
+                'cost' => $trip->cost + $amount,
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            // Tạo thông báo
+            \App\Models\Notification::create([
+                'user_id' => $trip->car->user_id,
+                'message' => "Khách hàng {$user->name} đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id}. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                'is_read' => '0',
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Thanh toán phí gia hạn thành công! Chuyến đi đã được cập nhật thời gian mới.',
+                'data' => $trip->load(['car', 'images', 'extensions', 'latestExtension'])
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thanh toán phí gia hạn: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API Từ chối yêu cầu gia hạn chuyến đi (Owner hoặc Renter hủy -> status gia hạn sang 4 - Bị từ chối)
      * PUT /api/trips/{id}/extension-reject
      */
     public function rejectExtension(Request $request, $id)
@@ -615,41 +712,39 @@ class TripController extends Controller
             ], 404);
         }
 
-        // Kiểm tra quyền chủ xe
-        if ($trip->car->user_id !== $user->id) {
+        // Kiểm tra quyền: chủ xe hoặc khách thuê đều có thể hủy yêu cầu gia hạn
+        if ($trip->car->user_id !== $user->id && $trip->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền thực hiện hành động này.'
             ], 403);
         }
 
-        // Chuyến đi phải ở trạng thái Chờ gia hạn (7)
-        if ($trip->status !== TripStatus::WaitingExtension->value) {
+        $extension = $trip->extensions()->whereIn('status', [1, 2])->latest()->first();
+        if (!$extension) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không ở trạng thái Chờ gia hạn.'
+                'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ xử lý.'
             ], 400);
         }
 
-        $reason = $request->input('reason', 'Chủ xe từ chối gia hạn chuyến đi');
+        $reason = $request->input('reason', 'Yêu cầu gia hạn bị từ chối/hủy');
+        $extension->update(['status' => 4]); // 4: Bị từ chối gia hạn
 
-        // Hủy thông tin đề xuất gia hạn, trả trạng thái về Đang diễn ra (3)
-        $trip->update([
-            'extended_end_at' => null,
-            'status' => TripStatus::Ongoing->value
-        ]);
+        // Yêu cầu gia hạn bị từ chối được lưu trong trip_extensions (không sửa status của trip)
 
-        // Tạo thông báo cho khách thuê
+        // Tạo thông báo
+        $notifyUserId = ($trip->car->user_id === $user->id) ? $trip->user_id : $trip->car->user_id;
         \App\Models\Notification::create([
-            'user_id' => $trip->user_id,
-            'message' => "Yêu cầu gia hạn cho chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã bị từ chối. Lý do: {$reason}.",
+            'user_id' => $notifyUserId,
+            'message' => "Yêu cầu gia hạn cho chuyến đi #{$trip->id} (xe {$trip->car->name}) đã bị từ chối/hủy. Lý do: {$reason}.",
             'is_read' => '0',
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Đã từ chối yêu cầu gia hạn chuyến đi!',
-            'data' => $trip
+            'message' => 'Đã từ chối/hủy yêu cầu gia hạn chuyến đi!',
+            'data' => $trip->load(['car', 'images', 'extensions', 'latestExtension'])
         ]);
     }
 

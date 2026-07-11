@@ -10,7 +10,7 @@ export function useZaloPay() {
      */
     const initiatePayment = async (
         amount: number,
-        paymentType: "rental" | "deposit" | "penalty",
+        paymentType: "rental" | "deposit" | "penalty" | "extension",
         tripId?: number
     ): Promise<void> => {
         loading.value = true;

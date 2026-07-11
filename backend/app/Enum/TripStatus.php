@@ -11,7 +11,6 @@ enum TripStatus: int
     case Complete = 4;
     case UserCancel = 5;
     case OwnerCancel = 6;
-    case WaitingExtension = 7;
 
     public function label(): string
     {
@@ -23,7 +22,6 @@ enum TripStatus: int
             self::Complete => 'Đã hoàn thành',
             self::UserCancel => 'Người dùng hủy',
             self::OwnerCancel => 'Chủ xe hủy',
-            self::WaitingExtension => 'Chờ gia hạn',
         };
     }
 }

@@ -34,9 +34,9 @@ class VNPayController extends Controller
             }
 
             $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty',
+                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
                 'amount' => 'required|numeric|min:5000',
-                'trip_id' => 'required_if:payment_type,rental,penalty|integer'
+                'trip_id' => 'required_if:payment_type,rental,penalty,extension|integer'
             ]);
 
             $paymentType = $request->input('payment_type');
@@ -68,6 +68,27 @@ class VNPayController extends Controller
                     $tripId = $request->input('trip_id');
                     $txnRef = "penalty_{$tripId}_{$user->id}_{$timestamp}";
                     $orderInfo = "Thanh toan tien phat vi pham hop dong chuyen di #{$tripId}";
+                    break;
+
+                case 'extension':
+                    $tripId = $request->input('trip_id');
+                    $trip = Trip::with('car')->find($tripId);
+                    if (!$trip) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy thông tin chuyến đi.'
+                        ], 404);
+                    }
+                    $extension = $trip->extensions()->where('status', 2)->latest()->first();
+                    if (!$extension) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ thanh toán.'
+                        ], 404);
+                    }
+                    $ownerId = $trip->car->user_id ?? 0;
+                    $txnRef = "ext_{$tripId}_{$extension->id}_{$ownerId}_{$timestamp}";
+                    $orderInfo = "Thanh toan phi gia han chuyen di #{$tripId}";
                     break;
 
                 default:

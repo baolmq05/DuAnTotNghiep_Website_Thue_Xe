@@ -112,6 +112,17 @@ export interface Car {
     };
 }
 
+export interface TripExtension {
+    id: number;
+    trip_id: number;
+    extension_amount: number | string;
+    status: number; // 0: Chưa gia hạn, 1: Đã gửi yêu cầu, 2: Chờ thanh toán, 3: Đã gia hạn, 4: Bị từ chối
+    start_date?: string;
+    end_date?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
 export interface CarResponse<T> {
     success: boolean;
     message: string;
@@ -280,7 +291,7 @@ export class CarService extends BaseService {
     /**
      * Gửi yêu cầu gia hạn chuyến đi
      */
-    async requestExtension(id: number | string, payload: { extended_days: number }): Promise<{ success: boolean; message: string; data: any }> {
+    async requestExtension(id: number | string, payload: { extended_days?: number; end_date?: string; start_date?: string; extension_amount?: number }): Promise<{ success: boolean; message: string; data: any }> {
         return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-request`, {
             method: "POST",
             body: payload,
@@ -294,6 +305,16 @@ export class CarService extends BaseService {
     async approveExtension(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
         return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-approve`, {
             method: "PUT",
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Khách hàng thanh toán phí gia hạn
+     */
+    async payExtension(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/extension-pay`, {
+            method: "POST",
             useAuth: true,
         });
     }

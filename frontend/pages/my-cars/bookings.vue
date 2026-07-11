@@ -74,7 +74,7 @@
 
             <!-- Basic Text Info -->
             <div class="flex-grow min-w-0">
-              <div class="flex items-center gap-1.5">
+              <div class="flex flex-wrap items-center gap-1.5">
                 <span
                   class="bg-slate-100 text-slate-800 text-[10px] font-mono font-bold px-2 py-0.5 rounded border border-slate-200">
                   {{ trip.car.license_plate }}
@@ -82,6 +82,12 @@
                 <span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold"
                   :class="statusClass(trip.status)">
                   {{ statusLabel(trip.status) }}
+                </span>
+                <!-- Song song status gia hạn nếu có -->
+                <span v-if="trip.latest_extension && trip.latest_extension.status !== 0"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold border shadow-2xs"
+                  :class="extensionStatusClass(trip.latest_extension.status)">
+                  {{ extensionStatusLabel(trip.latest_extension.status) }}
                 </span>
               </div>
               <h3
@@ -153,7 +159,7 @@
             </div>
 
             <!-- Extension Info Block -->
-            <div v-if="trip.status === TripStatus.WaitingExtension" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 mt-3 text-xs text-indigo-900 space-y-2">
+            <div v-if="trip.status === TripStatus.WaitingExtension || (trip.latest_extension && (trip.latest_extension.status === 1 || trip.latest_extension.status === 2))" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 mt-3 text-xs text-indigo-900 space-y-2">
               <p class="font-bold flex items-center gap-1.5 text-indigo-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-650 shrink-0">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -163,17 +169,32 @@
                   <line x1="12" y1="14" x2="12" y2="20"></line>
                   <line x1="9" y1="17" x2="15" y2="17"></line>
                 </svg>
-                Yêu cầu gia hạn thêm ngày:
+                <span v-if="trip.latest_extension?.status === 2">Đã đồng ý - Chờ khách thanh toán phí gia hạn</span>
+                <span v-else>Yêu cầu gia hạn thêm ngày:</span>
               </p>
-              <div class="flex flex-col gap-1 mt-1 font-medium">
-                <div>
+               <div class="flex flex-col gap-1.5 mt-1 font-medium">
+                <div class="flex justify-between items-center">
                   <span class="text-slate-500 font-semibold">Ngày trả xe đề xuất mới:</span>
-                  <p class="font-bold text-indigo-950 text-sm mt-0.5">{{ formatDate(trip.extended_end_at) }}</p>
+                  <span class="font-bold text-indigo-950 text-sm mt-0.5">{{ formatDate(trip.latest_extension?.end_date) }}</span>
+                </div>
+                <div v-if="trip.latest_extension?.extension_amount" class="flex justify-between items-center">
+                  <span class="text-slate-500 font-semibold">Phí gia hạn đề xuất:</span>
+                  <span class="font-bold text-[#1e4e57] text-sm">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
                 </div>
                 <div class="text-[10px] text-indigo-600 bg-indigo-100/50 px-2.5 py-1 rounded-lg border border-indigo-200/40 w-fit mt-1">
-                  Thời gian gia hạn thêm: {{ duration(trip.end_at, trip.extended_end_at) }}
+                  Thời gian gia hạn thêm: {{ duration(trip.end_at, trip.latest_extension?.end_date) }}
                 </div>
               </div>
+            </div>
+
+            <!-- Previous Extension status -->
+            <div v-if="trip.latest_extension?.status === 3" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-3 text-emerald-900 flex items-center gap-2 text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <span>Khách đã gia hạn thành công tới <strong>{{ formatDate(trip.end_at) }}</strong></span>
+            </div>
+            <div v-if="trip.latest_extension?.status === 4" class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3 text-rose-900 flex items-center gap-2 text-xs font-medium">
+              <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
+              <span>Yêu cầu gia hạn trước đó đã bị từ chối/hủy</span>
             </div>
           </div>
         </div>
@@ -200,8 +221,8 @@
           </button>
         </div>
 
-        <!-- Confirm / Reject Action buttons for WaitingExtension -->
-        <div v-else-if="trip.status === TripStatus.WaitingExtension" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+        <!-- Confirm / Reject Action buttons for Extension -->
+        <div v-else-if="trip.latest_extension?.status === 1 || (trip.status === TripStatus.WaitingExtension && (!trip.latest_extension || trip.latest_extension.status === 1))" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
           <button @click="openRejectExtensionDialog(trip)"
             class="flex-1 py-3 px-4 border border-rose-200 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] transition-all text-xs font-bold text-rose-600 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -220,6 +241,9 @@
             </svg>
             Đồng ý gia hạn
           </button>
+        </div>
+        <div v-else-if="trip.latest_extension?.status === 2 || (trip.status === TripStatus.WaitingExtension && trip.latest_extension?.status === 2)" class="p-4 border-t border-slate-100 bg-amber-50/60 text-center text-xs font-bold text-amber-800">
+          Chủ xe đã đồng ý gia hạn - Đang chờ khách hàng thanh toán
         </div>
 
         <!-- Complete Action button for Ongoing trips -->
@@ -259,6 +283,7 @@
             </svg>
             Đánh giá khách thuê
           </button>
+        </div>
         </div>
       </div>
     </div>
@@ -522,7 +547,7 @@ const filterTabs = computed(() => {
     {
       value: 'waiting_extension' as const,
       label: 'Chờ gia hạn',
-      count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension).length,
+      count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension || (t.latest_extension && (t.latest_extension.status === 1 || t.latest_extension.status === 2))).length,
     },
     {
       value: 'completed' as const,
@@ -595,7 +620,7 @@ const filteredTrips = computed(() => {
   } else if (activeFilter.value === 'active') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Ongoing);
   } else if (activeFilter.value === 'waiting_extension') {
-    return ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension);
+    return ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension || (t.latest_extension && (t.latest_extension.status === 1 || t.latest_extension.status === 2)));
   } else if (activeFilter.value === 'completed') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Complete);
   } else if (activeFilter.value === 'cancelled_renter') {
@@ -612,6 +637,26 @@ function statusLabel(status: number) {
 
 function statusClass(status: number) {
   return TripStatusBadgeClass[status as TripStatus] ?? 'bg-slate-100 text-slate-500';
+}
+
+function extensionStatusLabel(status?: number) {
+  switch (status) {
+    case 1: return 'Gia hạn: Chờ duyệt';
+    case 2: return 'Gia hạn: Chờ thanh toán';
+    case 3: return 'Gia hạn: Thành công';
+    case 4: return 'Gia hạn: Bị từ chối';
+    default: return '';
+  }
+}
+
+function extensionStatusClass(status?: number) {
+  switch (status) {
+    case 1: return 'bg-indigo-50 border-indigo-200 text-indigo-700';
+    case 2: return 'bg-amber-50 border-amber-200 text-amber-700';
+    case 3: return 'bg-emerald-50 border-emerald-200 text-emerald-700';
+    case 4: return 'bg-rose-50 border-rose-200 text-rose-700';
+    default: return 'bg-slate-100 border-slate-200 text-slate-600';
+  }
 }
 
 function formatDate(dt: string) {

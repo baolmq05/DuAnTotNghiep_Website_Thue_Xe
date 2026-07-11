@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Trip;
 use App\Models\Transaction;
+use App\Models\TripExtension;
 use Illuminate\Support\Facades\DB;
 
 class ZaloPayService
@@ -360,6 +361,21 @@ class ZaloPayService
 
                 ];
 
+            case "ext":
+            case "extension":
+
+                return [
+
+                    "type" => "extension",
+
+                    "trip_id" => intval($parts[2] ?? 0),
+
+                    "extension_id" => intval($parts[3] ?? 0),
+
+                    "owner_id" => intval($parts[4] ?? 0)
+
+                ];
+
             default:
 
                 return [
@@ -594,6 +610,52 @@ class ZaloPayService
 
                     ]);
 
+                    break;
+
+                case "extension":
+                    $trip = Trip::with('car')->find($meta["trip_id"]);
+                    if (!$trip) {
+                        return [
+                            "success" => false,
+                            "message" => "Không tìm thấy chuyến đi."
+                        ];
+                    }
+                    $extension = TripExtension::find($meta["extension_id"]);
+                    if (!$extension || $extension->status == 3) {
+                        return [
+                            "success" => true,
+                            "message" => "Gia hạn đã được xử lý trước đó."
+                        ];
+                    }
+                    $owner = User::find($meta["owner_id"] ?? ($trip->car->user_id ?? 0));
+                    if ($owner) {
+                        if (!$owner->wallet_id) {
+                            $wallet = Wallet::create(["amount" => 0]);
+                            $owner->wallet_id = $wallet->id;
+                            $owner->save();
+                        } else {
+                            $wallet = $owner->wallet;
+                        }
+                        $wallet->increment("amount", $amount);
+                    }
+                    Transaction::create([
+                        "user_id" => $trip->user_id,
+                        "transaction_code" => $zpTransactionId,
+                        "amount" => $amount,
+                        "prepay" => 0,
+                        "trip_id" => $trip->id
+                    ]);
+                    $extension->update(["status" => 3]);
+                    $trip->update([
+                        "end_at" => $extension->end_date,
+                        "extended_end_at" => null,
+                        "cost" => $trip->cost + $amount,
+                    ]);
+                    \App\Models\Notification::create([
+                        'user_id' => $trip->car->user_id ?? ($owner->id ?? 0),
+                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                        'is_read' => '0',
+                    ]);
                     break;
 
                 default:

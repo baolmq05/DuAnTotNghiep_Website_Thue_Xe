@@ -21,7 +21,7 @@ class MyTripController extends Controller
         }
 
         // lấy tất cả trip và car của user
-        $tripQuery = Trip::where('user_id', $user->id)->with(['car']);
+        $tripQuery = Trip::where('user_id', $user->id)->with(['car', 'extensions', 'latestExtension']);
 
         // tk biển số
         if ($request->filled('search')) {
@@ -35,7 +35,7 @@ class MyTripController extends Controller
         }
 
         // lọc trạng thái
-        if ($request->filled('status') && in_array($request->status, [0, 1, 2, 3, 4, 5, 6, 7])) {
+        if ($request->filled('status') && in_array($request->status, [0, 1, 2, 3, 4, 5, 6])) {
             $status = (int)$request->status;
             $tripQuery->where('status', $status);
         }
@@ -75,7 +75,6 @@ class MyTripController extends Controller
                 case TripStatus::Complete->value: $trip->status_text = 'Đã hoàn thành'; break;
                 case TripStatus::UserCancel->value: $trip->status_text = 'Đã hủy bởi bạn'; break;
                 case TripStatus::OwnerCancel->value: $trip->status_text = 'Đã hủy bởi chủ xe'; break;
-                case TripStatus::WaitingExtension->value: $trip->status_text = 'Chờ gia hạn'; break;
                 default: $trip->status_text = 'Không xác định'; break;
             }
 

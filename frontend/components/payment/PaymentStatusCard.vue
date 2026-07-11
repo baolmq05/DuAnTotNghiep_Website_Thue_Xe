@@ -121,7 +121,7 @@ const router = useRouter()
 
 const getTripId = computed(() => {
     if (!props.data) return null
-    return props.data.meta?.trip_id || null
+    return props.data.meta?.trip_id || props.data.trip_id || null
 })
 
 const getPaymentTypeLabel = (type: string) => {
@@ -132,6 +132,8 @@ const getPaymentTypeLabel = (type: string) => {
             return 'Nạp tiền vào ví điện tử'
         case 'penalty':
             return 'Thanh toán tiền phạt vi phạm'
+        case 'extension':
+            return 'Thanh toán phí gia hạn chuyến đi'
         default:
             return 'Nạp tiền dịch vụ'
     }

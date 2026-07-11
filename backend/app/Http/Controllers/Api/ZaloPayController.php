@@ -35,9 +35,9 @@ class ZaloPayController extends Controller
             }
 
             $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty',
+                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
                 'amount' => 'required|numeric|min:1000',
-                'trip_id' => 'required_if:payment_type,rental,penalty'
+                'trip_id' => 'required_if:payment_type,rental,penalty,extension'
             ]);
 
             $paymentType = $request->payment_type;
@@ -100,6 +100,37 @@ class ZaloPayController extends Controller
                         "_" .
                         time();
                     $description = "Thanh toán tiền phạt #{$request->trip_id}";
+
+                    break;
+
+                case 'extension':
+                    $trip = Trip::with('car')->find($request->trip_id);
+
+                    if (!$trip) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy chuyến đi.'
+                        ], 404);
+                    }
+                    $extension = $trip->extensions()->where('status', 2)->latest()->first();
+                    if (!$extension) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ thanh toán.'
+                        ], 404);
+                    }
+                    $ownerId = $trip->car->user_id ?? 0;
+                    $appTransId =
+                        date('ymd') .
+                        "_ext_" .
+                        $trip->id .
+                        "_" .
+                        $extension->id .
+                        "_" .
+                        $ownerId .
+                        "_" .
+                        time();
+                    $description = "Thanh toán phí gia hạn chuyến đi #{$trip->id}";
 
                     break;
 
