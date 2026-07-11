@@ -194,6 +194,13 @@ class TripController extends Controller
         // Cập nhật trạng thái thành WaitingPayment (Chờ thanh toán)
         $trip->update(['status' => TripStatus::WaitingPayment->value]);
 
+        // Tạo thông báo cho khách thuê
+        \App\Models\Notification::create([
+            'user_id' => $trip->user_id,
+            'message' => "Yêu cầu thuê xe '{$trip->car->name}' của bạn đã được chủ xe xác nhận. Vui lòng tiến hành thanh toán.",
+            'is_read' => '0',
+        ]);
+
         return response()->json([
             'success' => true,
             'message' => 'Xác nhận cho thuê xe thành công!',

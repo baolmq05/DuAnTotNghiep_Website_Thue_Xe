@@ -19,7 +19,9 @@ class DrivingLicensesTable
             ->columns([
                 TextColumn::make('full_name')
                     ->label('Họ và tên')
-                    ->searchable(),
+                    ->searchable()
+                    ->url(fn ($record) => $record->user ? route('filament.admin.resources.users.edit', ['record' => $record->user->id]) : null)
+                    ->color(fn ($record) => $record->user ? 'primary' : null),
                 ImageColumn::make('image')
                     ->label(new HtmlString('Ảnh giấy phép lái xe<style>.hover-zoom-image{transition:0.2s}.hover-zoom-image:hover{transform:scale(2.8);z-index:999999!important;position:relative!important;border-radius:8px!important;box-shadow:0 10px 15px rgba(0,0,0,0.3);cursor:zoom-in}tr:has(.hover-zoom-image:hover){position:relative!important;z-index:9998!important}td:has(.hover-zoom-image:hover){position:relative!important;z-index:9999!important}table:has(.hover-zoom-image:hover) th,table:has(.hover-zoom-image:hover) td:not(:has(.hover-zoom-image:hover)){z-index:1!important}*:has(.hover-zoom-image:hover){overflow:visible!important}</style>'))
                     ->circular()

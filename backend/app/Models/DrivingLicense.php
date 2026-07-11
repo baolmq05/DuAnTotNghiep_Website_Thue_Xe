@@ -34,4 +34,9 @@ class DrivingLicense extends Model
             }
         });
     }
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(User::class, 'driving_license_id');
+    }
 }

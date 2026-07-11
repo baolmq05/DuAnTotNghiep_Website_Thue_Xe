@@ -12,6 +12,11 @@ class ListDrivingLicenses extends ListRecords
 {
     protected static string $resource = DrivingLicenseResource::class;
 
+    protected function getTableQuery(): ?Builder
+    {
+        return parent::getTableQuery()->with('user');
+    }
+
     protected function getHeaderActions(): array
     {
         return [
