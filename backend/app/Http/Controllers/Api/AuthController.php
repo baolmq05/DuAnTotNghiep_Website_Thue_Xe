@@ -336,12 +336,31 @@ class AuthController extends Controller
             ];
 
             if ($request->hasFile('image')) {
-                $imageFile = $request->file('image');
-                $filename = time() . '_' . uniqid() . '.' . $imageFile->getClientOriginalExtension();
-                $path = $imageFile->storeAs('licenses', $filename, 'public');
-                $imageUrl = asset('storage/' . $path);
-                $drivingLicenseData['image'] = $imageUrl;
+                $file = $request->file('image');
+                $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
+                $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
+
+                // Bắn trực tiếp lên API Cloudinary
+                $response = \Illuminate\Support\Facades\Http::attach(
+                    'file',
+                    file_get_contents($file->getRealPath()),
+                    $file->getClientOriginalName()
+                )->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
+                    'upload_preset' => $uploadPreset,
+                    'folder' => 'licenses',
+                ]);
+
+                if ($response->successful()) {
+                    $drivingLicenseData['image'] = $response->json('secure_url');
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không thể upload ảnh lên Cloudinary.',
+                        'error' => $response->json()
+                    ], 500);
+                }
             } elseif ($request->filled('image')) {
+                // Web gửi chuỗi URL qua thì lấy luôn chuỗi lưu vào DB
                 $drivingLicenseData['image'] = $request->input('image');
             }
 
