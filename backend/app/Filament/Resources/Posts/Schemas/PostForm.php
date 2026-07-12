@@ -13,6 +13,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Utilities\Set;
 use Illuminate\Support\Str;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class PostForm
 {
@@ -23,60 +24,56 @@ class PostForm
                 Grid::make(3)
                     ->columnSpan('full')
                     ->schema([
-                        // Cột chính (2/3 chiều rộng) - Giao diện soạn thảo
-                        Grid::make(1)
-                            ->columnSpan(2)
+                        Grid::make(2)
+                            ->columnSpan([
+                                'default' => 1,
+                                'lg' => 2,
+                            ])
                             ->schema([
-                                Section::make('Nội dung bài viết')
+                                Section::make('Thông tin bài viết')
                                     ->schema([
                                         TextInput::make('title')
+                                            ->label('Tiêu đề')
                                             ->required()
-                                            ->label("Tiêu đề bài viết")
+                                            ->maxLength(255)
                                             ->live(onBlur: true)
                                             ->afterStateUpdated(fn (Set $set, ?string $state) => $set('slug', Str::slug($state))),
-                                        
+
                                         TextInput::make('slug')
+                                            ->label('Slug (Đường dẫn tĩnh)')
                                             ->required()
-                                            ->label("Slug / Đường dẫn tĩnh")
-                                            ->disabled()
-                                            ->dehydrated()
-                                            ->unique(ignoreRecord: true),
-                                        
-                                        RichEditor::make('content')
-                                            ->toolbarButtons([
-                                                ['bold', 'italic', 'underline', 'strike', 'subscript', 'superscript'],
-                                                ['h2', 'h3'],
-                                                ['alignStart', 'alignCenter', 'alignEnd'],
-                                                ['blockquote', 'bulletList', 'orderedList'],
-                                                ['table', 'attachFiles'],
-                                                ['undo', 'redo'],
-                                            ])
-                                            ->label("Nội dung bài viết")
-                                            ->required(),
-                                    ]),
-                                
-                                Section::make('Tóm tắt bài viết')
-                                    ->schema([
-                                        Textarea::make('excerpt')
-                                            ->label("Mô tả ngắn (Excerpt)")
+                                            ->maxLength(255)
+                                            ->unique(table: 'posts', column: 'slug', ignoreRecord: true),
+
+                                        Textarea::make('summary')
+                                            ->label('Mô tả ngắn')
+                                            ->required()
                                             ->rows(3)
-                                            ->required(),
+                                            ->columnSpanFull(),
+
+                                        RichEditor::make('content')
+                                            ->label('Nội dung chi tiết')
+                                            ->required()
+                                            ->fileAttachmentsDisk('public')
+                                            ->fileAttachmentsDirectory('blogs/' . date('Y/m'))
+                                            ->columnSpanFull(),
                                     ]),
                             ]),
 
-                        // Cột Sidebar (1/3 chiều rộng) - Thiết lập bài viết
                         Grid::make(1)
-                            ->columnSpan(1)
+                            ->columnSpan([
+                                'default' => 1,
+                                'lg' => 1,
+                            ])
                             ->schema([
-                                Section::make('Đăng tải & Trạng thái')
+                                Section::make('Trạng thái')
                                     ->schema([
                                         Select::make('status')
                                             ->label('Trạng thái')
                                             ->options([
-                                                0 => 'Nháp',
-                                                1 => 'Công khai',
+                                                '1' => 'Đã xuất bản',
+                                                '0' => 'Bản nháp',
                                             ])
-                                            ->required()
                                             ->default(1),
 
                                         DateTimePicker::make('published_at')
@@ -100,7 +97,10 @@ class PostForm
                                             ->label("Ảnh đại diện")
                                             ->image()
                                             ->disk('public')
-                                            ->directory('blogs')
+                                            ->directory('blogs/' . date('Y/m'))
+                                            ->getUploadedFileNameForStorageUsing(
+                                                fn (TemporaryUploadedFile $file): string => date('Y-m-d-H-i-s') . '.' . $file->getClientOriginalExtension()
+                                            )
                                             ->imageEditor()
                                             ->imageEditorViewportWidth('1920')
                                             ->imageEditorViewportHeight('1080'),
