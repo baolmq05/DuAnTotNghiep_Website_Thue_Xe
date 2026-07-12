@@ -10,7 +10,8 @@
     <div v-else-if="error || !car" class="max-w-7xl mx-auto px-4 py-32 flex flex-col items-center justify-center">
       <Icon name="lucide:alert-circle" size="48" class="text-rose-500" />
       <h2 class="mt-4 text-xl font-bold text-slate-800">{{ error || 'Không tìm thấy thông tin xe' }}</h2>
-      <NuxtLink to="/vehicle-list" class="mt-6 px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold hover:opacity-90">
+      <NuxtLink to="/vehicle-list"
+        class="mt-6 px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold hover:opacity-90">
         Quay lại danh sách xe
       </NuxtLink>
     </div>
@@ -23,159 +24,91 @@
         ════════════════════════════════════════ -->
         <div class="lg:col-span-7 space-y-6">
           <!-- IMAGE GALLERY -->
-          <div
-            class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80"
-          >
+          <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100/80">
             <div
-              class="relative rounded-xl overflow-hidden shadow-sm border border-slate-100 h-[240px] sm:h-[340px] bg-slate-900 w-full"
-            >
-              <img
-                :src="carImages[activeIndex]"
-                alt="Xe chính"
-                class="w-full h-full object-cover transition-all duration-500"
-              />
+              class="relative rounded-xl overflow-hidden shadow-sm border border-slate-100 h-[240px] sm:h-[340px] bg-slate-900 w-full">
+              <img :src="carImages[activeIndex]" alt="Xe chính"
+                class="w-full h-full object-cover transition-all duration-500" />
               <div
-                class="absolute bottom-3 right-3 bg-slate-950/70 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wider"
-              >
+                class="absolute bottom-3 right-3 bg-slate-950/70 backdrop-blur-sm text-white text-[10px] px-2.5 py-1 rounded-full font-bold tracking-wider">
                 {{ activeIndex + 1 }} / {{ carImages.length }}
               </div>
             </div>
             <div class="flex gap-2.5 mt-3 overflow-x-auto pb-1.5">
-              <div
-                v-for="(imgUrl, idx) in carImages"
-                :key="idx"
-                @click="activeIndex = idx"
-                :class="[
-                  'relative w-16 h-12 rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-300 border-2',
-                  activeIndex === idx
-                    ? 'border-brand-primary scale-[1.02] shadow-sm'
-                    : 'border-slate-100 hover:border-slate-200 opacity-80',
-                ]"
-              >
-                <img
-                  :src="imgUrl"
-                  alt="Thumbnail"
-                  class="w-full h-full object-cover"
-                />
+              <div v-for="(imgUrl, idx) in carImages" :key="idx" @click="activeIndex = idx" :class="[
+                'relative w-16 h-12 rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-300 border-2',
+                activeIndex === idx
+                  ? 'border-brand-primary scale-[1.02] shadow-sm'
+                  : 'border-slate-100 hover:border-slate-200 opacity-80',
+              ]">
+                <img :src="imgUrl" alt="Thumbnail" class="w-full h-full object-cover" />
               </div>
             </div>
           </div>
 
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
             <div class="flex items-start justify-between gap-4">
               <div>
-                <h1
-                  class="text-2xl sm:text-3xl font-black text-brand-dark tracking-tight"
-                >
+                <h1 class="text-2xl sm:text-3xl font-black text-brand-dark tracking-tight">
                   {{ car?.name }}
                 </h1>
                 <div class="flex items-center gap-3 mt-2 flex-wrap">
                   <div class="flex items-center gap-1.5">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-4 h-4 text-yellow-400 fill-current"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
+                      viewBox="0 0 24 24">
                       <path
-                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z"
-                      />
+                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
                     </svg>
-                    <span class="text-sm font-extrabold text-brand-dark"
-                      >{{ car?.reviews_avg_rating ? parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span
-                    >
-                    <span
-                      class="text-xs text-gray-400 font-bold uppercase tracking-wider"
-                      >• {{ car?.trips_count || 0 }} chuyến</span
-                    >
+                    <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
+                      parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
+                    <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">• {{ car?.trips_count || 0 }}
+                      chuyến</span>
                   </div>
                   <span class="text-slate-200">|</span>
                   <div class="flex items-center gap-1 text-slate-500">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-4 h-4 text-gray-400"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5"
-                      />
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" viewBox="0 0 24 24">
+                      <path fill="currentColor"
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5" />
                     </svg>
-                    <span class="text-sm font-medium"
-                      >{{ car?.car_location?.address || 'Chưa cập nhật' }}</span
-                    >
+                    <span class="text-sm font-medium">{{ car?.car_location?.address || 'Chưa cập nhật' }}</span>
                   </div>
                 </div>
                 <div class="flex items-center gap-2 mt-3 flex-wrap">
                   <span
-                    class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-100"
-                  >
-                    <span
-                      class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"
-                    ></span>
+                    class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-100">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                     Miễn thế chấp
                   </span>
                   <span v-if="car?.delivery_option_id"
-                    class="inline-flex items-center gap-1.5 bg-brand-secondary text-brand-primary text-xs font-bold px-3 py-1.5 rounded-full border border-brand-primary/10"
-                  >
+                    class="inline-flex items-center gap-1.5 bg-brand-secondary text-brand-primary text-xs font-bold px-3 py-1.5 rounded-full border border-brand-primary/10">
                     Giao xe tận nơi
                   </span>
                 </div>
               </div>
               <div class="flex items-center gap-2 flex-shrink-0">
-                <button
-                  class="p-2.5 rounded-xl border border-slate-200 hover:border-brand-primary hover:text-brand-primary text-slate-500 hover:bg-slate-50 transition-all duration-200"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81c1.66 0 3-1.34 3-3s-1.34-3-3-3s-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65c0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92"
-                    />
-                  </svg>
-                </button>
-                <button
-                  class="p-2.5 rounded-xl border transition-all duration-200"
+                <button class="w-10 h-10 flex items-center justify-center rounded-xl border transition-all duration-200"
                   :class="isFavorite ? 'border-rose-200 text-rose-600 bg-rose-50' : 'border-slate-200 text-slate-500 hover:border-rose-200 hover:text-rose-600 hover:bg-rose-50'"
-                  @click="handleToggleFavorite"
-                >
-                  <Icon 
-                    :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'" 
-                    class="w-5 h-5"
-                  />
+                  @click="handleToggleFavorite">
+                  <Icon :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'" class="w-5 h-5" />
                 </button>
               </div>
             </div>
           </div>
 
           <!-- Đặc điểm -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Đặc điểm
             </h2>
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div
-                v-for="spec in specs"
-                :key="spec.label"
-                class="flex flex-col items-center text-center gap-1.5 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:border-brand-primary/35 hover:bg-white hover:shadow-md transition-all duration-300"
-              >
+              <div v-for="spec in specs" :key="spec.label"
+                class="flex flex-col items-center text-center gap-1.5 p-4 bg-slate-50/50 border border-slate-100 rounded-2xl hover:border-brand-primary/35 hover:bg-white hover:shadow-md transition-all duration-300">
                 <div
                   class="w-10 h-10 rounded-full bg-brand-secondary text-brand-primary flex items-center justify-center"
-                  v-html="spec.icon"
-                ></div>
-                <span
-                  class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1"
-                  >{{ spec.label }}</span
-                >
+                  v-html="spec.icon"></div>
+                <span class="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-1">{{ spec.label
+                }}</span>
                 <span class="text-sm font-extrabold text-brand-dark">{{
                   spec.value
                 }}</span>
@@ -184,19 +117,12 @@
           </div>
 
           <!-- Mô tả -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-3 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-3 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Mô tả
             </h2>
-            <div
-              class="text-sm text-slate-600 leading-relaxed space-y-3"
-              :class="{ 'line-clamp-4': !showFullDesc }"
-            >
+            <div class="text-sm text-slate-600 leading-relaxed space-y-3" :class="{ 'line-clamp-4': !showFullDesc }">
               <p class="font-semibold text-brand-dark whitespace-pre-line">
                 {{ car?.description || 'Chưa có mô tả chi tiết cho xe này.' }}
               </p>
@@ -205,61 +131,30 @@
                 <p class="text-slate-600">{{ car.rental_terms }}</p>
               </div>
             </div>
-            <button
-              @click="showFullDesc = !showFullDesc"
-              class="mt-4 text-sm text-brand-primary font-bold hover:underline flex items-center gap-1"
-            >
+            <button @click="showFullDesc = !showFullDesc"
+              class="mt-4 text-sm text-brand-primary font-bold hover:underline flex items-center gap-1">
               {{ showFullDesc ? "Thu gọn" : "Xem thêm" }}
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4 transition-transform duration-200"
-                :class="{ 'rotate-180': showFullDesc }"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2"
-                  d="m6 9l6 6l6-6"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-200"
+                :class="{ 'rotate-180': showFullDesc }" viewBox="0 0 24 24">
+                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="m6 9l6 6l6-6" />
               </svg>
             </button>
           </div>
 
           <!-- Tiện nghi -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Các tiện nghi khác
             </h2>
             <div class="grid grid-cols-2 gap-3">
-              <div
-                v-for="amenity in amenities"
-                :key="amenity.name"
-                class="flex items-center gap-3 text-sm text-slate-700 bg-slate-50/40 p-3 rounded-xl border border-slate-100/60 hover:border-brand-primary/20 hover:bg-white transition-all duration-200"
-              >
-                <img
-                  v-if="amenity.icon"
-                  :src="amenity.icon"
-                  alt="Icon"
-                  class="w-5 h-5 object-contain flex-shrink-0"
-                />
-                <svg
-                  v-else
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-4 h-4 text-brand-primary flex-shrink-0"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z"
-                  />
+              <div v-for="amenity in amenities" :key="amenity.name"
+                class="flex items-center gap-3 text-sm text-slate-700 bg-slate-50/40 p-3 rounded-xl border border-slate-100/60 hover:border-brand-primary/20 hover:bg-white transition-all duration-200">
+                <img v-if="amenity.icon" :src="amenity.icon" alt="Icon" class="w-5 h-5 object-contain flex-shrink-0" />
+                <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-primary flex-shrink-0"
+                  viewBox="0 0 24 24">
+                  <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19L21 7l-1.41-1.41z" />
                 </svg>
                 <span class="font-semibold text-slate-700">{{ amenity.name }}</span>
               </div>
@@ -267,12 +162,8 @@
           </div>
 
           <!-- Giấy tờ thuê xe -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-1 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-1 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Giấy tờ thuê xe
             </h2>
@@ -280,32 +171,20 @@
               Chọn 1 trong 2 hình thức sau
             </p>
             <div class="grid grid-cols-1 gap-3">
-              <div
-                v-for="doc in documents"
-                :key="doc.title"
-                class="flex items-start gap-3.5 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary/20 transition-all duration-300"
-              >
+              <div v-for="doc in documents" :key="doc.title"
+                class="flex items-start gap-3.5 p-4 bg-slate-50 border border-slate-100 rounded-2xl hover:border-brand-primary/20 transition-all duration-300">
                 <div
-                  class="w-10 h-10 rounded-xl bg-brand-secondary text-brand-primary flex items-center justify-center flex-shrink-0"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-5 h-5"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      fill="currentColor"
-                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9z"
-                    />
+                  class="w-10 h-10 rounded-xl bg-brand-secondary text-brand-primary flex items-center justify-center flex-shrink-0">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                      d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8zm-1 7V3.5L18.5 9z" />
                   </svg>
                 </div>
                 <div>
                   <h4 class="text-sm font-bold text-brand-dark mb-0.5">
                     {{ doc.title }}
                   </h4>
-                  <p
-                    class="text-xs text-slate-600 leading-relaxed font-semibold"
-                  >
+                  <p class="text-xs text-slate-600 leading-relaxed font-semibold">
                     {{ doc.desc }}
                   </p>
                 </div>
@@ -314,12 +193,8 @@
           </div>
 
           <!-- Chính sách hủy chuyến -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Chính sách hủy chuyến
             </h2>
@@ -327,37 +202,24 @@
               <table class="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr class="bg-slate-50 border-b border-slate-100">
-                    <th
-                      class="py-2.5 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wider"
-                    >
+                    <th class="py-2.5 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wider">
                       Thời điểm hủy
                     </th>
-                    <th
-                      class="py-2.5 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wider text-right"
-                    >
+                    <th class="py-2.5 px-4 font-semibold text-gray-500 text-xs uppercase tracking-wider text-right">
                       Phí hủy
                     </th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                  <tr
-                    v-for="policy in cancelPolicies"
-                    :key="policy.time"
-                    class="hover:bg-slate-50/50 transition-colors"
-                  >
-                    <td
-                      class="py-3 px-4 text-slate-700 font-medium text-xs sm:text-sm"
-                    >
+                  <tr v-for="policy in cancelPolicies" :key="policy.time"
+                    class="hover:bg-slate-50/50 transition-colors">
+                    <td class="py-3 px-4 text-slate-700 font-medium text-xs sm:text-sm">
                       {{ policy.time }}
                     </td>
-                    <td
-                      class="py-3 px-4 text-right font-extrabold text-xs sm:text-sm"
-                      :class="
-                        policy.fee === 'Miễn phí'
-                          ? 'text-green-600'
-                          : 'text-brand-accent'
-                      "
-                    >
+                    <td class="py-3 px-4 text-right font-extrabold text-xs sm:text-sm" :class="policy.fee === 'Miễn phí'
+                      ? 'text-green-600'
+                      : 'text-brand-accent'
+                      ">
                       {{ policy.fee }}
                     </td>
                   </tr>
@@ -367,80 +229,43 @@
           </div>
 
           <!-- Chủ xe -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Chủ xe
             </h2>
-            <div
-              class="flex items-center gap-4 bg-slate-50/50 p-4 border border-slate-100 rounded-2xl"
-            >
+            <div class="flex items-center gap-4 bg-slate-50/50 p-4 border border-slate-100 rounded-2xl">
               <div v-if="!car?.owner?.avatar"
-                class="w-14 h-14 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md shadow-brand-primary/10"
-              >
+                class="w-14 h-14 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md shadow-brand-primary/10">
                 {{ car?.owner?.name?.charAt(0).toUpperCase() || 'M' }}
               </div>
-              <img v-else
-                :src="car.owner.avatar"
-                alt="Owner Avatar"
-                class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10"
-              />
+              <img v-else :src="car.owner.avatar" alt="Owner Avatar"
+                class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10" />
               <div class="flex-1">
                 <p class="font-extrabold text-brand-dark">
                   {{ car?.owner?.name || 'Chủ xe' }}
                 </p>
                 <div class="flex items-center gap-2 mt-1">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-4 h-4 text-yellow-400 fill-current"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
+                    viewBox="0 0 24 24">
                     <path
-                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z"
-                    />
+                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
                   </svg>
-                  <span class="text-sm font-extrabold text-brand-dark"
-                    >{{ car?.reviews_avg_rating ? parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span
-                  >
+                  <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
+                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
                   <span class="text-gray-300">•</span>
-                  <span
-                    class="text-xs text-gray-500 font-bold uppercase tracking-wider"
-                    >{{ car?.trips_count || 0 }} chuyến</span
-                  >
+                  <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ car?.trips_count || 0 }}
+                    chuyến</span>
                 </div>
               </div>
-              <button
-                class="flex-shrink-0 flex items-center gap-2 border border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white text-sm font-bold px-4 py-2.5 rounded-xl transition-all duration-200 shadow-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-4 h-4"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"
-                  />
-                </svg>
-                Nhắn tin
-              </button>
             </div>
             <div class="grid grid-cols-3 gap-3 mt-4">
-              <div
-                v-for="stat in hostStats"
-                :key="stat.label"
-                class="text-center p-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-brand-primary/15 transition-all"
-              >
+              <div v-for="stat in hostStats" :key="stat.label"
+                class="text-center p-3 bg-slate-50 border border-slate-100 rounded-xl hover:border-brand-primary/15 transition-all">
                 <p class="text-base sm:text-lg font-black text-brand-primary">
                   {{ stat.value }}
                 </p>
-                <p
-                  class="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5"
-                >
+                <p class="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
                   {{ stat.label }}
                 </p>
               </div>
@@ -448,26 +273,18 @@
           </div>
 
           <!-- Đánh giá -->
-          <div
-            class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80"
-          >
-            <h2
-              class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2"
-            >
+          <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100/80">
+            <h2 class="text-base font-bold text-brand-dark mb-4 flex items-center gap-2">
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Đánh giá từ khách hàng
             </h2>
             <div class="space-y-4">
-              <div
-                v-for="review in formattedReviews"
-                :key="review.name"
-                class="border-b border-slate-100 pb-4 last:border-0 last:pb-0"
-              >
+              <div v-for="review in formattedReviews" :key="review.name"
+                class="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div class="flex items-center gap-3 mb-2.5">
                   <div
                     class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm"
-                    :style="{ backgroundColor: review.color }"
-                  >
+                    :style="{ backgroundColor: review.color }">
                     {{ review.name.charAt(0) }}
                   </div>
                   <div>
@@ -476,28 +293,18 @@
                     </p>
                     <div class="flex items-center gap-1.5 mt-0.5">
                       <div class="flex items-center gap-0.5 text-yellow-400">
-                        <svg
-                          v-for="s in 5"
-                          :key="s"
-                          xmlns="http://www.w3.org/2000/svg"
-                          class="w-3.5 h-3.5 fill-current"
-                          viewBox="0 0 24 24"
-                        >
+                        <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
+                          viewBox="0 0 24 24">
                           <path
-                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z"
-                          />
+                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
                         </svg>
                       </div>
-                      <span
-                        class="text-[11px] text-gray-400 font-bold uppercase tracking-wider"
-                        >{{ review.date }}</span
-                      >
+                      <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date
+                      }}</span>
                     </div>
                   </div>
                 </div>
-                <p
-                  class="text-sm text-slate-600 leading-relaxed pl-1 font-medium"
-                >
+                <p class="text-sm text-slate-600 leading-relaxed pl-1 font-medium">
                   {{ review.text }}
                 </p>
               </div>
@@ -511,67 +318,48 @@
         <div class="  lg:col-span-5">
           <div class="sticky top-6 space-y-4">
             <!-- Booking card -->
-            <div
-              class="bg-white rounded-2xl shadow-sm border border-slate-100/80 overflow-hidden"
-            >
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-100/80 overflow-hidden">
               <!-- Price header -->
               <div class="bg-brand-dark px-6 py-5">
                 <div class="flex items-end gap-2">
-                  <span class="text-3xl font-black text-white">{{ car ? (car.unit_price / 1000).toFixed(0) : '' }}K</span>
-                  <span class="text-brand-light text-sm font-medium pb-0.5"
-                    >/ngày</span
-                  >
+                  <span class="text-3xl font-black text-white">{{ car ? (car.unit_price / 1000).toFixed(0) : ''
+                  }}K</span>
+                  <span class="text-brand-light text-sm font-medium pb-0.5">/ngày</span>
                 </div>
                 <div class="flex items-center gap-2 mt-1.5 text-white">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="w-3.5 h-3.5 text-yellow-400 fill-current"
-                    viewBox="0 0 24 24"
-                  >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-yellow-400 fill-current"
+                    viewBox="0 0 24 24">
                     <path
-                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z"
-                    />
+                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
                   </svg>
-                  <span class="text-xs text-white/70 font-semibold"
-                    >{{ car?.reviews_avg_rating ? parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến • Miễn thế chấp</span
-                  >
+                  <span class="text-xs text-white/70 font-semibold">{{ car?.reviews_avg_rating ?
+                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến • Miễn
+                    thế chấp</span>
                 </div>
               </div>
 
               <div class="p-5 space-y-4">
                 <!-- Date picker -->
                 <div>
-                  <p
-                    class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2"
-                  >
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                     Thời gian thuê
                   </p>
                   <div @click="isDatePickerOpen = true" class="grid grid-cols-2 gap-2">
                     <div
-                      class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-brand-primary transition-colors"
-                    >
-                      <p
-                        class="text-[9px] text-gray-400 font-bold uppercase tracking-wider"
-                      >
+                      class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-brand-primary transition-colors">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
                         NHẬN XE
                       </p>
-                      <p
-                        class="text-sm font-extrabold text-brand-dark mt-0.5"
-                      >
+                      <p class="text-sm font-extrabold text-brand-dark mt-0.5">
                         {{ formattedStart || 'Chọn thời gian' }}
                       </p>
                     </div>
                     <div
-                      class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-brand-primary transition-colors"
-                    >
-                      <p
-                        class="text-[9px] text-gray-400 font-bold uppercase tracking-wider"
-                      >
+                      class="border border-slate-200 rounded-xl p-3 cursor-pointer hover:border-brand-primary transition-colors">
+                      <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">
                         TRẢ XE
                       </p>
-                      <p
-                        class="text-sm font-extrabold text-brand-dark mt-0.5"
-                      >
+                      <p class="text-sm font-extrabold text-brand-dark mt-0.5">
                         {{ formattedEnd || 'Chọn thời gian' }}
                       </p>
                     </div>
@@ -583,34 +371,25 @@
                   <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2">
                     Hình thức nhận xe
                   </p>
-                  
+
                   <!-- Tabs/Toggles -->
                   <div class="grid grid-cols-2 gap-2 mb-3">
-                    <button
-                      type="button"
-                      :class="[
-                        'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200',
-                        receiveMethod === 'pickup'
-                          ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
-                      ]"
-                      @click="receiveMethod = 'pickup'"
-                    >
+                    <button type="button" :class="[
+                      'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200',
+                      receiveMethod === 'pickup'
+                        ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300'
+                    ]" @click="receiveMethod = 'pickup'">
                       Nhận tại vị trí xe
                     </button>
-                    
-                    <button
-                      type="button"
-                      :disabled="!car?.delivery_option || car.delivery_option.status !== 1"
-                      :class="[
-                        'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1',
-                        receiveMethod === 'delivery'
-                          ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
-                          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
-                      ]"
-                      @click="receiveMethod = 'delivery'"
-                      :title="(!car?.delivery_option || car.delivery_option.status !== 1) ? 'Chủ xe không hỗ trợ giao xe tận nơi' : ''"
-                    >
+
+                    <button type="button" :disabled="!car?.delivery_option || car.delivery_option.status !== 1" :class="[
+                      'py-2 px-3 text-xs font-bold rounded-xl border transition-all duration-200 flex items-center justify-center gap-1',
+                      receiveMethod === 'delivery'
+                        ? 'bg-[#1e4e57] text-white border-[#1e4e57]'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 disabled:opacity-50 disabled:cursor-not-allowed'
+                    ]" @click="receiveMethod = 'delivery'"
+                      :title="(!car?.delivery_option || car.delivery_option.status !== 1) ? 'Chủ xe không hỗ trợ giao xe tận nơi' : ''">
                       <Icon name="lucide:truck" class="w-3.5 h-3.5" />
                       Giao xe tận nơi
                     </button>
@@ -618,19 +397,12 @@
 
                   <!-- Content based on selected method -->
                   <!-- 1. Self-pickup -->
-                  <div
-                    v-if="receiveMethod === 'pickup'"
-                    class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:border-brand-primary transition-colors"
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      class="w-4 h-4 text-brand-primary flex-shrink-0"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        fill="currentColor"
-                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5"
-                      />
+                  <div v-if="receiveMethod === 'pickup'"
+                    class="flex items-center gap-2 p-3 border border-slate-200 rounded-xl hover:border-brand-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-brand-primary flex-shrink-0"
+                      viewBox="0 0 24 24">
+                      <path fill="currentColor"
+                        d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5" />
                     </svg>
                     <span class="text-sm text-slate-700 font-semibold truncate flex-1">
                       {{ car?.car_location?.address || 'Chưa cập nhật' }}
@@ -643,35 +415,27 @@
                   <!-- 2. Delivery Search Autocomplete -->
                   <div v-else-if="receiveMethod === 'delivery'" class="space-y-3">
                     <div class="relative">
-                      <input
-                        type="text"
-                        v-model="deliveryAddress"
-                        @input="searchDeliveryPlace"
+                      <input type="text" v-model="deliveryAddress" @input="searchDeliveryPlace"
                         placeholder="Nhập địa chỉ nhận xe..."
-                        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 pr-10 outline-none transition text-xs font-semibold text-slate-700 focus:border-[#1e4e57] focus:ring-2 focus:ring-[#1e4e57]/10"
-                      >
+                        class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 pr-10 outline-none transition text-xs font-semibold text-slate-700 focus:border-[#1e4e57] focus:ring-2 focus:ring-[#1e4e57]/10">
                       <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
                         <Icon name="lucide:map-pin" class="w-4 h-4" />
                       </div>
 
                       <!-- Suggestions Dropdown -->
-                      <div
-                        v-if="deliverySuggestions.length"
-                        class="absolute z-[100] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100"
-                      >
-                        <div
-                          v-for="item in deliverySuggestions"
-                          :key="item.place_id"
+                      <div v-if="deliverySuggestions.length"
+                        class="absolute z-[100] left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-48 overflow-y-auto divide-y divide-slate-100">
+                        <div v-for="item in deliverySuggestions" :key="item.place_id"
                           class="p-3 hover:bg-slate-50 cursor-pointer text-xs text-slate-700 transition-colors font-medium"
-                          @click="selectDeliveryPlace(item)"
-                        >
+                          @click="selectDeliveryPlace(item)">
                           {{ item.description }}
                         </div>
                       </div>
                     </div>
 
                     <!-- Distance & Fee details -->
-                    <div v-if="deliveryDistance !== null" class="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1 text-xs">
+                    <div v-if="deliveryDistance !== null"
+                      class="bg-slate-50 border border-slate-100 rounded-xl p-3 space-y-1 text-xs">
                       <div class="flex justify-between font-semibold">
                         <span class="text-slate-500">Khoảng cách giao xe:</span>
                         <span class="text-slate-800">{{ deliveryDistance }} km</span>
@@ -690,60 +454,40 @@
                       </div>
 
                       <!-- Warning if too far -->
-                      <div v-if="isDistanceTooFar" class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100 flex items-center justify-center gap-1">
+                      <div v-if="isDistanceTooFar"
+                        class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100 flex items-center justify-center gap-1">
                         <Icon name="lucide:triangle-alert" class="w-4 h-4" />
                         Vị trí quá xa! Chủ xe chỉ giao tối đa {{ car?.delivery_option?.max_distance }} km.
                       </div>
                     </div>
 
                     <!-- Map container -->
-                    <div
-                      id="detail-map"
-                      class="w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner"
-                      style="height: 200px; display: none;"
-                      :style="{ display: deliveryCoords ? 'block' : 'none' }"
-                    ></div>
+                    <div id="detail-map" class="w-full rounded-xl overflow-hidden border border-slate-200 shadow-inner"
+                      style="height: 200px; display: none;" :style="{ display: deliveryCoords ? 'block' : 'none' }">
+                    </div>
                   </div>
                 </div>
 
                 <!-- Chi tiết giá -->
                 <div class="space-y-2.5 pt-2 border-t border-slate-100">
-                  <div
-                    v-for="item in priceDetails"
-                    :key="item.label"
-                    class="flex items-center justify-between text-sm"
-                  >
-                    <span
-                      class="text-slate-500 font-medium flex items-center gap-1"
-                    >
+                  <div v-for="item in priceDetails" :key="item.label" class="flex items-center justify-between text-sm">
+                    <span class="text-slate-500 font-medium flex items-center gap-1">
                       {{ item.label }}
-                      <svg
-                        v-if="item.info"
-                        xmlns="http://www.w3.org/2000/svg"
-                        class="w-3.5 h-3.5 text-gray-300"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          fill="currentColor"
-                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z"
-                        />
+                      <svg v-if="item.info" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-gray-300"
+                        viewBox="0 0 24 24">
+                        <path fill="currentColor"
+                          d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m1 15h-2v-6h2zm0-8h-2V7h2z" />
                       </svg>
                     </span>
-                    <span
-                      :class="
-                        item.discount
-                          ? 'text-green-600 font-bold'
-                          : 'font-semibold text-brand-dark'
-                      "
-                      >{{ item.value }}</span
-                    >
+                    <span :class="item.discount
+                      ? 'text-green-600 font-bold'
+                      : 'font-semibold text-brand-dark'
+                      ">{{ item.value }}</span>
                   </div>
                 </div>
 
                 <!-- Tổng -->
-                <div
-                  class="bg-brand-secondary rounded-xl p-4 flex items-center justify-between"
-                >
+                <div class="bg-brand-secondary rounded-xl p-4 flex items-center justify-between">
                   <div>
                     <p class="text-xs text-gray-500 font-medium">Tổng cộng</p>
                     <p class="text-xl font-black text-brand-dark">{{ totalPrice.toLocaleString('vi-VN') }}đ</p>
@@ -758,111 +502,65 @@
                 <button
                   :disabled="hasActiveBooking || (receiveMethod === 'delivery' && (isDistanceTooFar || !deliveryCoords))"
                   class="w-full bg-brand-primary hover:bg-brand-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-300 text-sm tracking-widest shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 hover:-translate-y-[0.5px] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-                  @click="handleBooking"
-                >
+                  @click="handleBooking">
                   <span v-if="hasActiveBooking">CHUYẾN ĐI CHƯA HOÀN THÀNH</span>
                   <span v-else-if="receiveMethod === 'delivery' && isDistanceTooFar">KHOẢNG CÁCH QUÁ XA</span>
                   <span v-else>CHỌN THUÊ</span>
                 </button>
 
                 <!-- Phụ phí -->
-                <button
-                  class="w-full text-center text-sm text-brand-primary hover:underline font-semibold"
-                >
+                <button class="w-full text-center text-sm text-brand-primary hover:underline font-semibold">
                   Xem phụ phí có thể phát sinh →
                 </button>
               </div>
             </div>
 
             <!-- Báo cáo -->
-            <button
-              class="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-red-500 transition-colors py-1"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-4 h-4"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  fill="currentColor"
-                  d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"
-                />
+            <!-- <button
+              class="w-full flex items-center justify-center gap-2 text-sm text-gray-400 hover:text-red-500 transition-colors py-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z" />
               </svg>
               Báo cáo xe này
-            </button>
+            </button> -->
           </div>
         </div>
       </div>
     </div>
 
     <!-- XE TƯƠNG TỰ -->
-    <div
-      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6"
-    >
-      <h2
-        class="text-xl font-black text-brand-dark mb-6 flex items-center gap-2"
-      >
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6">
+      <h2 class="text-xl font-black text-brand-dark mb-6 flex items-center gap-2">
         <span class="w-1.5 h-6 bg-brand-primary rounded-full"></span>
         Xe tương tự (cùng hãng {{ car?.car_brand?.name }})
       </h2>
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <NuxtLink
-          v-for="simCar in similarCars"
-          :key="simCar.id"
-          :to="`/vehicles/${simCar.id}`"
-          class="bg-white rounded-2xl overflow-hidden border border-slate-100/60 shadow-sm hover:shadow-md hover:border-brand-primary/10 transition-all duration-300 cursor-pointer group block"
-        >
+        <NuxtLink v-for="simCar in similarCars" :key="simCar.id" :to="`/vehicles/${simCar.id}`"
+          class="bg-white rounded-2xl overflow-hidden border border-slate-100/60 shadow-sm hover:shadow-md hover:border-brand-primary/10 transition-all duration-300 cursor-pointer group block">
           <div class="relative h-36 overflow-hidden">
-            <img
-              :src="simCar.image"
-              :alt="simCar.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-            />
-            <span
-              v-if="simCar.badge"
-              class="absolute top-2 left-2 bg-brand-accent text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm"
-              >{{ simCar.badge }}</span
-            >
+            <img :src="simCar.image" :alt="simCar.name"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <span v-if="simCar.badge"
+              class="absolute top-2 left-2 bg-brand-accent text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">{{
+                simCar.badge }}</span>
           </div>
           <div class="p-3.5">
             <p class="text-xs font-black text-brand-dark truncate">
               {{ simCar.name }}
             </p>
             <div class="flex items-center gap-1 mt-1">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                class="w-3 h-3 text-yellow-400 fill-current"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z"
-                />
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
               </svg>
-              <span class="text-[10px] font-bold text-gray-500"
-                >{{ simCar.rating }} • {{ simCar.trips }} chuyến</span
-              >
+              <span class="text-[10px] font-bold text-gray-500">{{ simCar.rating }} • {{ simCar.trips }} chuyến</span>
             </div>
-            <div
-              class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50"
-            >
-              <span class="text-sm font-black text-brand-primary"
-                >{{ simCar.price
-                }}<span class="text-[10px] font-semibold text-gray-400"
-                  >/ngày</span
-                ></span
-              >
-              <div
-                class="flex items-center gap-1 text-[10px] text-gray-400 font-bold"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  class="w-3 h-3 text-gray-300"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5"
-                  />
+            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
+              <span class="text-sm font-black text-brand-primary">{{ simCar.price
+              }}<span class="text-[10px] font-semibold text-gray-400">/ngày</span></span>
+              <div class="flex items-center gap-1 text-[10px] text-gray-400 font-bold">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-300" viewBox="0 0 24 24">
+                  <path fill="currentColor"
+                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5" />
                 </svg>
                 {{ simCar.location }}
               </div>
@@ -871,158 +569,128 @@
         </NuxtLink>
       </div>
     </div>
-    
+
     <!-- Date Picker Modal -->
-    <DatePickerModal 
-      :is-open="isDatePickerOpen" 
-      :initial-start="selectedStart || undefined" 
-      :initial-end="selectedEnd || undefined" 
-      :disabled-dates="disabledDates"
-      @close="isDatePickerOpen = false" 
-      @apply="handleApplyDates"
-    />
+    <DatePickerModal :is-open="isDatePickerOpen" :initial-start="selectedStart || undefined"
+      :initial-end="selectedEnd || undefined" :disabled-dates="disabledDates" @close="isDatePickerOpen = false"
+      @apply="handleApplyDates" />
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
          MODAL CẬP NHẬT THÔNG TIN NHANH (TÍCH HỢP LOGIC UPLOAD CỦA PROFILE)
          ════════════════════════════════════════════════════════════ -->
-    <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-      <!-- Màn đen mờ phía sau (Overlay) -->
-      <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" @click="isUpdateModalOpen = false"></div>
-      
-      <!-- Khung nội dung Modal -->
-      <div class="relative bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl border border-slate-100/80 z-10 flex flex-col max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-in fade-in zoom-in-95 no-scrollbar">
-        
-        <!-- Nút đóng nhanh -->
-        <button @click="isUpdateModalOpen = false" class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
-          <Icon name="ic:outline-close" size="20" />
-        </button>
+  <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
+    <!-- Màn đen mờ phía sau (Overlay) -->
+    <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" @click="isUpdateModalOpen = false"></div>
 
-        <!-- Tiêu đề Modal -->
-        <div class="mb-5">
-          <h3 class="text-xl font-black text-brand-dark flex items-center gap-2">
-            <Icon name="ic:outline-stars" class="text-brand-primary" size="24" />
-            Xác thực thông tin thuê xe
-          </h3>
-          <p class="text-xs text-slate-500 mt-1 font-medium">
-            Vui lòng hoàn thiện các thông tin còn thiếu bên dưới để tiếp tục chuyến đi của bạn.
-          </p>
+    <!-- Khung nội dung Modal -->
+    <div
+      class="relative bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl border border-slate-100/80 z-10 flex flex-col max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-in fade-in zoom-in-95 no-scrollbar">
+
+      <!-- Nút đóng nhanh -->
+      <button @click="isUpdateModalOpen = false"
+        class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
+        <Icon name="ic:outline-close" size="20" />
+      </button>
+
+      <!-- Tiêu đề Modal -->
+      <div class="mb-5">
+        <h3 class="text-xl font-black text-brand-dark flex items-center gap-2">
+          <Icon name="ic:outline-stars" class="text-brand-primary" size="24" />
+          Xác thực thông tin thuê xe
+        </h3>
+        <p class="text-xs text-slate-500 mt-1 font-medium">
+          Vui lòng hoàn thiện các thông tin còn thiếu bên dưới để tiếp tục chuyến đi của bạn.
+        </p>
+      </div>
+
+      <!-- Form Xử lý cập nhật -->
+      <form @submit.prevent="submitQuickUpdate" class="space-y-5">
+
+        <!-- KHU VỰC 1: SỐ ĐIỆN THOẠI (Chỉ hiển thị nếu tài khoản chưa có) -->
+        <div v-if="missingFields.phone" class="space-y-1.5">
+          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+            Số điện thoại <span class="text-rose-500">*</span>
+          </label>
+          <input type="text" v-model="quickUpdateForm.phone" placeholder="Nhập số điện thoại của bạn"
+            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white focus:ring-2 focus:ring-brand-primary/5 transition-all" />
         </div>
 
-        <!-- Form Xử lý cập nhật -->
-        <form @submit.prevent="submitQuickUpdate" class="space-y-5">
-          
-          <!-- KHU VỰC 1: SỐ ĐIỆN THOẠI (Chỉ hiển thị nếu tài khoản chưa có) -->
-          <div v-if="missingFields.phone" class="space-y-1.5">
-            <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-              Số điện thoại <span class="text-rose-500">*</span>
-            </label>
-            <input 
-              type="text" 
-              v-model="quickUpdateForm.phone" 
-              placeholder="Nhập số điện thoại của bạn"
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white focus:ring-2 focus:ring-brand-primary/5 transition-all"
-              
-            />
+        <!-- KHU VỰC 2: GIẤY PHÉP LÁI XE (Chỉ hiển thị nếu chưa có hoặc bị từ chối) -->
+        <div v-if="missingFields.drivingLicense" class="space-y-4 pt-1">
+          <div class="border-t border-dashed border-slate-200 my-2"></div>
+
+          <h4 class="text-xs font-extrabold text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
+            <Icon name="ic:outline-credit-card" class="text-emerald-500" size="18" />
+            Thông tin Giấy phép lái xe
+          </h4>
+
+          <!-- Trường Số GPLX -->
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số GPLX</label>
+            <input type="text" v-model="quickUpdateForm.driving_license_number" placeholder="Nhập số GPLX ghi trên thẻ"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
           </div>
 
-          <!-- KHU VỰC 2: GIẤY PHÉP LÁI XE (Chỉ hiển thị nếu chưa có hoặc bị từ chối) -->
-          <div v-if="missingFields.drivingLicense" class="space-y-4 pt-1">
-            <div class="border-t border-dashed border-slate-200 my-2"></div>
-            
-            <h4 class="text-xs font-extrabold text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
-              <Icon name="ic:outline-credit-card" class="text-emerald-500" size="18" />
-              Thông tin Giấy phép lái xe
-            </h4>
+          <!-- Trường Họ và Tên -->
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Họ và tên</label>
+            <input type="text" v-model="quickUpdateForm.full_name" placeholder="Nhập họ và tên đầy đủ viết hoa"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
+          </div>
 
-            <!-- Trường Số GPLX -->
-            <div class="space-y-1.5">
-              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số GPLX</label>
-              <input 
-                type="text" 
-                v-model="quickUpdateForm.driving_license_number" 
-                placeholder="Nhập số GPLX ghi trên thẻ"
-                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
-                
-              />
-            </div>
+          <!-- Trường Ngày Sinh -->
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ngày sinh</label>
+            <input type="date" v-model="quickUpdateForm.DOB"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
+          </div>
 
-            <!-- Trường Họ và Tên -->
-            <div class="space-y-1.5">
-              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Họ và tên</label>
-              <input 
-                type="text" 
-                v-model="quickUpdateForm.full_name" 
-                placeholder="Nhập họ và tên đầy đủ viết hoa"
-                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
-                
-              />
-            </div>
+          <!-- Vùng Kéo thả & Upload ảnh bằng lái (Bê nguyên cấu trúc mượt mà từ Profile sang) -->
+          <div class="space-y-1.5">
+            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ảnh mặt trước GPLX</label>
 
-            <!-- Trường Ngày Sinh -->
-            <div class="space-y-1.5">
-              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ngày sinh</label>
-              <input 
-                type="date" 
-                v-model="quickUpdateForm.DOB" 
-                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all"
-                
-              />
-            </div>
+            <div @click="triggerLicenseFileInput" @dragover.prevent="isLicenseDragging = true"
+              @dragleave.prevent="isLicenseDragging = false" @drop.prevent="onLicenseDrop"
+              class="h-[160px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all bg-slate-50/50"
+              :class="isLicenseDragging ? 'border-brand-primary bg-brand-primary/5 shadow-inner' : (licenseImagePreview ? 'border-solid border-slate-200 bg-white' : 'border-slate-300 hover:border-brand-primary')">
+              <!-- Hiển thị Preview ảnh khi người dùng chọn file -->
+              <img v-if="licenseImagePreview" :src="licenseImagePreview"
+                class="w-full h-full object-contain absolute inset-0 p-1" alt="Preview GPLX" />
 
-            <!-- Vùng Kéo thả & Upload ảnh bằng lái (Bê nguyên cấu trúc mượt mà từ Profile sang) -->
-            <div class="space-y-1.5">
-              <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ảnh mặt trước GPLX</label>
-              
-              <div 
-                @click="triggerLicenseFileInput" 
-                @dragover.prevent="isLicenseDragging = true"
-                @dragleave.prevent="isLicenseDragging = false" 
-                @drop.prevent="onLicenseDrop"
-                class="h-[160px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all bg-slate-50/50"
-                :class="isLicenseDragging ? 'border-brand-primary bg-brand-primary/5 shadow-inner' : (licenseImagePreview ? 'border-solid border-slate-200 bg-white' : 'border-slate-300 hover:border-brand-primary')"
-              >
-                <!-- Hiển thị Preview ảnh khi người dùng chọn file -->
-                <img v-if="licenseImagePreview" :src="licenseImagePreview" class="w-full h-full object-contain absolute inset-0 p-1" alt="Preview GPLX" />
-                
-                <!-- Giao diện mặc định khi chưa chọn file -->
-                <div v-else class="flex flex-col items-center p-4 text-center">
-                  <Icon name="ic:outline-cloud-upload" size="36" class="text-green-500 mb-1.5" />
-                  <p class="text-xs text-slate-600 font-bold">Kéo thả ảnh vào đây hoặc nhấp để chọn file</p>
-                  <p class="text-[10px] text-slate-400 mt-1 font-medium">Chấp nhận JPG, PNG dung lượng tối đa 5MB</p>
-                </div>
-
-                <!-- Input file bị ẩn chạy ngầm dưới nền -->
-                <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*" class="hidden" />
+              <!-- Giao diện mặc định khi chưa chọn file -->
+              <div v-else class="flex flex-col items-center p-4 text-center">
+                <Icon name="ic:outline-cloud-upload" size="36" class="text-green-500 mb-1.5" />
+                <p class="text-xs text-slate-600 font-bold">Kéo thả ảnh vào đây hoặc nhấp để chọn file</p>
+                <p class="text-[10px] text-slate-400 mt-1 font-medium">Chấp nhận JPG, PNG dung lượng tối đa 5MB</p>
               </div>
+
+              <!-- Input file bị ẩn chạy ngầm dưới nền -->
+              <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*"
+                class="hidden" />
             </div>
           </div>
+        </div>
 
-          <!-- NÚT THAO TÁC (ACTIONS BUTTON) -->
-          <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-            <!-- Nút Hủy -->
-            <button 
-              type="button" 
-              @click="isUpdateModalOpen = false"
-              class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-colors focus:outline-none text-xs tracking-wider uppercase"
-            >
-              Hủy bỏ
-            </button>
-            
-            <!-- Nút Xác nhận & Lưu đơn -->
-            <button 
-              type="submit" 
-              :disabled="isUpdating"
-              class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-xs tracking-wider uppercase shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Icon v-if="isUpdating" name="svg-spinners:ring-resize" class="w-4 h-4" />
-              <span>{{ isUpdating ? 'Đang lưu...' : 'Xác nhận & Thuê xe' }}</span>
-            </button>
-          </div>
+        <!-- NÚT THAO TÁC (ACTIONS BUTTON) -->
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
+          <!-- Nút Hủy -->
+          <button type="button" @click="isUpdateModalOpen = false"
+            class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-colors focus:outline-none text-xs tracking-wider uppercase">
+            Hủy bỏ
+          </button>
 
-        </form>
-      </div>
+          <!-- Nút Xác nhận & Lưu đơn -->
+          <button type="submit" :disabled="isUpdating"
+            class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-xs tracking-wider uppercase shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <Icon v-if="isUpdating" name="svg-spinners:ring-resize" class="w-4 h-4" />
+            <span>{{ isUpdating ? 'Đang lưu...' : 'Xác nhận & Thuê xe' }}</span>
+          </button>
+        </div>
+
+      </form>
     </div>
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -1234,31 +902,31 @@ const handleBooking = async () => {
 
   const drivingLicense = user.value.driving_license
 
-if (drivingLicense && drivingLicense.status === 0) {
-  showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
-  return
-}
+  if (drivingLicense && drivingLicense.status === 0) {
+    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+    return
+  }
 
-const isPhoneMissing = !user.value.phone
-const isLicenseMissing = !drivingLicense || drivingLicense.status === 2
+  const isPhoneMissing = !user.value.phone
+  const isLicenseMissing = !drivingLicense || drivingLicense.status === 2
 
-if (isPhoneMissing || isLicenseMissing) {
-  missingFields.value = { phone: isPhoneMissing, drivingLicense: isLicenseMissing }
-  
-  // Điền sẵn data cũ (nếu có) vào form modal
-  quickUpdateForm.value.phone = user.value.phone || ''
-  quickUpdateForm.value.driving_license_number = drivingLicense?.driving_license_number || ''
-  quickUpdateForm.value.full_name = drivingLicense?.full_name || ''
-  quickUpdateForm.value.DOB = drivingLicense?.DOB || ''
-  
-  // Reset trạng thái file ảnh tạm
-  licenseImagePreview.value = ''
-  licenseImageFile.value = null
-  
-  // Bật modal lên và dừng luồng xử lý đơn hàng tại đây
-  isUpdateModalOpen.value = true
-  return
-}
+  if (isPhoneMissing || isLicenseMissing) {
+    missingFields.value = { phone: isPhoneMissing, drivingLicense: isLicenseMissing }
+
+    // Điền sẵn data cũ (nếu có) vào form modal
+    quickUpdateForm.value.phone = user.value.phone || ''
+    quickUpdateForm.value.driving_license_number = drivingLicense?.driving_license_number || ''
+    quickUpdateForm.value.full_name = drivingLicense?.full_name || ''
+    quickUpdateForm.value.DOB = drivingLicense?.DOB || ''
+
+    // Reset trạng thái file ảnh tạm
+    licenseImagePreview.value = ''
+    licenseImageFile.value = null
+
+    // Bật modal lên và dừng luồng xử lý đơn hàng tại đây
+    isUpdateModalOpen.value = true
+    return
+  }
 
   // Kiểm tra số điện thoại
   // if (!user.value.phone) {
@@ -1343,8 +1011,8 @@ if (isPhoneMissing || isLicenseMissing) {
       end_at: selectedEnd.value ? formatDbDate(selectedEnd.value) : '',
       car_id: car.value.id,
       delivery_address: receiveMethod.value === 'delivery' ? deliveryAddress.value : car.value.car_location?.address,
-      delivery_location: receiveMethod.value === 'delivery' && deliveryCoords.value 
-        ? `${deliveryCoords.value.lat},${deliveryCoords.value.lng}` 
+      delivery_location: receiveMethod.value === 'delivery' && deliveryCoords.value
+        ? `${deliveryCoords.value.lat},${deliveryCoords.value.lng}`
         : car.value.car_location?.location,
     }
 
@@ -1549,14 +1217,14 @@ const loadCarDetails = async (id: string) => {
     const response = await carService.getCarById(id);
     if (response.success && response.data) {
       car.value = response.data;
-      
+
       // Kiểm tra nếu là chủ xe thì không được phép truy cập
       if (user.value && car.value.user_id === user.value.id) {
         showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'warning');
         navigateTo('/vehicle-list');
         return;
       }
-      
+
       // Kiểm tra xem xe này có nằm trong danh sách yêu thích hay không
       await checkFavoriteStatus(id);
 
@@ -1723,7 +1391,7 @@ const priceDetails = computed(() => {
   const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
   const days = rentalDays.value;
-  
+
   const details = [
     { label: "Đơn giá thuê", value: `${(unitPrice * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
     { label: "Bảo hiểm thuê xe", value: `${(insuranceFee * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
@@ -1790,13 +1458,13 @@ const formattedReviews = computed(() => {
 
 const similarCars = computed(() => {
   return rawSimilarCars.value.map((c: any) => {
-    const thumbnailImg = c.images?.find((img: any) => img.is_thumbnail === 1)?.image_url 
-        || c.images?.[0]?.image_url 
-        || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
-    
+    const thumbnailImg = c.images?.find((img: any) => img.is_thumbnail === 1)?.image_url
+      || c.images?.[0]?.image_url
+      || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
+
     const discountPct = c.unit_price > 0 && c.discount_value > 0
-        ? Math.round((c.discount_value / c.unit_price) * 100)
-        : 0;
+      ? Math.round((c.discount_value / c.unit_price) * 100)
+      : 0;
 
     return {
       id: c.id,
@@ -1813,7 +1481,7 @@ const similarCars = computed(() => {
 
 const hasActiveBooking = computed(() => {
   if (!user.value || !car.value?.trips) return false;
-  return car.value.trips.some((trip: any) => 
+  return car.value.trips.some((trip: any) =>
     trip.user_id === user.value.id && [TripStatus.Pending, TripStatus.WaitingPayment, TripStatus.Confirmed, TripStatus.Ongoing].includes(Number(trip.status))
   );
 });
@@ -1883,13 +1551,13 @@ const submitQuickUpdate = async () => {
     // ════════════════════════════════════════════════════════════
     if (missingFields.value.phone) {
       const phoneInput = quickUpdateForm.value.phone.trim();
-      
+
       if (!phoneInput) {
         showToast('Vui lòng không để trống Số điện thoại.', 'error');
         isUpdating.value = false;
         return;
       }
-      
+
       const phoneRegex = /^0\d{9}$/;
       if (!phoneRegex.test(phoneInput)) {
         showToast('Số điện thoại không hợp lệ! Phải bắt đầu bằng số 0 và có đúng 10  số.', 'error');
@@ -2008,7 +1676,9 @@ const submitQuickUpdate = async () => {
 
 /* Ẩn thanh cuộn cho IE, Edge và Firefox */
 .no-scrollbar {
-  -ms-overflow-style: none;  /* IE và Edge */
-  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE và Edge */
+  scrollbar-width: none;
+  /* Firefox */
 }
 </style>

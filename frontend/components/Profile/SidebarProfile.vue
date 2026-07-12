@@ -42,7 +42,15 @@ const mainMenus = [
 ];
 
 const filteredMainMenus = computed(() => {
-  return mainMenus;
+  const menus = [...mainMenus];
+  if (user.value && user.value.role_id === 3) {
+    menus.push({
+      title: "Ví của tôi",
+      icon: "ic:outline-account-balance-wallet",
+      href: "/mywallet",
+    });
+  }
+  return menus;
 });
 
 const settingMenus = [

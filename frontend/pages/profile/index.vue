@@ -46,9 +46,11 @@
               Tham gia: {{ user?.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : '13/05/2026' }}
             </p>
 
-            <div class="mt-4 border rounded-xl px-4 py-2 flex items-center gap-2">
-              <Icon name="ic:outline-emoji-events" class="text-yellow-500" size="22" />
-              <span class="font-semibold"> 0 điểm </span>
+            <div class="mt-4 border border-slate-200 bg-slate-50/50 rounded-xl px-4 py-2 flex items-center gap-1.5 shadow-sm">
+              <Icon name="ic:outline-star" class="text-yellow-500" size="20" />
+              <span class="font-bold text-slate-800 text-sm">
+                {{ user?.rating ? parseFloat(user.rating).toFixed(1) : '5.0' }} sao
+              </span>
             </div>
           </div>
         </div>
@@ -83,11 +85,11 @@
               <span class="font-medium break-all">{{ user?.email || 'Chưa cập nhật' }}</span>
             </div>
 
-            <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
+            <!-- <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span class="text-gray-500"> Facebook </span>
 
               <span class="font-medium"> Thêm liên kết </span>
-            </div>
+            </div> -->
 
             <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span class="text-gray-500"> Google </span>

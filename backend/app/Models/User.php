@@ -55,6 +55,13 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
     protected $with = ['drivingLicense'];
+    protected $appends = ['rating'];
+
+    public function getRatingAttribute()
+    {
+        $rating = \App\Models\Review::where('target_id', $this->id)->avg('rating');
+        return $rating ? round(floatval($rating), 1) : 5.0;
+    }
 
     protected $fillable = [
         'name',

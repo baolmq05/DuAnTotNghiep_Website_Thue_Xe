@@ -253,24 +253,19 @@
 
         <!-- Input area -->
         <div class="bg-gray-50 px-4 md:px-6 pb-6 pt-2 flex-shrink-0">
-          <div class="flex items-end gap-3 max-w-4xl mx-auto">
+          <div class="flex items-center gap-3 max-w-4xl mx-auto">
             <div class="flex-1 relative">
               <textarea ref="inputRef" v-model="inputText" rows="1"
                 :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.other_user?.name ?? 'chủ xe'}...`"
                 class="w-full resize-none text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-200 focus:border-brand-primary focus:outline-none rounded-2xl px-4 py-3 pr-12 transition-all leading-relaxed shadow-sm"
                 style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
               <button class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5a2.5 2.5 0 0 1 5 0v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5a2.5 2.5 0 0 0 5 0V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z" />
-                </svg>
+                <Icon name="lucide:paperclip" class="w-5 h-5" />
               </button>
             </div>
             <button @click="sendMessage" :disabled="isTyping || !inputText.trim()"
-              class="flex-shrink-0 w-10 h-10 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24">
-                <path fill="currentColor" d="M2.01 21L23 12L2.01 3L2 10l15 2l-15 2z" />
-              </svg>
+              class="flex-shrink-0 w-11 h-11 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
+              <Icon name="lucide:send" class="w-5 h-5" />
             </button>
           </div>
           <p v-if="activeConvId === 'bot'" class="text-center text-xs text-gray-400 mt-2">Drivio AI có thể mắc lỗi. Vui

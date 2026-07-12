@@ -8,6 +8,8 @@ declare global {
 }
 
 export default defineNuxtPlugin(() => {
+    // Commented out Facebook SDK initialization
+    /*
     window.fbAsyncInit = function () {
         window.FB.init({
             appId: '1318387693233381',
@@ -32,4 +34,5 @@ export default defineNuxtPlugin(() => {
             d.head?.appendChild(js);
         }
     }(document, 'script', 'facebook-jssdk'));
+    */
 })

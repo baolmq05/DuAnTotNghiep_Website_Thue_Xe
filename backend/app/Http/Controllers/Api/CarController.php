@@ -113,16 +113,25 @@ class CarController extends Controller
             $query->where('status', 1);
         }
 
-        // Eager load các quan hệ & tính toán rating trung bình, tổng số chuyến đi
-        $query->with([
-            'carLocation',
-            'carBrand',
-            'carType',
-            'images',
-            'owner' => function ($q) {
-                $q->select('id', 'name', 'avatar');
-            }
-        ])
+        // Eager load các quan hệ & tính toán rating trung bình, tổng số chuyến đi, doanh thu tháng này
+        $query->select('cars.*')
+            ->selectSub(function ($q) {
+                $q->selectRaw('COALESCE(SUM(cost - discount_amount), 0)')
+                    ->from('trips')
+                    ->whereColumn('trips.car_id', 'cars.id')
+                    ->where('trips.status', TripStatus::Complete->value)
+                    ->whereMonth('trips.created_at', now()->month)
+                    ->whereYear('trips.created_at', now()->year);
+            }, 'revenue')
+            ->with([
+                'carLocation',
+                'carBrand',
+                'carType',
+                'images',
+                'owner' => function ($q) {
+                    $q->select('id', 'name', 'avatar');
+                }
+            ])
             ->withAvg(['reviews' => function ($q) {
                 $q->where('review_type', 1);
             }], 'rating')

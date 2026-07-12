@@ -284,7 +284,6 @@
             Đánh giá khách thuê
           </button>
         </div>
-        </div>
       </div>
     </div>
 

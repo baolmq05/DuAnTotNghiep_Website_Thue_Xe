@@ -1,5 +1,6 @@
 <template>
     <div class="min-h-screen bg-[#f8f9fa] font-sans text-[#333333] pb-24 antialiased">
+        <CommonLoadingOverlay :loading="isLoading" text="Đang tải dữ liệu..." />
 
         <div class="bg-[#286874] pt-24 pb-12 text-center">
             <h2 class="text-[32px] font-bold text-white tracking-tight">
@@ -129,6 +130,7 @@ import { walletService } from '~/services/wallet.service'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+const isLoading = ref(false)
 
 const balance = ref(0)
 const rating = ref(5.0)
@@ -153,6 +155,7 @@ const formatCurrency = (value) => {
 }
 
 const loadWalletDetails = async () => {
+    isLoading.value = true
     try {
         const response = await walletService.getWalletDetails()
         if (response.success && response.data) {
@@ -166,6 +169,8 @@ const loadWalletDetails = async () => {
         }
     } catch (error) {
         console.error('Error loading wallet details:', error)
+    } finally {
+        isLoading.value = false
     }
 }
 

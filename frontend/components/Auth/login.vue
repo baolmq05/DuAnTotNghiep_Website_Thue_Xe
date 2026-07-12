@@ -80,19 +80,19 @@
                                 Hoặc kết nối qua
                             </span>
                         </div>
-                        <div class="grid grid-cols-2 gap-3 items-center">
+                        <div class="flex justify-center items-center">
                             <div class="flex justify-center items-center h-[44px]">
                                 <div id="googleButtonContainer"></div>
                             </div>
 
-                            <button type="button" @click="loginWithFacebook"
+                            <!-- <button type="button" @click="loginWithFacebook"
                                 class="flex items-center justify-center gap-2 h-[44px] w-full border border-slate-200 rounded-full text-sm font-medium hover:bg-slate-50 transition-colors focus:outline-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" class="w-5 h-5">
                                     <path fill="#3b5998"
                                         d="M48 24C48 10.75 37.25 0 24 0S0 10.75 0 24c0 11.98 8.78 21.9 20.25 23.7V30.94h-6.1V24h6.1v-5.29c0-6.01 3.58-9.34 9.07-9.34 2.63 0 5.38.47 5.38.47v5.91h-3.03c-2.98 0-3.91 1.85-3.91 3.75V24h6.66l-1.06 6.94h-5.6V47.7C39.22 45.9 48 35.98 48 24z" />
                                 </svg>
                                 <span class="text-gray-900 font-medium">Facebook</span>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
 
@@ -291,38 +291,38 @@ watch(() => isLoginOpen.value, async (isOpen) => {
 // =====================================================================================
 // 4. FACEBOOK SIGN-IN LOGIN
 // =====================================================================================
-function loginWithFacebook() {
-    if (process.client && window.FB) {
-        window.FB.login(function (response) {
-            if (response.authResponse) {
-                // Kích hoạt overlay cho Facebook mượt mà
-                loadingText.value = 'Đang xác thực tài khoản Facebook...'
-                isLoading.value = true
-
-                const accessToken = response.authResponse.accessToken;
-                loginWithFacebookService(accessToken)
-                    .then((loginRes) => {
-                        if (loginRes.success) {
-                            showToast(`Xin chào ${loginRes.user?.name || ''}! Đăng nhập Facebook thành công.`, "success");
-                            setTimeout(() => { window.location.reload(); }, 300);
-                        } else {
-                            isLoading.value = false
-                            showToast(loginRes.message || "Đăng nhập Facebook thất bại!", "error");
-                        }
-                    })
-                    .catch((error) => {
-                        isLoading.value = false
-                        console.error(error);
-                        showToast("Đăng nhập bằng Facebook thất bại!", "error");
-                    });
-            } else {
-                showToast("Người dùng đã hủy hoặc không cấp quyền đăng nhập.", "error");
-            }
-        }, { scope: 'public_profile,email' });
-    } else {
-        showToast("Facebook SDK chưa sẵn sàng. Vui lòng thử lại sau!", "error");
-    }
-}
+// function loginWithFacebook() {
+//     if (process.client && window.FB) {
+//         window.FB.login(function (response) {
+//             if (response.authResponse) {
+//                 // Kích hoạt overlay cho Facebook mượt mà
+//                 loadingText.value = 'Đang xác thực tài khoản Facebook...'
+//                 isLoading.value = true
+// 
+//                 const accessToken = response.authResponse.accessToken;
+//                 loginWithFacebookService(accessToken)
+//                     .then((loginRes) => {
+//                         if (loginRes.success) {
+//                             showToast(`Xin chào ${loginRes.user?.name || ''}! Đăng nhập Facebook thành công.`, "success");
+//                             setTimeout(() => { window.location.reload(); }, 300);
+//                         } else {
+//                             isLoading.value = false
+//                             showToast(loginRes.message || "Đăng nhập Facebook thất bại!", "error");
+//                         }
+//                     })
+//                     .catch((error) => {
+//                         isLoading.value = false
+//                         console.error(error);
+//                         showToast("Đăng nhập bằng Facebook thất bại!", "error");
+//                     });
+//             } else {
+//                 showToast("Người dùng đã hủy hoặc không cấp quyền đăng nhập.", "error");
+//             }
+//         }, { scope: 'public_profile,email' });
+//     } else {
+//         showToast("Facebook SDK chưa sẵn sàng. Vui lòng thử lại sau!", "error");
+//     }
+// }
 
 defineExpose({ openModal, closeModal })
 </script>

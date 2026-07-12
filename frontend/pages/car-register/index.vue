@@ -72,7 +72,7 @@
                                     <label class="mb-1 block text-sm font-medium text-slate-700">
                                         Biển số xe
                                     </label>
-                                    <input type="text" v-model="licensePlate"
+                                    <input type="text" v-model="licensePlate" maxlength="12"
                                         placeholder="Nhập biển số xe (VD: 51H-123.45)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
                    focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                 </div>
@@ -83,7 +83,7 @@
                                         <label class="mb-1 block text-sm font-medium text-slate-700">
                                             Số khung (VIN)
                                         </label>
-                                        <input type="text" v-model="VIN"
+                                        <input type="text" v-model="VIN" maxlength="17"
                                             placeholder="Nhập số khung (VD: 1HGCR2F8XHA045239)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
                        focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                     </div>
@@ -92,7 +92,7 @@
                                         <label class="mb-1 block text-sm font-medium text-slate-700">
                                             Số máy
                                         </label>
-                                        <input type="text" v-model="engineNumber"
+                                        <input type="text" v-model="engineNumber" maxlength="100"
                                             placeholder="Nhập số máy (VD: K24W1-1234567)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
                        focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                     </div>
@@ -658,6 +658,37 @@ const onSubmit = async () => {
         activeStep.value = 1;
         return;
     }
+    licensePlate.value = licensePlate.value.trim().toUpperCase();
+    if (licensePlate.value.length > 12) {
+        showToast('Biển số xe không được vượt quá 12 ký tự.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+
+    if (!VIN.value) {
+        showToast('Vui lòng nhập số khung (VIN).', 'error');
+        activeStep.value = 1;
+        return;
+    }
+    VIN.value = VIN.value.trim().toUpperCase();
+    if (VIN.value.length !== 17) {
+        showToast('Số khung (VIN) phải gồm đúng 17 ký tự.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+
+    if (!engineNumber.value) {
+        showToast('Vui lòng nhập số máy.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+    engineNumber.value = engineNumber.value.trim().toUpperCase();
+    if (engineNumber.value.length > 100) {
+        showToast('Số máy không được vượt quá 100 ký tự.', 'error');
+        activeStep.value = 1;
+        return;
+    }
+
     if (!selectedBrandId.value) {
         showToast('Vui lòng chọn hãng xe.', 'error');
         activeStep.value = 1;
@@ -783,8 +814,19 @@ const onSubmit = async () => {
         }
     } catch (e: any) {
         console.error('Đăng ký xe thất bại:', e);
-        const errMsg = e.response?._data?.message || 'Có lỗi xảy ra khi kết nối máy chủ.';
-console.log(...formData); // here it show the output
+        let errMsg = 'Có lỗi xảy ra khi kết nối máy chủ.';
+        
+        const data = e.response?._data;
+        if (data) {
+            if (data.errors) {
+                const errorsList = Object.values(data.errors).flatMap((err: any) => err);
+                if (errorsList.length > 0) {
+                    errMsg = errorsList.join(' ');
+                }
+            } else if (data.message) {
+                errMsg = data.message;
+            }
+        }
         showToast(errMsg, 'error');
     } finally {
         submitting.value = false;
