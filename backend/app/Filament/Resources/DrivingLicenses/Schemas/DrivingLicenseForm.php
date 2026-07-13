@@ -10,6 +10,8 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
+use Filament\Actions\Action;
+use Filament\Schemas\Components\Actions;
 
 class DrivingLicenseForm
 {
@@ -32,14 +34,27 @@ class DrivingLicenseForm
                                                 fn($record) =>
                                                 $record?->image
                                                     ? new HtmlString(
-                                                        '<img src="' . e($record->image) . '"
-                                                             style="
-                                                                max-width:100%;
-                                                                max-height:350px;
-                                                                border-radius:12px;
-                                                                border:1px solid #ddd;
-                                                                box-shadow:0 2px 8px rgba(0,0,0,.1);
-                                                             ">'
+                                                        '<div style="
+                                                            width:100%;   
+                                                            min-height:420px;  
+                                                            display:flex;  
+                                                            justify-content:center;  
+                                                            align-items:center;   
+                                                            background:#f8fafc; 
+                                                            border:1px solid #e5e7eb;  
+                                                            border-radius:12px;
+                                                            padding:12px; 
+                                                        ">
+                                                            <img src="' . e($record->image) . '"      
+                                                            style="            
+                                                               max-width:100%;
+                                                               max-height:550px;
+                                                               width:auto;
+                                                               height:auto;
+                                                               object-fit:contain;
+                                                              border-radius:8px;     
+                                                            ">
+                                                        </div>'
                                                     )
                                                     : new HtmlString(
                                                         '<span class="text-gray-400 italic">
@@ -74,30 +89,48 @@ class DrivingLicenseForm
                                                 0 => new HtmlString('<span style="color:#ca8a04;">Chờ duyệt</span>'),
                                                 1 => new HtmlString('<span style="color:#16a34a;">Đã duyệt</span>'),
                                                 2 => new HtmlString('<span style="color:#dc2626;">Từ chối</span>'),
+                                                default => '-',
                                             }),
 
-                                        Select::make('status')
-                                            ->label('Duyệt GPLX')
-                                            ->options([
-                                                1 => 'Đã duyệt',
-                                                2 => 'Từ chối',
-                                            ])
-                                            ->visible(fn($record) => $record?->status == 0),
+                                        Actions::make([
+                                            Action::make('approve')
+                                                ->label('Duyệt')
+                                                ->icon('heroicon-o-check-circle')
+                                                ->color('success')
+                                                // ->requiresConfirmation()
+                                                ->action(function ($record) {
+                                                    $record->update([
+                                                        'status' => 1,
+                                                    ]);
+                                                }),
+
+                                            Action::make('reject')
+                                                ->label('Từ chối')
+                                                ->icon('heroicon-o-x-circle')
+                                                ->color('danger')
+                                                // ->requiresConfirmation()
+                                                ->action(function ($record) {
+                                                    $record->update([
+                                                        'status' => 2,
+                                                    ]);
+                                                }),
+                                        ])
+                                            ->visible(fn($record) => $record?->status == 0)
                                     ]),
 
                                 Section::make('Thông tin tài khoản')
                                     ->schema([
                                         Placeholder::make('account_name')
                                             ->label('Tên người dùng')
-                                            ->content(fn ($record) => $record?->user?->name ?? 'Không tìm thấy'),
+                                            ->content(fn($record) => $record?->user?->name ?? 'Không tìm thấy'),
 
                                         Placeholder::make('account_email')
                                             ->label('Email')
-                                            ->content(fn ($record) => $record?->user?->email ?? 'Không tìm thấy'),
+                                            ->content(fn($record) => $record?->user?->email ?? 'Không tìm thấy'),
 
                                         Placeholder::make('account_phone')
                                             ->label('Số điện thoại')
-                                            ->content(fn ($record) => $record?->user?->phone ?? 'Chưa cập nhật'),
+                                            ->content(fn($record) => $record?->user?->phone ?? 'Chưa cập nhật'),
 
                                         Placeholder::make('account_action')
                                             ->label('')
@@ -129,7 +162,7 @@ class DrivingLicenseForm
                                                     </a>
                                                 ');
                                             })
-                                            ->visible(fn ($record) => (bool) ($record?->user)),
+                                            ->visible(fn($record) => (bool) ($record?->user)),
                                     ]),
                             ]),
                     ]),
