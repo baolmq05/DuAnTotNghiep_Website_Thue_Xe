@@ -844,8 +844,15 @@ const submitCompletion = async () => {
 
   completing.value = true;
   try {
+    const urls = await imageUploadRef.value.upload();
+    if (urls.length === 0) {
+      showToast('Vui lòng tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.', 'error');
+      completing.value = false;
+      return;
+    }
+
     const res = await carService.completeTrip(selectedTripForComplete.value.id, {
-      images: uploadedImages.value,
+      images: urls,
     });
     if (res && res.success) {
       showToast('Hoàn thành chuyến đi thành công!', 'success');
