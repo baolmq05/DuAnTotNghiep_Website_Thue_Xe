@@ -1125,11 +1125,6 @@ const handleStartTrip = async () => {
   }
 }
 
-const afterTripImages = computed(() => {
-  if (!trip.value || !trip.value.images) return []
-  return trip.value.images.filter((img: any) => img.type === 1).map((img: any) => img.image_url)
-})
-
 const renterReview = computed(() => {
   if (!trip.value || !trip.value.reviews) return null;
   return trip.value.reviews.find((r: any) => r.review_type === 1);
