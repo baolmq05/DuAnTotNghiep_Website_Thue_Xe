@@ -301,31 +301,44 @@
           Trạng thái & Hình ảnh xe
         </h3>
 
-        <!-- CASE 1: Trip is Confirmed (status = 2) - Allow uploading and starting -->
+        <!-- CASE 1: Trip is Confirmed (status = 2) - Allow uploading and starting (Owner only) or show message (Renter) -->
         <div v-if="trip.status === 2" class="space-y-4">
-          <p class="text-xs text-slate-500 leading-relaxed">
-            Vui lòng chụp và tải lên hình ảnh hiện trạng của xe trước khi khởi hành. Đây là cơ sở để đối chiếu khi bàn
-            giao lại xe.
-          </p>
+          <!-- If owner of the car -->
+          <div v-if="isOwner" class="space-y-4 animate-fade-in">
+            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe trước khi bàn bàn giao xe cho khách thuê và khởi hành. Đây là cơ sở để đối chiếu khi nhận lại xe.
+            </p>
 
-          <!-- Premium Cloud ImageUpload Component -->
-          <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
+            <!-- Premium Cloud ImageUpload Component -->
+            <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
 
-          <!-- Start Trip Button -->
-          <button @click="handleStartTrip" :disabled="uploadedImages.length === 0 || uploading"
-            class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
-            :class="uploadedImages.length > 0 && !uploading
-              ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
-              : 'bg-slate-300 shadow-none cursor-not-allowed'">
-            <span v-if="uploading" class="flex items-center gap-1.5">
-              <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
-              Đang khởi hành...
-            </span>
-            <span v-else class="flex items-center gap-1.5">
-              <Icon name="lucide:play" class="w-4 h-4" />
-              Bắt đầu chuyến đi
-            </span>
-          </button>
+            <!-- Start Trip Button -->
+            <button @click="handleStartTrip" :disabled="uploadedImages.length === 0 || uploading"
+              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
+              :class="uploadedImages.length > 0 && !uploading
+                ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
+                : 'bg-slate-300 shadow-none cursor-not-allowed'">
+              <span v-if="uploading" class="flex items-center gap-1.5">
+                <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                Đang khởi hành...
+              </span>
+              <span v-else class="flex items-center gap-1.5">
+                <Icon name="lucide:play" class="w-4 h-4" />
+                Xác nhận bắt đầu chuyến đi
+              </span>
+            </button>
+          </div>
+
+          <!-- If renter of the car -->
+          <div v-else class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5 animate-fade-in">
+            <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-sky-600" />
+            <div class="leading-relaxed">
+              <p class="font-bold">Đang chờ chủ xe bàn giao xe và bắt đầu chuyến đi</p>
+              <p class="mt-0.5 font-medium opacity-90">
+                Chủ xe sẽ kiểm tra hiện trạng xe và chụp ảnh tải lên hệ thống trước khi bắt đầu chuyến đi của bạn. Vui lòng liên hệ với chủ xe nếu cần thêm thông tin.
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4), Waiting Extension (status = 7) or Waiting Return (status = 8) - Display uploaded photos -->

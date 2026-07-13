@@ -291,6 +291,18 @@
           </button>
         </div>
 
+        <!-- Start Trip Action button for Confirmed trips -->
+        <div v-else-if="trip.status === TripStatus.Confirmed" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
+          <button @click="openStartTripModal(trip)"
+            class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/15 transform cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="5 3 19 12 5 21 5 3"></polygon>
+            </svg>
+            Bắt đầu chuyến đi
+          </button>
+        </div>
+
         <!-- Action button for other statuses -->
         <div v-else class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
           <button @click="navigateTo('/trips/' + trip.id)"
@@ -367,6 +379,63 @@
             <button @click="submitRejection"
               class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-rose-500/20">
               Xác nhận từ chối
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Start Trip Modal -->
+    <Transition name="fade">
+      <div v-if="showStartModal"
+        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div
+          class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+                <polygon points="5 3 19 12 5 21 5 3"></polygon>
+              </svg>
+              Bắt đầu chuyến đi
+            </h3>
+            <button @click="closeStartModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="text-slate-400">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body Description -->
+          <div v-if="selectedTripForStart" class="space-y-3">
+            <p class="text-xs text-slate-500 leading-relaxed font-medium">
+              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe <span class="font-bold text-slate-800">{{ selectedTripForStart.car.name }}</span> trước khi bàn giao cho khách hàng <span class="font-bold text-slate-800">{{ selectedTripForStart.renter.name }}</span>. Đây là cơ sở đối chiếu tình trạng xe khi hoàn thành chuyến đi.
+            </p>
+
+            <!-- ImageUpload component -->
+            <ImageUpload ref="startTripImageUploadRef" v-model="startTripUploadedImages" :max-files="5" />
+          </div>
+
+          <!-- Footer Actions -->
+          <div class="flex gap-3 pt-2">
+            <button @click="closeStartModal"
+              class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl">
+              Hủy
+            </button>
+            <button @click="submitStartTrip"
+              :disabled="startTripUploadedImages.length === 0 || starting"
+              class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-350 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
+              <span v-if="starting" class="flex items-center gap-1.5">
+                <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Đang xử lý...
+              </span>
+              <span v-else>Xác nhận bắt đầu</span>
             </button>
           </div>
         </div>
@@ -814,6 +883,59 @@ const selectedTripForComplete = ref<any | null>(null);
 const completing = ref(false);
 const uploadedImages = ref<string[]>([]);
 const imageUploadRef = ref<any>(null);
+
+// Start Trip State
+const showStartModal = ref(false);
+const selectedTripForStart = ref<any | null>(null);
+const starting = ref(false);
+const startTripUploadedImages = ref<string[]>([]);
+const startTripImageUploadRef = ref<any>(null);
+
+const openStartTripModal = (trip: any) => {
+  selectedTripForStart.value = trip;
+  startTripUploadedImages.value = [];
+  starting.value = false;
+  showStartModal.value = true;
+};
+
+const closeStartModal = () => {
+  showStartModal.value = false;
+  selectedTripForStart.value = null;
+  startTripUploadedImages.value = [];
+};
+
+const submitStartTrip = async () => {
+  if (startTripUploadedImages.value.length === 0) {
+    showToast('Vui lòng tải lên ít nhất 1 ảnh xe trước khi bắt đầu chuyến đi.', 'error');
+    return;
+  }
+  if (!selectedTripForStart.value) return;
+
+  starting.value = true;
+  try {
+    const urls = await startTripImageUploadRef.value.upload();
+    if (urls.length === 0) {
+      showToast('Vui lòng tải lên ít nhất 1 ảnh xe để bắt đầu.', 'error');
+      starting.value = false;
+      return;
+    }
+    const res = await carService.startTrip(selectedTripForStart.value.id, {
+      images: urls,
+    });
+    if (res && res.success) {
+      showToast('Khởi hành chuyến đi thành công!', 'success');
+      closeStartModal();
+      await loadOwnerTrips();
+    } else {
+      showToast(res.message || 'Lỗi khi bắt đầu chuyến đi.', 'error');
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi bắt đầu chuyến đi:', err);
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi bắt đầu chuyến đi.', 'error');
+  } finally {
+    starting.value = false;
+  }
+};
 
 // Owner Review State
 const showReviewModal = ref(false);
