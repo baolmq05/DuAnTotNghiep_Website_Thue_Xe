@@ -61,6 +61,8 @@ class TripsTable
                         TripStatus::Ongoing->value => 'primary',
                         TripStatus::Complete->value => 'success',
                         TripStatus::UserCancel->value, TripStatus::OwnerCancel->value => 'danger',
+                        TripStatus::WaitingExtension->value => 'info',
+                        TripStatus::WaitingReturn->value => 'warning',
                         default => 'gray',
                     })
                     ->badge()
@@ -101,6 +103,8 @@ class TripsTable
                         TripStatus::Complete->value => 'Đã hoàn thành',
                         TripStatus::UserCancel->value => 'Người dùng hủy',
                         TripStatus::OwnerCancel->value => 'Chủ xe hủy',
+                        TripStatus::WaitingExtension->value => 'Chờ gia hạn',
+                        TripStatus::WaitingReturn->value => 'Chờ trả xe',
                     ]),
                 SelectFilter::make('trip_type')
                     ->label('Loại thuê')

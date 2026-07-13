@@ -6,6 +6,8 @@ export enum TripStatus {
   Complete = 4,
   UserCancel = 5,
   OwnerCancel = 6,
+  WaitingExtension = 7,
+  WaitingReturn = 8,
 }
 
 export const TripStatusLabel: Record<TripStatus, string> = {
@@ -16,6 +18,8 @@ export const TripStatusLabel: Record<TripStatus, string> = {
   [TripStatus.Complete]: 'Đã hoàn thành',
   [TripStatus.UserCancel]: 'Người dùng hủy',
   [TripStatus.OwnerCancel]: 'Chủ xe hủy',
+  [TripStatus.WaitingExtension]: 'Chờ gia hạn',
+  [TripStatus.WaitingReturn]: 'Chờ trả xe',
 };
 
 export const TripStatusBadgeClass: Record<TripStatus, string> = {
@@ -26,6 +30,8 @@ export const TripStatusBadgeClass: Record<TripStatus, string> = {
   [TripStatus.Complete]: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
   [TripStatus.UserCancel]: 'bg-rose-50 text-rose-500 border border-rose-100',
   [TripStatus.OwnerCancel]: 'bg-rose-50 text-rose-500 border border-rose-100',
+  [TripStatus.WaitingExtension]: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
+  [TripStatus.WaitingReturn]: 'bg-sky-50 text-sky-600 border border-sky-200',
 };
 
 export const TripStatusOptions = [
@@ -36,4 +42,6 @@ export const TripStatusOptions = [
   { value: TripStatus.Complete, label: TripStatusLabel[TripStatus.Complete] },
   { value: TripStatus.UserCancel, label: TripStatusLabel[TripStatus.UserCancel] },
   { value: TripStatus.OwnerCancel, label: TripStatusLabel[TripStatus.OwnerCancel] },
+  { value: TripStatus.WaitingExtension, label: TripStatusLabel[TripStatus.WaitingExtension] },
+  { value: TripStatus.WaitingReturn, label: TripStatusLabel[TripStatus.WaitingReturn] },
 ] as const;

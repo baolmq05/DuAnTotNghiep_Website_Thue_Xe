@@ -63,7 +63,10 @@
           <!-- Car details & Image -->
           <div class="flex gap-4 items-start pb-4 border-b border-slate-100">
             <!-- Thumbnail Image -->
-            <div class="relative w-36 h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-100 bg-slate-50">
+            <div 
+              @click="navigateTo('/trips/' + trip.id)"
+              class="relative w-36 h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-100 bg-slate-50 cursor-pointer"
+            >
               <img :src="trip.car.image" :alt="trip.car.name"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <span
@@ -91,7 +94,9 @@
                 </span>
               </div>
               <h3
-                class="font-extrabold text-base text-slate-800 mt-2 line-clamp-1 group-hover:text-[#1e4e57] transition-colors">
+                @click="navigateTo('/trips/' + trip.id)"
+                class="font-extrabold text-base text-slate-800 mt-2 line-clamp-1 group-hover:text-[#1e4e57] transition-colors cursor-pointer"
+              >
                 {{ trip.car.name }}
               </h3>
               <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
@@ -242,12 +247,13 @@
             Đồng ý gia hạn
           </button>
         </div>
+        
         <div v-else-if="trip.latest_extension?.status === 2 || (trip.status === TripStatus.WaitingExtension && trip.latest_extension?.status === 2)" class="p-4 border-t border-slate-100 bg-amber-50/60 text-center text-xs font-bold text-amber-800">
           Chủ xe đã đồng ý gia hạn - Đang chờ khách hàng thanh toán
         </div>
 
-        <!-- Complete Action button for Ongoing trips -->
-        <div v-else-if="trip.status === TripStatus.Ongoing" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
+        <!-- Complete Action button for WaitingReturn trips -->
+        <div v-else-if="trip.status === TripStatus.WaitingReturn" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
           <button @click="openCompleteTripModal(trip)"
             class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/15 transform cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -282,6 +288,19 @@
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
             </svg>
             Đánh giá khách thuê
+          </button>
+        </div>
+
+        <!-- Action button for other statuses -->
+        <div v-else class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+          <button @click="navigateTo('/trips/' + trip.id)"
+            class="flex-1 py-3 px-4 bg-[#1e4e57] hover:bg-[#163a41] active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-[#1e4e57]/15 transform cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+              <circle cx="12" cy="12" r="3"></circle>
+            </svg>
+            Xem chi tiết chuyến đi
           </button>
         </div>
       </div>
@@ -513,7 +532,7 @@ const chatService = new ChatService();
 const { showToast } = useToast();
 const loading = ref(true);
 const ownerTrips = ref<any[]>([]);
-const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'waiting_extension' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
+const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'waiting_extension' | 'waiting_return' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
 
 // Modal States
 const showRejectModal = ref(false);
@@ -547,6 +566,11 @@ const filterTabs = computed(() => {
       value: 'waiting_extension' as const,
       label: 'Chờ gia hạn',
       count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension || (t.latest_extension && (t.latest_extension.status === 1 || t.latest_extension.status === 2))).length,
+    },
+    {
+      value: 'waiting_return' as const,
+      label: 'Chờ trả xe',
+      count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingReturn).length,
     },
     {
       value: 'completed' as const,
@@ -620,6 +644,8 @@ const filteredTrips = computed(() => {
     return ownerTrips.value.filter(t => t.status === TripStatus.Ongoing);
   } else if (activeFilter.value === 'waiting_extension') {
     return ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension || (t.latest_extension && (t.latest_extension.status === 1 || t.latest_extension.status === 2)));
+  } else if (activeFilter.value === 'waiting_return') {
+    return ownerTrips.value.filter(t => t.status === TripStatus.WaitingReturn);
   } else if (activeFilter.value === 'completed') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Complete);
   } else if (activeFilter.value === 'cancelled_renter') {

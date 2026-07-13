@@ -131,6 +131,9 @@ class TripController extends Controller
             ], 401);
         }
 
+        // Tự động quét và cập nhật các chuyến đi hết giờ
+        $this->autoUpdateExpiredTrips();
+
         // Chuyến đã đặt (Renter)
         $bookedTrips = Trip::where('user_id', $user->id)
             ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'reviews.reviewer', 'extensions', 'latestExtension'])
@@ -278,6 +281,9 @@ class TripController extends Controller
             ], 401);
         }
 
+        // Tự động quét và cập nhật các chuyến đi hết giờ
+        $this->autoUpdateExpiredTrips();
+
         $trip = Trip::with([
             'car.carLocation',
             'car.images',
@@ -346,7 +352,7 @@ class TripController extends Controller
         if ($trip->status !== TripStatus::Confirmed->value) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chuyến đi không ở trạng thái Đã xác nhận để bắt đầu.'
+                'message' => 'Chuyến đi không ở trạng thái Đang xác nhận để bắt đầu.'
             ], 400);
         }
 
@@ -748,8 +754,66 @@ class TripController extends Controller
         ]);
     }
 
+    private function autoUpdateExpiredTrips()
+    {
+        Trip::where('status', TripStatus::Ongoing->value)
+            ->where('end_at', '<', now())
+            ->update(['status' => TripStatus::WaitingReturn->value]);
+    }
+
     /**
-     * API Hoàn thành chuyến đi
+     * API Khách thuê bấm trả xe (Trả xe sớm)
+     * POST /api/trips/{id}/return-request
+     */
+    public function requestReturn($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with('car')->find($id);
+        if (!$trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin chuyến đi.'
+            ], 404);
+        }
+
+        if ($trip->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thực hiện hành động này.'
+            ], 403);
+        }
+
+        if ($trip->status !== TripStatus::Ongoing->value) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Chuyến đi không ở trạng thái Đang diễn ra.'
+            ], 400);
+        }
+
+        $trip->update(['status' => TripStatus::WaitingReturn->value]);
+
+        \App\Models\Notification::create([
+            'user_id' => $trip->car->user_id,
+            'message' => "Khách hàng {$user->name} đã yêu cầu trả xe sớm cho chuyến đi #{$trip->id} (xe {$trip->car->name}). Vui lòng xác nhận hoàn thành chuyến xe.",
+            'is_read' => '0',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Gửi yêu cầu trả xe thành công!',
+            'data' => $trip
+        ]);
+    }
+
+    /**
+     * API Chủ xe xác nhận hoàn thành chuyến xe (upload ảnh sau chuyến đi & đổi trạng thái sang 4 - Complete)
      * POST /api/trips/{id}/complete
      */
     public function completeTrip(Request $request, $id)
@@ -770,29 +834,26 @@ class TripController extends Controller
             ], 404);
         }
 
-        // Kiểm tra quyền: renter hoặc owner
-        if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+        if ($trip->car->user_id !== $user->id) {
             return response()->json([
                 'success' => false,
                 'message' => 'Bạn không có quyền thực hiện hành động này.'
             ], 403);
         }
 
-        // Trạng thái chuyến đi phải là Ongoing (3) hoặc WaitingExtension (7)
-        if ($trip->status !== TripStatus::Ongoing->value && $trip->status !== TripStatus::WaitingExtension->value) {
+        if ($trip->status !== TripStatus::WaitingReturn->value) {
             return response()->json([
                 'success' => false,
-                'message' => 'Chuyến đi không ở trạng thái Đang diễn ra để hoàn thành.'
+                'message' => 'Chuyến đi không ở trạng thái Chờ trả xe để hoàn thành.'
             ], 400);
         }
 
-        // Xác thực ảnh tải lên từ cloud
         $validator = Validator::make($request->all(), [
             'images' => 'required|array|min:1',
             'images.*' => 'required|string|url',
         ], [
-            'images.required' => 'Bạn phải tải lên ít nhất 1 ảnh xe khi trả xe.',
-            'images.min' => 'Bạn phải tải lên ít nhất 1 ảnh xe khi trả xe.',
+            'images.required' => 'Bạn phải tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.',
+            'images.min' => 'Bạn phải tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.',
             'images.*.url' => 'Đường dẫn hình ảnh không hợp lệ.',
         ]);
 
@@ -808,33 +869,29 @@ class TripController extends Controller
             \Illuminate\Support\Facades\DB::beginTransaction();
 
             $imageUrls = $request->input('images');
-            foreach ($imageUrls as $index => $url) {
-                // Lưu vào bảng trip_images
+            foreach ($imageUrls as $url) {
                 \App\Models\TripImage::create([
                     'trip_id' => $trip->id,
                     'image_url' => $url,
-                    'type' => 1, // Sau chuyến đi
+                    'type' => 1,
                     'is_thumbnail' => 0,
                 ]);
             }
 
-            // Cập nhật trạng thái chuyến đi thành Complete (4)
             $trip->update(['status' => TripStatus::Complete->value]);
 
-            \Illuminate\Support\Facades\DB::commit();
-
-            // Tạo thông báo cho bên còn lại
-            $notifyUser = $trip->user_id === $user->id ? $trip->car->user_id : $trip->user_id;
             \App\Models\Notification::create([
-                'user_id' => $notifyUser,
-                'message' => "Chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã hoàn thành. Hãy để lại đánh giá của bạn!",
+                'user_id' => $trip->user_id,
+                'message' => "Chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã được chủ xe xác nhận hoàn thành.",
                 'is_read' => '0',
             ]);
+
+            \Illuminate\Support\Facades\DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Hoàn thành chuyến đi thành công!',
-                'data' => $trip->load(['car', 'images', 'reviews.reviewer'])
+                'data' => $trip->load(['car', 'images'])
             ]);
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\DB::rollBack();
@@ -960,4 +1017,3 @@ class TripController extends Controller
         }
     }
 }
-

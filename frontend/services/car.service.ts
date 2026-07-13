@@ -331,6 +331,16 @@ export class CarService extends BaseService {
     }
 
     /**
+     * Khách thuê yêu cầu trả xe sớm
+     */
+    async requestReturn(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/return-request`, {
+            method: "POST",
+            useAuth: true,
+        });
+    }
+
+    /**
      * Hoàn thành chuyến đi (tải ảnh trả xe và đổi trạng thái)
      */
     async completeTrip(id: number | string, payload: { images: string[] }): Promise<{ success: boolean; message: string; data: any }> {

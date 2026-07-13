@@ -27,6 +27,8 @@ class StatusDoughnutChart extends ChartWidget
                         Trip::where('status', TripStatus::Complete->value)->count(),
                         Trip::where('status', TripStatus::UserCancel->value)->count(),
                         Trip::where('status', TripStatus::OwnerCancel->value)->count(),
+                        Trip::where('status', TripStatus::WaitingExtension->value)->count(),
+                        Trip::where('status', TripStatus::WaitingReturn->value)->count(),
                     ],
                     'backgroundColor' => [
                         '#f59e0b', // Pending (Chờ duyệt)
@@ -36,10 +38,12 @@ class StatusDoughnutChart extends ChartWidget
                         '#3b82f6', // Complete (Đã hoàn thành)
                         '#ef4444', // UserCancel (Người dùng hủy)
                         '#ec4899', // OwnerCancel (Chủ xe hủy)
+                        '#6366f1', // WaitingExtension (Chờ gia hạn)
+                        '#06b6d4', // WaitingReturn (Chờ trả xe)
                     ],
                 ],
             ],
-            'labels' => ['Chờ duyệt', 'Chờ thanh toán', 'Đã xác nhận', 'Đang diễn ra', 'Đã hoàn thành', 'Người dùng hủy', 'Chủ xe hủy'],
+            'labels' => ['Chờ duyệt', 'Chờ thanh toán', 'Đã xác nhận', 'Đang diễn ra', 'Đã hoàn thành', 'Người dùng hủy', 'Chủ xe hủy', 'Chờ gia hạn', 'Chờ trả xe'],
         ];
     }
 

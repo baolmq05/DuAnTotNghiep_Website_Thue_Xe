@@ -4,8 +4,15 @@
 
       <!-- Back Button & Breadcrumbs -->
       <div class="mb-6 flex items-center justify-between">
+<<<<<<< HEAD
         <button @click="navigateTo('/profile/my-trips')"
           class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#1e4e57] transition-colors bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+=======
+        <button 
+          @click="handleBack" 
+          class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#1e4e57] transition-colors bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"
+        >
+>>>>>>> 50bbbd1 ([Feature] Complete Trip)
           <Icon name="lucide:arrow-left" class="w-4 h-4" />
           Quay lại danh sách
         </button>
@@ -326,8 +333,13 @@
           </button>
         </div>
 
+<<<<<<< HEAD
         <!-- CASE 2: Trip is Ongoing (status = 3) or Completed (status = 4) - Display uploaded photos -->
         <div v-else-if="trip.status === 3 || trip.status === 4" class="space-y-4">
+=======
+        <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4), Waiting Extension (status = 7) or Waiting Return (status = 8) - Display uploaded photos -->
+        <div v-else-if="trip.status === 3 || trip.status === 4 || trip.status === 7 || trip.status === 8" class="space-y-4">
+>>>>>>> 50bbbd1 ([Feature] Complete Trip)
           <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
             <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
             Ảnh xe trước chuyến đi đã tải lên
@@ -352,11 +364,19 @@
             Không tìm thấy ảnh xe trước chuyến đi
           </div>
 
+<<<<<<< HEAD
           <!-- After Trip Images (only for Completed status) -->
           <div v-if="trip.status === 4" class="pt-4 border-t border-slate-100 space-y-4">
             <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
               <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
               Ảnh xe khi trả xe đã tải lên
+=======
+          <!-- Display after trip photos if completed or available -->
+          <div v-if="trip.status === 4 || afterTripImages.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
+            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
+              <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
+              Ảnh xe sau chuyến đi đã tải lên
+>>>>>>> 50bbbd1 ([Feature] Complete Trip)
             </p>
             
             <div v-if="afterTripImages.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -373,7 +393,11 @@
               </div>
             </div>
             <div v-else class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-medium">
+<<<<<<< HEAD
               Không tìm thấy ảnh xe khi trả xe
+=======
+              Không tìm thấy ảnh xe sau chuyến đi
+>>>>>>> 50bbbd1 ([Feature] Complete Trip)
             </div>
           </div>
 
@@ -391,6 +415,7 @@
                 </p>
               </div>
             </div>
+<<<<<<< HEAD
 
             <!-- SONG SONG: Box thông tin trạng thái gia hạn -->
             <!-- Trạng thái 2: Chủ xe đã đồng ý, chờ khách thanh toán -->
@@ -483,6 +508,59 @@
                 <p class="mt-0.5 font-medium opacity-90">
                   Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! Chuyến đi đã được hoàn thành thành công.
                 </p>
+=======
+            
+            <div v-if="!isOwner" class="flex flex-col sm:flex-row gap-3">
+              <button 
+                @click="openExtensionModal" 
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5"
+              >
+                <Icon name="lucide:calendar-plus" class="w-4 h-4" />
+                Gia hạn chuyến đi
+              </button>
+
+              <button 
+                @click="handleReturnRequest" 
+                :disabled="returningTrip"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center justify-center gap-1.5"
+              >
+                <span v-if="returningTrip" class="flex items-center gap-1.5">
+                  <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                  Đang xử lý...
+                </span>
+                <span v-else class="flex items-center gap-1.5">
+                  <Icon name="lucide:log-out" class="w-4 h-4" />
+                  Trả xe
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Trip is completed (status = 4) -->
+          <div v-else-if="trip.status === 4" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex items-start gap-2.5">
+            <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
+            <div class="leading-relaxed">
+              <p class="font-bold">Chuyến đi đã kết thúc</p>
+              <p class="mt-0.5 font-medium opacity-90">
+                Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi! Chuyến đi đã được hoàn thành thành công.
+              </p>
+            </div>
+          </div>
+
+          <!-- Trip is waiting for extension approval (status = 7) -->
+          <div v-else-if="trip.status === 7" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex items-start gap-2.5">
+            <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-650" />
+            <div class="leading-relaxed flex-grow">
+              <p class="font-bold">Đang chờ chủ xe duyệt gia hạn</p>
+              <p class="mt-0.5 font-medium opacity-90">
+                Yêu cầu gia hạn thêm ngày đang chờ chủ xe phê duyệt.
+              </p>
+              <div v-if="trip.extended_end_at" class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
+                <div>
+                  <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề xuất:</span>
+                  <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.extended_end_at) }}</span>
+                </div>
+>>>>>>> 50bbbd1 ([Feature] Complete Trip)
               </div>
             </div>
 
@@ -512,6 +590,55 @@
                 <Icon name="lucide:star" class="w-4 h-4" />
                 Đánh giá chủ xe & chuyến đi
               </button>
+            </div>
+          </div>
+
+          <!-- Trip is waiting for return (status = 8) -->
+          <div v-else-if="trip.status === 8" class="space-y-4">
+            <!-- If owner of the car -->
+            <div v-if="isOwner" class="space-y-4">
+              <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
+                <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-sky-600" />
+                <div class="leading-relaxed">
+                  <p class="font-bold">Đang chờ bạn xác nhận hoàn thành và nhận lại xe</p>
+                  <p class="mt-0.5 font-medium opacity-90">
+                    Vui lòng chụp và tải lên hình ảnh hiện trạng của xe sau khi nhận lại xe, sau đó bấm Xác nhận hoàn thành chuyến xe.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Premium Cloud ImageUpload Component for Post-trip -->
+              <ImageUpload ref="postTripImageUploadRef" v-model="postTripUploadedImages" :max-files="5" />
+
+              <!-- Complete Trip Button -->
+              <button 
+                @click="handleCompleteTrip" 
+                :disabled="postTripUploadedImages.length === 0 || completingTrip"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
+                :class="postTripUploadedImages.length > 0 && !completingTrip 
+                  ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer' 
+                  : 'bg-slate-300 shadow-none cursor-not-allowed'"
+              >
+                <span v-if="completingTrip" class="flex items-center gap-1.5">
+                  <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                  Đang xử lý hoàn thành...
+                </span>
+                <span v-else class="flex items-center gap-1.5">
+                  <Icon name="lucide:check" class="w-4 h-4" />
+                  Xác nhận hoàn thành chuyến xe
+                </span>
+              </button>
+            </div>
+
+            <!-- If renter of the car -->
+            <div v-else class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
+              <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-sky-650" />
+              <div class="leading-relaxed flex-grow">
+                <p class="font-bold">Đang chờ chủ xe xác nhận trả xe</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Chuyến đi đã kết thúc. Vui lòng chờ chủ xe kiểm tra hiện trạng xe và bấm xác nhận hoàn thành chuyến xe.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -757,6 +884,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { carService } from '~/services/car.service'
 import { useToast } from '~/composables/useToast'
 import { TripStatusLabel, TripStatusBadgeClass } from '~/config/trip-status'
+import { useAuth } from '~/composables/useAuth'
 import ImageUpload from '~/components/ImageUpload/ImageUpload.vue'
 import { useVNPay } from '~/composables/useVNPay'
 import { useZaloPay } from '~/composables/useZaloPay'
@@ -770,11 +898,31 @@ const router = useRouter()
 const { showToast } = useToast()
 const { initiatePayment: callVNPay } = useVNPay()
 const { initiatePayment: callZaloPay } = useZaloPay()
+const { user } = useAuth()
 
 const trip = ref<any>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const uploading = ref(false)
+
+const isOwner = computed(() => {
+  if (!user.value || !trip.value || !trip.value.car) return false
+  return user.value.id === trip.value.car.user_id
+})
+
+const handleBack = () => {
+  if (isOwner.value) {
+    navigateTo('/my-cars/bookings')
+  } else {
+    navigateTo('/profile/my-trips')
+  }
+}
+
+// Complete / Return Trip States
+const postTripUploadedImages = ref<string[]>([])
+const postTripImageUploadRef = ref<any>(null)
+const completingTrip = ref(false)
+const returningTrip = ref(false)
 
 // Cloudinary Multiple ImageUpload Component Refs
 const uploadedImages = ref<string[]>([])
@@ -936,6 +1084,12 @@ const openImageModal = (url: string) => {
 const beforeTripImages = computed(() => {
   if (!trip.value || !trip.value.images) return []
   return trip.value.images.filter((img: any) => img.type === 0).map((img: any) => img.image_url)
+})
+
+// Retrieve the photos taken after trip (type = 1)
+const afterTripImages = computed(() => {
+  if (!trip.value || !trip.value.images) return []
+  return trip.value.images.filter((img: any) => img.type === 1).map((img: any) => img.image_url)
 })
 
 const fuelTypeLabel = computed(() => {
@@ -1138,6 +1292,63 @@ const submitTripReview = async () => {
     showToast(err.response?._data?.message || 'Có lỗi xảy ra khi gửi đánh giá.', 'error')
   } finally {
     submittingReview.value = false
+  }
+}
+
+// Return Trip Early Request
+const handleReturnRequest = async () => {
+  if (!confirm('Bạn có chắc chắn muốn trả xe sớm?')) return
+
+  returningTrip.value = true
+  try {
+    const tripId = route.params.id as string
+    const res = await carService.requestReturn(tripId)
+    if (res && res.success) {
+      showToast('Gửi yêu cầu trả xe thành công!', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Gửi yêu cầu trả xe thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi gửi yêu cầu trả xe:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi gửi yêu cầu trả xe.', 'error')
+  } finally {
+    returningTrip.value = false
+  }
+}
+
+// Owner Confirms Complete Trip
+const handleCompleteTrip = async () => {
+  if (postTripUploadedImages.value.length === 0) {
+    showToast('Vui lòng tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.', 'error')
+    return
+  }
+
+  completingTrip.value = true
+
+  try {
+    const urls = await postTripImageUploadRef.value.upload()
+    if (urls.length === 0) {
+      showToast('Vui lòng tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.', 'error')
+      completingTrip.value = false
+      return
+    }
+
+    const tripId = route.params.id as string
+    const res = await carService.completeTrip(tripId, { images: urls })
+    if (res && res.success) {
+      showToast('Đã hoàn thành chuyến đi thành công!', 'success')
+      postTripUploadedImages.value = []
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Hoàn thành chuyến đi thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi hoàn thành chuyến đi:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi hoàn thành chuyến đi.', 'error')
+  } finally {
+    completingTrip.value = false
+  }
   }
 }
 </script>
