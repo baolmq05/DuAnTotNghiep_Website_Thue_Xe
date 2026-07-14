@@ -92,6 +92,26 @@ export const useAuth = () => {
     }
   };
 
+  const refreshProfile = async () => {
+    try {
+      const authService = await getAuthService();
+      const res: any = await authService.getProfileApi();
+      const latestUser = res?.user ?? (res?.id ? res : null);
+      if (latestUser) {
+        user.value = latestUser;
+        if (typeof window !== "undefined") {
+          localStorage.setItem("USER_INFO", JSON.stringify(latestUser));
+        }
+        return { success: true, user: latestUser };
+      }
+      return { success: false, message: "Không thể làm mới thông tin người dùng." };
+    } catch (err: any) {
+      console.error(err);
+      const errMsg = err.response?._data?.message || "Không thể làm mới thông tin người dùng.";
+      return { success: false, message: errMsg };
+    }
+  };
+
   const changePassword = async (passwordData: any) => {
     try {
       const authService = await getAuthService();
@@ -180,6 +200,7 @@ export const useAuth = () => {
     register,
     updateProfile,
     submitDrivingLicense,
+    refreshProfile,
     changePassword,
     logout,
     loginWithGoogle,

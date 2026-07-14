@@ -388,7 +388,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue'
 // import { myCarService, type Car } from '~/services/my_car.service'
-import { authService } from '~/services/auth.service'
 import { BASE_URL } from '~/enviroment/enviroment'
 
 definePageMeta({
@@ -401,7 +400,7 @@ useHead({
   ]
 })
 
-const { user, updateProfile, submitDrivingLicense } = useAuth()
+const { user, updateProfile, submitDrivingLicense, refreshProfile } = useAuth()
 const { showToast } = useToast()
 
 const isEditModalOpen = ref(false)
@@ -602,13 +601,7 @@ onMounted(async () => {
 
   // Lấy dữ liệu mới nhất từ server để đồng bộ trạng thái duyệt bằng lái
   try {
-    const freshUser = await authService.getProfileApi()
-    if (freshUser) {
-      user.value = freshUser
-      if (typeof window !== "undefined") {
-        localStorage.setItem("USER_INFO", JSON.stringify(freshUser))
-      }
-    }
+    await refreshProfile()
   } catch (err) {
     console.error('Không thể cập nhật thông tin tài khoản mới nhất từ server:', err)
   }

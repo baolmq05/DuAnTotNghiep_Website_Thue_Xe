@@ -35,9 +35,9 @@
               </div>
             </div>
             <div class="flex gap-2.5 mt-3 overflow-x-auto pb-1.5">
-              <div v-for="(imgUrl, idx) in carImages" :key="idx" @click="activeIndex = idx" :class="[
+              <div v-for="(imgUrl, idx) in carImages" :key="idx" @click="activeIndex = Number(idx)" :class="[
                 'relative w-16 h-12 rounded-lg overflow-hidden cursor-pointer flex-shrink-0 transition-all duration-300 border-2',
-                activeIndex === idx
+                activeIndex === Number(idx)
                   ? 'border-brand-primary scale-[1.02] shadow-sm'
                   : 'border-slate-100 hover:border-slate-200 opacity-80',
               ]">
@@ -453,7 +453,7 @@
                         <span class="text-green-600 font-bold">Miễn phí</span>
                       </div>
 
-                      <!-- Warning if too far -->
+                      <!-- info if too far -->
                       <div v-if="isDistanceTooFar"
                         class="text-rose-500 font-bold text-center pt-1.5 border-t border-rose-100 flex items-center justify-center gap-1">
                         <Icon name="lucide:triangle-alert" class="w-4 h-4" />
@@ -706,7 +706,7 @@ definePageMeta({ layout: "vehicle-detail" });
 
 const route = useRoute();
 const carId = route.params.id as string;
-const { user, updateProfile, submitDrivingLicense } = useAuth();
+const { user, updateProfile, submitDrivingLicense, refreshProfile } = useAuth();
 const { showToast } = useToast();
 const { openLogin } = useAuthModal();
 
@@ -877,7 +877,7 @@ const calculatedDeliveryFee = computed(() => {
 
 const handleBooking = async () => {
   if (!selectedStart.value || !selectedEnd.value) {
-    showToast('Vui lòng chọn thời gian nhận và trả xe.', 'warning')
+    showToast('Vui lòng chọn thời gian nhận và trả xe.', 'info')
     return
   }
 
@@ -895,15 +895,17 @@ const handleBooking = async () => {
   }
 
   if (!user.value) {
-    showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'warning')
+    showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'info')
     openLogin()
     return
   }
 
-  const drivingLicense = user.value.driving_license
+  // Đồng bộ dữ liệu user mới nhất từ backend để tránh dùng trạng thái GPLX cũ trong cookie.
+  await refreshProfile()
 
+  const drivingLicense = user.value.driving_license
   if (drivingLicense && drivingLicense.status === 0) {
-    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'info')
     return
   }
 
@@ -930,7 +932,7 @@ const handleBooking = async () => {
 
   // Kiểm tra số điện thoại
   // if (!user.value.phone) {
-  //   showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'warning')
+  //   showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'info')
   //   setTimeout(() => {
   //     navigateTo('/profile')
   //   }, 2000)
@@ -940,7 +942,7 @@ const handleBooking = async () => {
   // Kiểm tra giấy phép lái xe
   // const drivingLicense = user.value.driving_license
   // if (!drivingLicense) {
-  //   showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'warning')
+  //   showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'info')
   //   setTimeout(() => {
   //     navigateTo('/profile')
   //   }, 2000)
@@ -948,12 +950,12 @@ const handleBooking = async () => {
   // }
 
   // if (drivingLicense.status === 0) {
-  //   showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'warning')
+  //   showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'info')
   //   return
   // }
 
   // if (drivingLicense.status === 2) {
-  //   showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'warning')
+  //   showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'info')
   //   setTimeout(() => {
   //     navigateTo('/profile')
   //   }, 2000)
@@ -967,7 +969,7 @@ const handleBooking = async () => {
 
   if (receiveMethod.value === 'delivery') {
     if (!deliveryCoords.value) {
-      showToast('Vui lòng chọn địa điểm nhận xe.', 'warning')
+      showToast('Vui lòng chọn địa điểm nhận xe.', 'info')
       return
     }
     if (isDistanceTooFar.value) {
@@ -1112,7 +1114,7 @@ watch(disabledDates, (newDisabled) => {
       return start <= range.end && end >= range.start
     })
     if (overlap) {
-      showToast('Lưu ý: Thời gian mặc định trùng với lịch bận của xe. Vui lòng chọn lịch khác!', 'warning')
+      showToast('Lưu ý: Thời gian mặc định trùng với lịch bận của xe. Vui lòng chọn lịch khác!', 'info')
       selectedStart.value = null
       selectedEnd.value = null
     }
@@ -1181,7 +1183,7 @@ const checkFavoriteStatus = async (id: string) => {
 
 const handleToggleFavorite = async () => {
   if (!user.value) {
-    showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "warning");
+    showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "info");
     openLogin();
     return;
   }
@@ -1220,7 +1222,7 @@ const loadCarDetails = async (id: string) => {
 
       // Kiểm tra nếu là chủ xe thì không được phép truy cập
       if (user.value && car.value.user_id === user.value.id) {
-        showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'warning');
+        showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'info');
         navigateTo('/vehicle-list');
         return;
       }
@@ -1288,7 +1290,7 @@ watch(() => route.params.id, (newId) => {
 // Watch thay đổi thông tin user đăng nhập để chuyển hướng nếu sở hữu xe
 watch(() => user.value, (newUser) => {
   if (newUser && car.value && car.value.user_id === newUser.id) {
-    showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'warning');
+    showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'info');
     navigateTo('/vehicle-list');
   }
 });
@@ -1392,7 +1394,7 @@ const priceDetails = computed(() => {
   const discountVal = car.value.discount_value || 0;
   const days = rentalDays.value;
 
-  const details = [
+  const details: { label: string; value: string; info: boolean; discount?: boolean }[] = [
     { label: "Đơn giá thuê", value: `${(unitPrice * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
     { label: "Bảo hiểm thuê xe", value: `${(insuranceFee * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
   ];

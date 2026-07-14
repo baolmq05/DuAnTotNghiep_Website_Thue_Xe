@@ -235,7 +235,7 @@ const handleCredentialResponse = async (response) => {
 
     try {
         const res = await loginWithGoogleService(response.credential);
-
+        console.log("Google login response:", res);
         if (res.success) {
             showToast(`Xin chào ${responsePayload.name}! Đăng nhập thành công.`, "success")
             setTimeout(() => { window.location.reload() }, 300)
