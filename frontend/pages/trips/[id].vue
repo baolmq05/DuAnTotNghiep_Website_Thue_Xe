@@ -219,20 +219,30 @@
 
           <!-- Car Card -->
           <div class="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm">
-            <div class="relative h-48 bg-slate-100">
-              <img :src="carThumbnail(trip.car)" :alt="trip.car?.name" class="w-full h-full object-cover" />
+            <NuxtLink :to="`/vehicles/${trip.car?.id || trip.car_id}`" class="block relative h-48 bg-slate-100 group">
+              <img :src="carThumbnail(trip.car)" :alt="trip.car?.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               <span
-                class="absolute top-4 right-4 bg-slate-900/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-white/10 backdrop-blur-sm">
+                class="absolute top-4 right-4 bg-slate-900/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-white/10 backdrop-blur-sm z-10">
                 {{ trip.car?.license_plate }}
               </span>
-            </div>
+              <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span class="text-white text-[10px] bg-black/60 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 border border-white/10 backdrop-blur-sm">
+                  <Icon name="lucide:eye" class="w-3.5 h-3.5" />
+                  Xem chi tiết xe
+                </span>
+              </div>
+            </NuxtLink>
 
             <div class="p-6 space-y-4">
               <div>
                 <span class="text-[10px] font-black uppercase text-[#1e4e57] tracking-wider">
                   {{ trip.car?.car_brand?.brand_name || 'Hãng xe' }} • {{ trip.car?.car_type?.type_name || 'Dòng xe' }}
                 </span>
-                <h3 class="text-lg font-black text-slate-900 mt-0.5">{{ trip.car?.name }}</h3>
+                <NuxtLink :to="`/vehicles/${trip.car?.id || trip.car_id}`" class="block group mt-0.5">
+                  <h3 class="text-lg font-black text-slate-900 group-hover:text-[#1e4e57] transition-colors leading-snug">
+                    {{ trip.car?.name }}
+                  </h3>
+                </NuxtLink>
               </div>
 
               <!-- Specs Grid -->
