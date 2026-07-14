@@ -23,8 +23,8 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div v-for="i in 3" :key="i" class="animate-pulse bg-white rounded-2xl border border-slate-100 p-4 h-[380px] flex flex-col justify-between">
+    <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+      <div v-for="i in 4" :key="i" class="animate-pulse bg-white rounded-2xl border border-slate-100 p-4 h-[380px] flex flex-col justify-between">
         <div class="bg-slate-200 rounded-xl h-[180px] w-full mb-4"></div>
         <div class="space-y-3 flex-1">
           <div class="h-4 bg-slate-200 rounded w-2/3"></div>
@@ -51,7 +51,7 @@
     </div>
 
     <!-- Favorites Grid -->
-    <div v-else-if="filteredFavorites.length > 0" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in">
+    <div v-else-if="filteredFavorites.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fade-in">
       <div v-for="fav in filteredFavorites" :key="fav.id" class="cursor-pointer" @click="goToDetail(fav.car_id)">
         <VehicleCard
           :name="fav.car?.name || fav.car_name"
