@@ -4,10 +4,8 @@
 
       <!-- Back Button & Breadcrumbs -->
       <div class="mb-6 flex items-center justify-between">
-        <button 
-          @click="handleBack" 
-          class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#1e4e57] transition-colors bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm"
-        >
+        <button @click="handleBack"
+          class="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-[#1e4e57] transition-colors bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
           <Icon name="lucide:arrow-left" class="w-4 h-4" />
           Quay lại danh sách
         </button>
@@ -187,7 +185,7 @@
 
               <!-- Payment status and deposit details -->
               <!-- When trip is ongoing/complete: always show 100% paid -->
-              <div v-if="trip.status >= 3"
+              <div v-if="trip.status === 3 || trip.status === 4 || trip.status === 7 || trip.status === 8"
                 class="pt-3 border-t border-dashed border-slate-100 space-y-2 animate-fade-in">
                 <div class="flex justify-between items-center text-sm font-medium">
                   <span class="text-slate-500">Đã thanh toán:</span>
@@ -201,6 +199,48 @@
                   class="flex items-center gap-1.5 text-[11px] text-emerald-600 font-semibold mt-1 bg-emerald-50/60 border border-emerald-100 rounded-xl px-2.5 py-1.5">
                   <Icon name="lucide:shield-check" class="w-3.5 h-3.5 shrink-0" />
                   Thanh toán đầy đủ, chuyến đi đã được xác nhận
+                </div>
+              </div>
+
+              <!-- When trip is cancelled -->
+              <div v-else-if="trip.status === 5 || trip.status === 6"
+                class="pt-3 border-t border-dashed border-slate-100 space-y-2.5 animate-fade-in">
+                <div class="flex justify-between items-center text-sm font-medium">
+                  <span class="text-slate-500 font-semibold text-rose-600">Trạng thái:</span>
+                  <span
+                    class="px-2.5 py-0.5 bg-rose-50 text-rose-600 border border-rose-200 rounded-lg text-xs font-bold flex items-center gap-1">
+                    <Icon name="lucide:ban" class="w-3.5 h-3.5" />
+                    Chuyến đi đã bị hủy
+                  </span>
+                </div>
+
+                <div v-if="cancellationDetails"
+                  class="bg-rose-50/40 border border-rose-100/60 rounded-2xl p-3.5 space-y-2 text-xs">
+                  <div class="flex justify-between items-center text-slate-500 font-medium">
+                    <span>Số tiền đã thanh toán:</span>
+                    <span class="font-bold text-slate-800">{{ formatCurrency(cancellationDetails.totalPaid) }}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-slate-500 font-medium">
+                    <span>Chính sách áp dụng:</span>
+                    <span class="font-semibold text-slate-700 text-right max-w-[180px] leading-relaxed">{{
+                      cancellationDetails.policyDesc }}</span>
+                  </div>
+                  <div class="flex justify-between items-center text-slate-500 font-medium">
+                    <span>Phí hủy chuyến ({{ cancellationDetails.feePercent }}%):</span>
+                    <span class="font-bold text-rose-600">{{ formatCurrency(cancellationDetails.cancellationFee)
+                      }}</span>
+                  </div>
+
+                  <div
+                    class="border-t border-dashed border-rose-200/50 pt-2 flex justify-between items-center text-xs font-medium">
+                    <span class="text-slate-500">Hoàn trả khách thuê:</span>
+                    <span class="font-black text-emerald-600 text-sm">{{
+                      formatCurrency(cancellationDetails.refundAmount) }} (Vào ví)</span>
+                  </div>
+                  <div class="flex justify-between items-center text-[10px] font-medium text-slate-400">
+                    <span>Đền bù chủ xe:</span>
+                    <span>{{ formatCurrency(cancellationDetails.compensationFee) }} (Vào ví)</span>
+                  </div>
                 </div>
               </div>
 
@@ -313,13 +353,16 @@
                 :src="trip.car?.owner?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'"
                 alt="Owner Avatar" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-sm" />
               <div class="min-w-0">
-                <p class="text-sm font-bold text-slate-800 truncate">{{ trip.car?.owner?.name || 'Chưa cập nhật' }}</p>
+                <p class="text-sm font-bold text-slate-800 truncate">
+                  {{ trip.car?.owner?.name || 'Chưa cập nhật' }}
+                  </p>
                 <p class="text-xs text-slate-400 font-medium">Chủ sở hữu xe</p>
               </div>
             </div>
             <div class="space-y-1.5 text-xs text-slate-500 font-semibold pt-1">
               <p class="flex items-center gap-2">
-                <Icon name="lucide:phone" class="text-slate-400 w-4 h-4" /> {{ trip.car?.owner?.phone || 'Chưa cập nhật SĐT' }}
+                <Icon name="lucide:phone" class="text-slate-400 w-4 h-4" />
+                {{ trip.car?.owner?.phone || 'Chưa cập nhật SĐT' }}
               </p>
               <p class="flex items-center gap-2">
                 <Icon name="lucide:mail" class="text-slate-400 w-4 h-4" /> {{ trip.car?.owner?.email || 'Chưa cập nhật Email' }}
@@ -348,37 +391,58 @@
             <!-- Premium Cloud ImageUpload Component -->
             <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
 
-            <!-- Start Trip Button -->
-            <button @click="handleStartTrip" :disabled="uploadedImages.length === 0 || uploading"
-              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
-              :class="uploadedImages.length > 0 && !uploading
-                ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
-                : 'bg-slate-300 shadow-none cursor-not-allowed'">
-              <span v-if="uploading" class="flex items-center gap-1.5">
-                <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
-                Đang khởi hành...
-              </span>
-              <span v-else class="flex items-center gap-1.5">
-                <Icon name="lucide:play" class="w-4 h-4" />
-                Xác nhận bắt đầu chuyến đi
-              </span>
-            </button>
+            <div class="flex flex-col gap-3">
+              <!-- Start Trip Button -->
+              <button @click="handleStartTrip" :disabled="uploadedImages.length === 0 || uploading"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
+                :class="uploadedImages.length > 0 && !uploading
+                  ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
+                  : 'bg-slate-300 shadow-none cursor-not-allowed'">
+                <span v-if="uploading" class="flex items-center gap-1.5">
+                  <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                  Đang khởi hành...
+                </span>
+                <span v-else class="flex items-center gap-1.5">
+                  <Icon name="lucide:play" class="w-4 h-4" />
+                  Xác nhận bắt đầu chuyến đi
+                </span>
+              </button>
+
+              <!-- Cancel Trip Button -->
+              <button @click="handleCancelTrip" :disabled="processingAction"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <Icon v-else name="lucide:ban" class="w-4 h-4" />
+                <span>Hủy chuyến đi</span>
+              </button>
+            </div>
           </div>
 
           <!-- If renter of the car -->
-          <div v-else class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5 animate-fade-in">
-            <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-sky-600" />
-            <div class="leading-relaxed">
-              <p class="font-bold">Đang chờ chủ xe bàn giao xe và bắt đầu chuyến đi</p>
-              <p class="mt-0.5 font-medium opacity-90">
-                Chủ xe sẽ kiểm tra hiện trạng xe và chụp ảnh tải lên hệ thống trước khi bắt đầu chuyến đi của bạn. Vui lòng liên hệ với chủ xe nếu cần thêm thông tin.
-              </p>
+          <div v-else class="space-y-4 animate-fade-in">
+            <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
+              <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-sky-600" />
+              <div class="leading-relaxed">
+                <p class="font-bold">Đang chờ chủ xe bàn giao xe và bắt đầu chuyến đi</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Chủ xe sẽ kiểm tra hiện trạng xe và chụp ảnh tải lên hệ thống trước khi bắt đầu chuyến đi của bạn. Vui lòng liên hệ với chủ xe nếu cần thêm thông tin.
+                </p>
+              </div>
             </div>
+
+            <!-- Cancel Trip Button -->
+            <button @click="handleCancelTrip" :disabled="processingAction"
+              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
+              <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+              <Icon v-else name="lucide:ban" class="w-4 h-4" />
+              <span>Hủy chuyến đi</span>
+            </button>
           </div>
         </div>
 
         <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4), Waiting Extension (status = 7) or Waiting Return (status = 8) - Display uploaded photos -->
-        <div v-else-if="trip.status === 3 || trip.status === 4 || trip.status === 7 || trip.status === 8" class="space-y-4">
+        <div v-else-if="trip.status === 3 || trip.status === 4 || trip.status === 7 || trip.status === 8"
+          class="space-y-4">
           <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
             <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
             Ảnh xe trước chuyến đi đã tải lên
@@ -405,25 +469,28 @@
 
           <!-- Display after trip photos if completed or available -->
           <div v-if="trip.status === 4 || afterTripImages.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
-            <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
+            <p
+              class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
               <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
               Ảnh xe sau chuyến đi đã tải lên
             </p>
-            
-            <div v-if="afterTripImages.length > 0" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              <div 
-                v-for="(imgUrl, index) in afterTripImages" 
-                :key="index"
+
+            <div v-if="afterTripImages.length > 0"
+              class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              <div v-for="(imgUrl, index) in afterTripImages" :key="index"
                 class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm aspect-video bg-slate-50 group relative cursor-pointer"
-                @click="openImageModal(imgUrl)"
-              >
-                <img :src="imgUrl" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="Car state after trip" />
-                <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                @click="openImageModal(imgUrl)">
+                <img :src="imgUrl"
+                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  alt="Car state after trip" />
+                <div
+                  class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span class="text-white text-[10px] bg-black/60 px-2 py-1 rounded-md font-bold">Xem ảnh lớn</span>
                 </div>
               </div>
             </div>
-            <div v-else class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-medium">
+            <div v-else
+              class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-medium">
               Không tìm thấy ảnh xe sau chuyến đi
             </div>
           </div>
@@ -442,30 +509,24 @@
                 </p>
               </div>
             </div>
-            
+
             <div v-if="!isOwner" class="flex flex-col sm:flex-row gap-3">
               <!-- Nếu có yêu cầu gia hạn chờ thanh toán -->
-              <button v-if="trip.latest_extension && trip.latest_extension.status === 2"
-                @click="openPayExtensionModal" 
-                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-amber-500 hover:bg-amber-600 active:scale-[0.98] cursor-pointer shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5"
-              >
+              <button v-if="trip.latest_extension && trip.latest_extension.status === 2" @click="openPayExtensionModal"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-amber-500 hover:bg-amber-600 active:scale-[0.98] cursor-pointer shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5">
                 <Icon name="lucide:credit-card" class="w-4 h-4" />
                 Thanh toán phí gia hạn
               </button>
-              
+
               <button v-else-if="!trip.latest_extension || trip.latest_extension.status === 0"
-                @click="openExtensionModal" 
-                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5"
-              >
+                @click="openExtensionModal"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5">
                 <Icon name="lucide:calendar-plus" class="w-4 h-4" />
                 Gia hạn chuyến đi
               </button>
 
-              <button 
-                @click="handleReturnRequest" 
-                :disabled="returningTrip"
-                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center justify-center gap-1.5"
-              >
+              <button @click="handleReturnRequest" :disabled="returningTrip"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center justify-center gap-1.5">
                 <span v-if="returningTrip" class="flex items-center gap-1.5">
                   <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
                   Đang xử lý...
@@ -501,30 +562,28 @@
                   </p>
                   <div class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4 text-[11px]">
                     <div>
-                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Ngày trả xe mới:</span>
-                      <span class="font-bold text-indigo-950 text-xs">{{ formatDate(trip.latest_extension.end_date) }}</span>
+                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Ngày trả xe
+                        mới:</span>
+                      <span class="font-bold text-indigo-950 text-xs">{{ formatDate(trip.latest_extension.end_date)
+                        }}</span>
                     </div>
                     <div>
-                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Phí gia hạn dự kiến:</span>
-                      <span class="font-bold text-[#1e4e57] text-xs">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
+                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Phí gia hạn
+                        dự kiến:</span>
+                      <span class="font-bold text-[#1e4e57] text-xs">{{
+                        formatCurrency(trip.latest_extension.extension_amount) }}</span>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="flex gap-3 pt-2">
-                <button 
-                  @click="handleApproveExtension" 
-                  :disabled="processingAction"
-                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
-                >
+                <button @click="handleApproveExtension" :disabled="processingAction"
+                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10">
                   <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-3.5 h-3.5" />
                   <span>Đồng ý gia hạn</span>
                 </button>
-                <button 
-                  @click="openRejectExtensionDialog" 
-                  :disabled="processingAction"
-                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
-                >
+                <button @click="openRejectExtensionDialog" :disabled="processingAction"
+                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
                   Từ chối gia hạn
                 </button>
               </div>
@@ -532,7 +591,8 @@
           </div>
 
           <!-- Trip is completed (status = 4) -->
-          <div v-else-if="trip.status === 4" class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex flex-col gap-3 w-full">
+          <div v-else-if="trip.status === 4"
+            class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex flex-col gap-3 w-full">
             <div class="flex items-start gap-2.5">
               <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
               <div class="leading-relaxed">
@@ -545,13 +605,12 @@
 
             <!-- Review section for renter -->
             <div class="mt-1 pt-3 border-t border-emerald-250/30">
-              <div v-if="renterReview" class="bg-white border border-emerald-100 rounded-xl p-3 text-slate-700 space-y-1.5 shadow-sm">
+              <div v-if="renterReview"
+                class="bg-white border border-emerald-100 rounded-xl p-3 text-slate-700 space-y-1.5 shadow-sm">
                 <div class="flex items-center gap-1.5">
                   <span class="font-bold text-xs text-slate-800">Đánh giá của bạn về chủ xe:</span>
                   <div class="flex items-center gap-0.5">
-                    <Icon v-for="star in 5" :key="star" 
-                      name="lucide:star" 
-                      class="w-3.5 h-3.5" 
+                    <Icon v-for="star in 5" :key="star" name="lucide:star" class="w-3.5 h-3.5"
                       :class="star <= renterReview.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'" />
                   </div>
                 </div>
@@ -560,12 +619,9 @@
                 </p>
                 <p class="text-slate-400 text-[10px]" v-else>Không có bình luận.</p>
               </div>
-              
-              <button 
-                v-else-if="!isOwner"
-                @click="openReviewModal" 
-                class="py-2 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5 w-fit"
-              >
+
+              <button v-else-if="!isOwner" @click="openReviewModal"
+                class="py-2 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5 w-fit">
                 <Icon name="lucide:star" class="w-4 h-4" />
                 Đánh giá chủ xe & chuyến đi
               </button>
@@ -573,7 +629,8 @@
           </div>
 
           <!-- Trip is waiting for extension approval (status = 7) -->
-          <div v-else-if="trip.status === 7" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex flex-col gap-3">
+          <div v-else-if="trip.status === 7"
+            class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex flex-col gap-3">
             <div class="flex items-start gap-2.5">
               <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-650" />
               <div class="leading-relaxed flex-grow">
@@ -581,32 +638,31 @@
                 <p class="mt-0.5 font-medium opacity-90">
                   Yêu cầu gia hạn thêm ngày đang chờ chủ xe phê duyệt.
                 </p>
-                <div v-if="trip.latest_extension?.end_date" class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
+                <div v-if="trip.latest_extension?.end_date"
+                  class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
                   <div>
-                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề xuất:</span>
-                    <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.latest_extension.end_date) }}</span>
+                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề
+                      xuất:</span>
+                    <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.latest_extension.end_date)
+                      }}</span>
                   </div>
                   <div v-if="trip.latest_extension?.extension_amount">
-                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Phí gia hạn dự kiến:</span>
-                    <span class="font-bold text-sm text-[#1e4e57]">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
+                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Phí gia hạn dự
+                      kiến:</span>
+                    <span class="font-bold text-sm text-[#1e4e57]">{{
+                      formatCurrency(trip.latest_extension.extension_amount) }}</span>
                   </div>
                 </div>
               </div>
             </div>
             <div v-if="isOwner" class="flex gap-3 pt-2">
-              <button 
-                @click="handleApproveExtension" 
-                :disabled="processingAction"
-                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
-              >
+              <button @click="handleApproveExtension" :disabled="processingAction"
+                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10">
                 <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-3.5 h-3.5" />
                 <span>Đồng ý gia hạn</span>
               </button>
-              <button 
-                @click="openRejectExtensionDialog" 
-                :disabled="processingAction"
-                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
-              >
+              <button @click="openRejectExtensionDialog" :disabled="processingAction"
+                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
                 Từ chối gia hạn
               </button>
             </div>
@@ -616,12 +672,14 @@
           <div v-else-if="trip.status === 8" class="space-y-4">
             <!-- If owner of the car -->
             <div v-if="isOwner" class="space-y-4">
-              <div class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
+              <div
+                class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
                 <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-sky-600" />
                 <div class="leading-relaxed">
                   <p class="font-bold">Đang chờ bạn xác nhận hoàn thành và nhận lại xe</p>
                   <p class="mt-0.5 font-medium opacity-90">
-                    Vui lòng chụp và tải lên hình ảnh hiện trạng của xe sau khi nhận lại xe, sau đó bấm Xác nhận hoàn thành chuyến xe.
+                    Vui lòng chụp và tải lên hình ảnh hiện trạng của xe sau khi nhận lại xe, sau đó bấm Xác nhận hoàn
+                    thành chuyến xe.
                   </p>
                 </div>
               </div>
@@ -630,14 +688,11 @@
               <ImageUpload ref="postTripImageUploadRef" v-model="postTripUploadedImages" :max-files="5" />
 
               <!-- Complete Trip Button -->
-              <button 
-                @click="handleCompleteTrip" 
-                :disabled="postTripUploadedImages.length === 0 || completingTrip"
+              <button @click="handleCompleteTrip" :disabled="postTripUploadedImages.length === 0 || completingTrip"
                 class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
-                :class="postTripUploadedImages.length > 0 && !completingTrip 
-                  ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer' 
-                  : 'bg-slate-300 shadow-none cursor-not-allowed'"
-              >
+                :class="postTripUploadedImages.length > 0 && !completingTrip
+                  ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
+                  : 'bg-slate-300 shadow-none cursor-not-allowed'">
                 <span v-if="completingTrip" class="flex items-center gap-1.5">
                   <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
                   Đang xử lý hoàn thành...
@@ -650,12 +705,14 @@
             </div>
 
             <!-- If renter of the car -->
-            <div v-else class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
+            <div v-else
+              class="bg-sky-50 border border-sky-100 rounded-2xl p-4 text-xs text-sky-850 flex items-start gap-2.5">
               <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-sky-650" />
               <div class="leading-relaxed flex-grow">
                 <p class="font-bold">Đang chờ chủ xe xác nhận trả xe</p>
                 <p class="mt-0.5 font-medium opacity-90">
-                  Chuyến đi đã kết thúc. Vui lòng chờ chủ xe kiểm tra hiện trạng xe và bấm xác nhận hoàn thành chuyến xe.
+                  Chuyến đi đã kết thúc. Vui lòng chờ chủ xe kiểm tra hiện trạng xe và bấm xác nhận hoàn thành chuyến
+                  xe.
                 </p>
               </div>
             </div>
@@ -669,31 +726,41 @@
             <Icon name="lucide:hourglass" class="text-amber-500 mb-2 mx-auto block w-6 h-6" />
             <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ chủ xe duyệt.</p>
             <div v-if="isOwner" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
-              <button 
-                @click="handleConfirmTrip" 
-                :disabled="processingAction"
-                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
-              >
+              <button @click="handleConfirmTrip" :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10">
                 <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
                 <span v-else>Đồng ý cho thuê</span>
               </button>
-              <button 
-                @click="openRejectTripDialog" 
-                :disabled="processingAction"
-                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
-              >
+              <button @click="openRejectTripDialog" :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
                 Từ chối cho thuê
+              </button>
+            </div>
+            <div v-else class="flex justify-center pt-2">
+              <button @click="handleCancelTrip" :disabled="processingAction"
+                class="py-2 px-6 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <Icon v-else name="lucide:ban" class="w-4 h-4" />
+                <span>Hủy chuyến đi</span>
               </button>
             </div>
           </template>
           <template v-else-if="trip.status === 1">
             <Icon name="lucide:credit-card" class="text-sky-500 mb-2 mx-auto block w-6 h-6" />
             <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ thanh toán đặt cọc.</p>
-            <nuxt-link :to="`/payment?trip_id=${trip.id}`"
-              class="px-6 py-2.5 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-sky-600/10 cursor-pointer mx-auto flex items-center gap-1.5 active:scale-[0.98] inline-flex">
-              <Icon name="lucide:wallet" class="w-4 h-4" />
-              Thanh toán ngay
-            </nuxt-link>
+            <div class="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto pt-1">
+              <nuxt-link v-if="!isOwner" :to="`/payment?trip_id=${trip.id}`"
+                class="flex-1 py-2.5 px-6 bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold rounded-xl transition-all shadow-md shadow-sky-600/10 cursor-pointer flex items-center justify-center gap-1.5 active:scale-[0.98]">
+                <Icon name="lucide:wallet" class="w-4 h-4" />
+                Thanh toán ngay
+              </nuxt-link>
+              <button @click="handleCancelTrip" :disabled="processingAction"
+                class="flex-1 py-2.5 px-6 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <Icon v-else name="lucide:ban" class="w-4 h-4" />
+                <span>Hủy chuyến đi</span>
+              </button>
+            </div>
           </template>
           <template v-else-if="trip.status === 5 || trip.status === 6">
             <Icon name="lucide:ban" class="text-rose-500 mb-2 mx-auto block w-6 h-6" />
@@ -843,41 +910,38 @@
     <!-- Review Modal -->
     <Teleport to="body">
       <Transition name="fade">
-        <div v-if="showReviewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+        <div v-if="showReviewModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
           <div @click="showReviewModal = false" class="absolute inset-0 cursor-pointer"></div>
-          <div class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up" @click.stop>
-            
+          <div
+            class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up"
+            @click.stop>
+
             <!-- Header -->
             <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
               <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <Icon name="lucide:star" class="w-5 h-5 text-amber-500 fill-amber-500" />
                 Đánh giá chủ xe & Chuyến đi
               </h3>
-              <button @click="showReviewModal = false" class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
+              <button @click="showReviewModal = false"
+                class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
                 <Icon name="lucide:x" class="w-4 h-4" />
               </button>
             </div>
 
             <!-- Content -->
             <div class="space-y-4 text-xs">
-              <p class="text-slate-500 font-medium">Chia sẻ trải nghiệm chuyến đi của bạn để giúp cải thiện dịch vụ của chúng tôi.</p>
-              
+              <p class="text-slate-500 font-medium">Chia sẻ trải nghiệm chuyến đi của bạn để giúp cải thiện dịch vụ của
+                chúng tôi.</p>
+
               <!-- Star selection -->
               <div class="space-y-2 flex flex-col items-center py-2">
                 <label class="block font-bold text-slate-700 text-center">Số sao đánh giá:</label>
                 <div class="flex items-center gap-2">
-                  <button 
-                    v-for="star in 5" 
-                    :key="star"
-                    type="button" 
-                    @click="reviewRating = star"
-                    class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-350 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none"
-                  >
-                    <Icon 
-                      name="lucide:star" 
-                      class="w-8 h-8" 
-                      :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'" 
-                    />
+                  <button v-for="star in 5" :key="star" type="button" @click="reviewRating = star"
+                    class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-350 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none">
+                    <Icon name="lucide:star" class="w-8 h-8"
+                      :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'" />
                   </button>
                 </div>
                 <span class="font-bold text-[#1e4e57] text-[11px] mt-1">
@@ -888,23 +952,102 @@
               <!-- Comment input -->
               <div class="space-y-1.5">
                 <label class="block font-bold text-slate-700">Ý kiến đóng góp (tùy chọn):</label>
-                <textarea 
-                  v-model="reviewComment" 
-                  rows="4"
+                <textarea v-model="reviewComment" rows="4"
                   placeholder="Chia sẻ thêm thông tin về tình trạng xe, độ nhiệt tình của chủ xe..."
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"
-                ></textarea>
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"></textarea>
               </div>
 
               <!-- Submit button -->
-              <button 
-                @click="submitTripReview"
-                :disabled="reviewRating === 0 || submittingReview"
-                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-[0.98]"
-              >
+              <button @click="submitTripReview" :disabled="reviewRating === 0 || submittingReview"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-[0.98]">
                 <Icon v-if="submittingReview" name="lucide:loader-2" class="animate-spin w-4 h-4" />
                 <span v-else>Gửi đánh giá</span>
               </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Beautiful Cancel Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showCancelModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+          <div @click="showCancelModal = false" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up"
+            @click.stop>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Icon name="lucide:alert-triangle" class="w-5 h-5 text-rose-500" />
+                Xác nhận hủy chuyến đi
+              </h3>
+              <button @click="showCancelModal = false"
+                class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4 text-xs">
+              <p class="text-slate-500 font-semibold leading-relaxed">
+                Bạn có chắc chắn muốn hủy chuyến đi này không? Quyết định này không thể hoàn tác sau khi đã thực hiện.
+              </p>
+
+              <!-- Policy Summary Grid -->
+              <div class="bg-rose-50/45 border border-rose-100/60 rounded-2xl p-4 space-y-2.5">
+                <div class="flex justify-between items-center text-slate-500 font-medium">
+                  <span>Chính sách áp dụng:</span>
+                  <span class="font-bold text-slate-850 text-right max-w-[200px] leading-relaxed">
+                    {{ cancelModalPolicyDesc }}
+                  </span>
+                </div>
+
+                <div class="flex justify-between items-center text-slate-500 font-medium">
+                  <span>Giá trị chuyến đi:</span>
+                  <span class="font-bold text-slate-800">{{ formatCurrency(cancelModalTripValue) }}</span>
+                </div>
+
+                <div v-if="!cancelModalIsOwner" class="flex justify-between items-center text-slate-500 font-medium">
+                  <span>Phí hủy chuyến:</span>
+                  <span class="font-bold text-rose-600">{{ formatCurrency(cancelModalFeeAmount) }}</span>
+                </div>
+
+                <div
+                  class="border-t border-dashed border-rose-200/50 pt-2 flex justify-between items-center font-medium">
+                  <span class="text-slate-600">Tiền hoàn khách thuê:</span>
+                  <span class="font-black text-emerald-600 text-sm">
+                    {{ formatCurrency(cancelModalRefundAmount) }}
+                  </span>
+                </div>
+
+                <div v-if="cancelModalCompensationAmount > 0"
+                  class="flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                  <span>Bồi thường chủ xe:</span>
+                  <span>{{ formatCurrency(cancelModalCompensationAmount) }}</span>
+                </div>
+              </div>
+
+              <!-- Note -->
+              <p class="text-slate-400 italic text-[10px] leading-normal">
+                * Tiền hoàn sẽ được chuyển trực tiếp vào ví điện tử trên hệ thống ngay sau khi lệnh hủy được xác nhận.
+              </p>
+
+              <!-- Action buttons -->
+              <div class="flex gap-3 pt-2">
+                <button @click="showCancelModal = false"
+                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] transition-all cursor-pointer text-center">
+                  Quay lại
+                </button>
+                <button @click="executeCancelTrip"
+                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-red-600/10">
+                  <Icon name="lucide:check" class="w-4 h-4" />
+                  Xác nhận hủy
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -977,7 +1120,7 @@ const handleConfirmTrip = async () => {
 const openRejectTripDialog = async () => {
   const reason = prompt('Nhập lý do từ chối cho thuê:', 'Chủ xe bận lịch đột xuất')
   if (reason === null) return // Hủy prompt
-  
+
   processingAction.value = true
   try {
     const res = await carService.rejectTrip(trip.value.id, reason)
@@ -1016,7 +1159,7 @@ const handleApproveExtension = async () => {
 const openRejectExtensionDialog = async () => {
   const reason = prompt('Nhập lý do từ chối gia hạn:', 'Không bận lịch trống xe')
   if (reason === null) return
-  
+
   processingAction.value = true
   try {
     const res = await carService.rejectExtension(trip.value.id, reason)
@@ -1048,7 +1191,82 @@ const imageUploadRef = ref<any>(null)
 const showPreviewModal = ref(false)
 const previewImageUrl = ref('')
 
+const showCancelModal = ref(false)
+const cancelModalPolicyDesc = ref('')
+const cancelModalTripValue = ref(0)
+const cancelModalFeeAmount = ref(0)
+const cancelModalRefundAmount = ref(0)
+const cancelModalCompensationAmount = ref(0)
+const cancelModalIsOwner = ref(false)
 
+const handleCancelTrip = () => {
+  if (!trip.value) return
+
+  const bookingTime = new Date(trip.value.created_at)
+  const startTime = new Date(trip.value.start_at)
+  const now = new Date()
+  const tripValue = trip.value.cost - trip.value.discount_amount
+
+  cancelModalTripValue.value = tripValue
+  cancelModalIsOwner.value = isOwner.value
+
+  if (isOwner.value) {
+    cancelModalPolicyDesc.value = 'Chủ xe tự hủy chuyến (Hoàn tiền 100%)'
+    cancelModalFeeAmount.value = 0
+    cancelModalRefundAmount.value = totalPaid.value
+    cancelModalCompensationAmount.value = 0
+  } else {
+    let feePercent = 0
+    let policyDesc = 'Miễn phí hủy chuyến (Trong vòng 1h sau khi đặt xe)'
+
+    const diffInMinutes = Math.floor((now.getTime() - bookingTime.getTime()) / 60000)
+    if (diffInMinutes > 60) {
+      const diffInDays = (startTime.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      if (diffInDays >= 7) {
+        feePercent = 0.10
+        policyDesc = 'Phí hủy 10% giá trị chuyến đi (Trước chuyến đi >= 7 ngày và sau 1h khi đặt)'
+      } else {
+        feePercent = 0.40
+        policyDesc = 'Phí hủy 40% giá trị chuyến đi (Trong vòng 7 ngày trước chuyến đi và sau 1h khi đặt)'
+      }
+    }
+
+    const cancelFeeAmount = tripValue * feePercent
+    const actualCompensation = Math.min(totalPaid.value, cancelFeeAmount)
+    const actualRefund = Math.max(0, totalPaid.value - actualCompensation)
+
+    cancelModalPolicyDesc.value = policyDesc
+    cancelModalFeeAmount.value = cancelFeeAmount
+    cancelModalRefundAmount.value = actualRefund
+    cancelModalCompensationAmount.value = actualCompensation
+  }
+
+  showCancelModal.value = true
+}
+
+const executeCancelTrip = async () => {
+  if (!trip.value) return
+
+  processingAction.value = true
+  showCancelModal.value = false
+  try {
+    const res = isOwner.value
+      ? await carService.cancelTripByOwner(trip.value.id)
+      : await carService.cancelTrip(trip.value.id)
+
+    if (res && res.success) {
+      showToast('Đã hủy chuyến đi thành công!', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Hủy chuyến đi thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi hủy chuyến đi:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi hủy chuyến đi.', 'error')
+  } finally {
+    processingAction.value = false
+  }
+}
 
 // Extension request states (Calendar UI matching Homepage Filter)
 const showExtensionModal = ref(false)
@@ -1106,6 +1324,43 @@ const paidPercent = computed(() => {
   const total = trip.value.cost - trip.value.discount_amount
   if (total === 0) return 0
   return Math.round((totalPaid.value / total) * 100)
+})
+
+const cancellationDetails = computed(() => {
+  if (!trip.value) return null
+
+  const bookingTime = new Date(trip.value.created_at)
+  const startTime = new Date(trip.value.start_at)
+  const cancelTime = new Date(trip.value.updated_at)
+  const tripValue = trip.value.cost - trip.value.discount_amount
+
+  let feePercent = 0
+  let policyDesc = 'Miễn phí hủy chuyến (Trong vòng 1h sau khi đặt xe)'
+
+  const diffInMinutes = Math.floor((cancelTime.getTime() - bookingTime.getTime()) / 60000)
+  if (diffInMinutes > 60) {
+    const diffInDays = (startTime.getTime() - cancelTime.getTime()) / (1000 * 60 * 60 * 24)
+    if (diffInDays >= 7) {
+      feePercent = 0.10
+      policyDesc = 'Phí hủy 10% giá trị chuyến đi (Trước chuyến đi >= 7 ngày và sau 1h khi đặt)'
+    } else {
+      feePercent = 0.40
+      policyDesc = 'Phí hủy 40% giá trị chuyến đi (Trong vòng 7 ngày trước chuyến đi và sau 1h khi đặt)'
+    }
+  }
+
+  const cancelFeeAmount = tripValue * feePercent
+  const actualCompensation = Math.min(totalPaid.value, cancelFeeAmount)
+  const actualRefund = Math.max(0, totalPaid.value - actualCompensation)
+
+  return {
+    policyDesc,
+    feePercent: feePercent * 100,
+    cancellationFee: cancelFeeAmount,
+    compensationFee: actualCompensation,
+    refundAmount: actualRefund,
+    totalPaid: totalPaid.value
+  }
 })
 
 const calculatedExtensionDays = computed(() => {

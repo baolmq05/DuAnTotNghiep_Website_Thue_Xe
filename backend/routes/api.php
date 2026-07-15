@@ -88,6 +88,8 @@ Route::group(['middleware' => 'api'], function () {
     Route::post('trips/{id}/start', [TripController::class, 'startTrip']);
     Route::put('trips/{id}/confirm', [TripController::class, 'confirm']);
     Route::put('trips/{id}/reject', [TripController::class, 'reject']);
+    Route::post('trips/{id}/cancel', [TripController::class, 'cancelTrip']);
+    Route::post('trips/{id}/owner-cancel', [TripController::class, 'cancelTripByOwner']);
     Route::post('trips/{id}/extension-request', [TripController::class, 'requestExtension']);
     Route::put('trips/{id}/extension-approve', [TripController::class, 'approveExtension']);
     Route::put('trips/{id}/extension-reject', [TripController::class, 'rejectExtension']);

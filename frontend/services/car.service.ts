@@ -361,6 +361,26 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Hủy chuyến đi (Dành cho renter)
+     */
+    async cancelTrip(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/cancel`, {
+            method: "POST",
+            useAuth: true,
+        });
+    }
+
+    /**
+     * Hủy chuyến đi (Dành cho owner)
+     */
+    async cancelTripByOwner(id: number | string): Promise<{ success: boolean; message: string; data: any }> {
+        return this.request<{ success: boolean; message: string; data: any }>(`trips/${id}/owner-cancel`, {
+            method: "POST",
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();

@@ -1032,4 +1032,230 @@ class TripController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * API Hủy chuyến đi (Dành cho Renter)
+     * POST /api/trips/{id}/cancel
+     */
+    public function cancelTrip($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with(['car.owner', 'user'])->findOrFail($id);
+
+        // Chỉ khách thuê mới được quyền hủy chuyến đi này
+        if ($trip->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền hủy chuyến đi này.'
+            ], 403);
+        }
+
+        // Chỉ được hủy khi trạng thái là 0 (Pending), 1 (WaitingPayment), 2 (Confirmed)
+        if (!in_array($trip->status, [0, 1, 2])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn chỉ được phép hủy chuyến đi ở trạng thái Chờ duyệt, Chờ thanh toán, hoặc Đã xác nhận.'
+            ], 400);
+        }
+
+        // Tính phí hủy chuyến và hoàn tiền theo chính sách
+        // 1. Tổng tiền thực tế của chuyến đi (giá trị chuyến đi)
+        $tripValue = $trip->cost - $trip->discount_amount;
+        $bookingTime = $trip->created_at;
+        $startTime = \Carbon\Carbon::parse($trip->start_at);
+        $now = now();
+
+        // 2. Xác định phần trăm phí hủy chuyến
+        // - Trong vòng 1h sau khi đặt xe (booking time): Miễn phí
+        if ($now->diffInMinutes($bookingTime) <= 60) {
+            $feePercent = 0;
+        } else {
+            // - Trước chuyến đi 7 ngày (Sau 1h khi đặt): 10% giá trị chuyến đi
+            // - Trong vòng 7 ngày trước chuyến đi (Sau 1h khi đặt): 40% giá trị chuyến đi
+            if ($now->copy()->addDays(7)->lte($startTime)) {
+                $feePercent = 0.10; // 10%
+            } else {
+                $feePercent = 0.40; // 40%
+            }
+        }
+
+        $cancellationFee = $tripValue * $feePercent;
+
+        // 3. Số tiền đang bị tạm giữ (đã thanh toán cọc/toàn bộ)
+        $totalPaid = $trip->pendingBalances()->where('status', '1')->sum('amount');
+
+        // 4. Tính toán tiền hoàn cho renter và đền bù cho owner
+        $refundAmount = max(0, $totalPaid - $cancellationFee);
+        $compensationFee = min($totalPaid, $cancellationFee);
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Hoàn tiền cho Khách thuê
+            if ($refundAmount > 0) {
+                $renter = $trip->user;
+                if (!$renter->wallet_id) {
+                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $renter->wallet_id = $wallet->id;
+                    $renter->save();
+                } else {
+                    $wallet = $renter->wallet;
+                }
+                $wallet->increment('amount', $refundAmount);
+            }
+
+            // Đền bù cho Chủ xe
+            if ($compensationFee > 0) {
+                $owner = $trip->car->owner;
+                if (!$owner->wallet_id) {
+                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $owner->wallet_id = $wallet->id;
+                    $owner->save();
+                } else {
+                    $wallet = $owner->wallet;
+                }
+                $wallet->increment('amount', $compensationFee);
+            }
+
+            // Cập nhật trạng thái pending_balances thành cancelled ('3')
+            $trip->pendingBalances()->where('status', '1')->update([
+                'status' => '3', // cancelled
+            ]);
+
+            // Cập nhật trạng thái chuyến đi thành UserCancel (5)
+            $trip->update([
+                'status' => \App\Enum\TripStatus::UserCancel->value
+            ]);
+
+            // Tạo thông báo cho chủ xe biết chuyến đi đã bị hủy
+            \App\Models\Notification::create([
+                'user_id' => $trip->car->user_id,
+                'message' => "Khách hàng đã hủy chuyến đi #{$trip->id}. Phí đền bù nhận được: " . number_format($compensationFee, 0, ',', '.') . " đ.",
+                'is_read' => '0',
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Hủy chuyến đi thành công.',
+                'data' => [
+                    'trip_id' => $trip->id,
+                    'trip_value' => $tripValue,
+                    'cancellation_fee' => $cancellationFee,
+                    'paid_amount' => $totalPaid,
+                    'refund_amount' => $refundAmount,
+                    'compensation_fee' => $compensationFee,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi hủy chuyến đi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API Hủy chuyến đi (Dành cho Owner)
+     * POST /api/trips/{id}/owner-cancel
+     */
+    public function cancelTripByOwner($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
+            ], 401);
+        }
+
+        $trip = Trip::with(['car.owner', 'user'])->findOrFail($id);
+
+        // Chỉ chủ xe mới được quyền hủy chuyến đi này
+        if ($trip->car->user_id !== $user->id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền hủy chuyến đi này.'
+            ], 403);
+        }
+
+        // Chỉ được hủy khi trạng thái là 0 (Pending), 1 (WaitingPayment), 2 (Confirmed)
+        if (!in_array($trip->status, [0, 1, 2])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn chỉ được phép hủy chuyến đi ở trạng thái Chờ duyệt, Chờ thanh toán, hoặc Đã xác nhận.'
+            ], 400);
+        }
+
+        // Số tiền đang bị tạm giữ (đã thanh toán cọc/toàn bộ)
+        $totalPaid = $trip->pendingBalances()->where('status', '1')->sum('amount');
+
+        // Đối với chủ xe hủy: Hoàn lại 100% tiền đã đóng cho Renter, không tính phí hủy
+        $refundAmount = $totalPaid;
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Hoàn tiền cho Khách thuê
+            if ($refundAmount > 0) {
+                $renter = $trip->user;
+                if (!$renter->wallet_id) {
+                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $renter->wallet_id = $wallet->id;
+                    $renter->save();
+                } else {
+                    $wallet = $renter->wallet;
+                }
+                $wallet->increment('amount', $refundAmount);
+            }
+
+            // Cập nhật trạng thái pending_balances thành cancelled ('3')
+            $trip->pendingBalances()->where('status', '1')->update([
+                'status' => '3', // cancelled
+            ]);
+
+            // Cập nhật trạng thái chuyến đi thành OwnerCancel (6)
+            $trip->update([
+                'status' => \App\Enum\TripStatus::OwnerCancel->value
+            ]);
+
+            // Tạo thông báo cho khách thuê biết chủ xe đã hủy chuyến
+            \App\Models\Notification::create([
+                'user_id' => $trip->user_id,
+                'message' => "Chủ xe đã hủy chuyến đi #{$trip->id}. Số tiền " . number_format($refundAmount, 0, ',', '.') . " đ đã được hoàn lại vào ví của bạn.",
+                'is_read' => '0',
+            ]);
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Chủ xe hủy chuyến đi thành công.',
+                'data' => [
+                    'trip_id' => $trip->id,
+                    'paid_amount' => $totalPaid,
+                    'refund_amount' => $refundAmount,
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Đã xảy ra lỗi khi hủy chuyến đi.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
