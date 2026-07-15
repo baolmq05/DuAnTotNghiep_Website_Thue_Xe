@@ -119,4 +119,9 @@ class User extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function cars(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Car::class, 'user_id');
+    }
 }

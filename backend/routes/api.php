@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\TripController;
 use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\ReviewController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -117,6 +118,10 @@ Route::group(['middleware' => 'api'], function () {
 
     // Register Broadcasting Auth with JWT Auth middleware
     Broadcast::routes(['middleware' => ['api', 'auth:api']]);
+
+    // Review 
+    Route::get('reviews/{targetId}', [ReviewController::class, 'getProfileReviews']);
+    Route::get('owner/profile/{id}', [CarController::class, 'getOwnerProfileInfo']);
 });
 
 // VNPay Public Callback/Verification routes
