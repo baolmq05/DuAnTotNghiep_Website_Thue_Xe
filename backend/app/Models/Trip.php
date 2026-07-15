@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+use App\Enum\TripStatus;
+
 class Trip extends Model
 {
     //
@@ -37,6 +39,17 @@ class Trip extends Model
         }
 
         return null;
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::updated(function ($trip) {
+            if (in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+                \App\Models\PromotionUsage::where('trip_id', $trip->id)->delete();
+            }
+        });
     }
 
     public function car(): \Illuminate\Database\Eloquent\Relations\BelongsTo

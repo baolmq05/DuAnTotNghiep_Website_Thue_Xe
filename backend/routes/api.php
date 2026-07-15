@@ -99,6 +99,7 @@ Route::group(['middleware' => 'api'], function () {
     Route::post('trips/{id}/extension-pay', [TripController::class, 'payExtension']);
     Route::get('my-trips', [MyTripController::class, 'index']);
 
+    Route::post('promotions/check', [PromotionController::class, 'check']);
     Route::post('promotions', [PromotionController::class, 'store']);
     Route::put('promotions/{id}', [PromotionController::class, 'update']);
     Route::delete('promotions/{id}', [PromotionController::class, 'destroy']);

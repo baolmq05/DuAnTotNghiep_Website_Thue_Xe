@@ -228,6 +228,8 @@ export class CarService extends BaseService {
         car_id: number;
         delivery_address?: string;
         delivery_location?: string;
+        promo_code?: string;
+        delivery_fee?: number;
     }): Promise<{ success: boolean; message: string; data: any }> {
         return this.request<{ success: boolean; message: string; data: any }>("trips", {
             method: "POST",

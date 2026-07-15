@@ -72,6 +72,8 @@ class TripController extends Controller
             'car_id' => 'required|exists:cars,id',
             'delivery_address' => 'nullable|string',
             'delivery_location' => 'nullable|string',
+            'promo_code' => 'nullable|string',
+            'delivery_fee' => 'nullable|numeric|min:0',
         ]);
 
         if ($validator->fails()) {
@@ -97,25 +99,120 @@ class TripController extends Controller
             ], 400);
         }
 
-        // Tạo chuyến đi với trạng thái Pending (Chờ duyệt)
-        $trip = Trip::create([
-            'cost' => $request->cost,
-            'discount_amount' => $request->discount_amount ?? 0,
-            'status' => TripStatus::Pending->value,
-            'trip_type' => $request->trip_type,
-            'start_at' => $request->start_at,
-            'end_at' => $request->end_at,
-            'car_id' => $request->car_id,
-            'user_id' => $user->id,
-            'delivery_address' => $request->delivery_address,
-            'delivery_location' => $request->delivery_location,
-        ]);
+        // Tính toán các thông số thuê xe
+        $start = \Carbon\Carbon::parse($request->start_at);
+        $end = \Carbon\Carbon::parse($request->end_at);
+        $diffMinutes = $start->diffInMinutes($end);
+        $days = max(1, ceil($diffMinutes / 1440));
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Gửi yêu cầu thuê xe thành công!',
-            'data' => $trip
-        ], 201);
+        $unitPrice = $car->unit_price;
+        $insuranceFee = round($unitPrice * 0.09);
+        $discountVal = $car->discount_value ?? 0;
+        $carDiscountTotal = $discountVal * $days;
+
+        $baseRentalPrice = ($unitPrice + $insuranceFee - $discountVal) * $days;
+        $deliveryFee = $request->input('delivery_fee', 0);
+        $totalPriceBeforePromo = $baseRentalPrice + $deliveryFee;
+
+        $promoDiscount = 0;
+        $promotion = null;
+
+        if ($request->filled('promo_code')) {
+            $promotion = \App\Models\Promotion::where('code', $request->promo_code)->first();
+
+            if (!$promotion || $promotion->status != 1) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá không hợp lệ.'
+                ], 400);
+            }
+
+            $now = now()->toDateString();
+            if ($promotion->start_date > $now || $promotion->end_date < $now) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Mã giảm giá đã hết hạn hoặc chưa đến thời gian sử dụng.'
+                ], 400);
+            }
+
+            // Check usage_limit
+            if ($promotion->usage_limit !== null) {
+                $totalUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)->count();
+                if ($totalUsages >= $promotion->usage_limit) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Mã giảm giá đã hết lượt sử dụng.'
+                    ], 400);
+                }
+            }
+
+            // Check per_user_limit
+            if ($promotion->per_user_limit !== null) {
+                $userUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)
+                    ->where('user_id', $user->id)
+                    ->count();
+                if ($userUsages >= $promotion->per_user_limit) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bạn đã sử dụng mã giảm giá này tối đa số lần cho phép.'
+                    ], 400);
+                }
+            }
+
+            if ($promotion->discount_type == 0) { // percentage
+                $promoDiscount = round(($baseRentalPrice * $promotion->discount_value) / 100);
+            } else { // fixed amount
+                $promoDiscount = $promotion->discount_value;
+            }
+
+            $promoDiscount = min($promoDiscount, $baseRentalPrice);
+        }
+
+        $calculatedCost = max(0, $totalPriceBeforePromo - $promoDiscount);
+        $calculatedDiscountAmount = $carDiscountTotal + $promoDiscount;
+
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            // Tạo chuyến đi với trạng thái Pending (Chờ duyệt)
+            $trip = Trip::create([
+                'cost' => $calculatedCost,
+                'discount_amount' => $calculatedDiscountAmount,
+                'status' => TripStatus::Pending->value,
+                'trip_type' => $request->trip_type,
+                'start_at' => $request->start_at,
+                'end_at' => $request->end_at,
+                'car_id' => $request->car_id,
+                'user_id' => $user->id,
+                'delivery_address' => $request->delivery_address,
+                'delivery_location' => $request->delivery_location,
+            ]);
+
+            if ($promotion) {
+                \App\Models\PromotionUsage::create([
+                    'user_id' => $user->id,
+                    'promotion_id' => $promotion->id,
+                    'discount_amount' => $promoDiscount,
+                    'used_at' => now(),
+                    'trip_id' => $trip->id
+                ]);
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gửi yêu cầu thuê xe thành công!',
+                'data' => $trip
+            ], 201);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thực hiện thuê xe: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -770,7 +867,7 @@ class TripController extends Controller
     private function autoUpdateExpiredTrips()
     {
         Trip::where('status', TripStatus::Ongoing->value)
-            ->where('end_at', '<', now())
+            ->where('end_at', '<', now('Asia/Ho_Chi_Minh')->toDateTimeString())
             ->update(['status' => TripStatus::WaitingReturn->value]);
     }
 

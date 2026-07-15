@@ -22,7 +22,7 @@ class MyTripController extends Controller
 
         // Tự động quét và cập nhật các chuyến đi hết giờ
         Trip::where('status', TripStatus::Ongoing->value)
-            ->where('end_at', '<', now())
+            ->where('end_at', '<', now('Asia/Ho_Chi_Minh')->toDateTimeString())
             ->update(['status' => TripStatus::WaitingReturn->value]);
 
         // lấy tất cả trip và car của user

@@ -43,6 +43,20 @@ export class PromotionService extends BaseService {
             useAuth: false,
         });
     }
+
+    async checkPromotion(payload: {
+        code: string;
+        start_at: string;
+        end_at: string;
+        car_id: number;
+        delivery_fee?: number;
+    }): Promise<PromotionResponse<any>> {
+        return this.request<PromotionResponse<any>>(`${this.endpoint}/check`, {
+            method: "POST",
+            body: payload,
+            useAuth: true,
+        });
+    }
 }
 
 export const promotionService = new PromotionService();

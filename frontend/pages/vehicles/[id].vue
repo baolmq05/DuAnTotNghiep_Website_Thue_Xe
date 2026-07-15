@@ -468,6 +468,51 @@
                   </div>
                 </div>
 
+                <!-- Mã giảm giá -->
+                <div class="space-y-2.5 pt-2 border-t border-slate-100">
+                  <div class="flex items-center justify-between text-sm">
+                    <span class="text-slate-700 font-semibold">Mã giảm giá</span>
+                  </div>
+                  <div class="flex gap-2">
+                    <input
+                      type="text"
+                      v-model="promoCodeInput"
+                      placeholder="Nhập mã giảm giá..."
+                      class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-primary bg-slate-50 focus:bg-white transition-all text-brand-dark"
+                      :disabled="isPromoApplied || isPromoLoading"
+                    />
+                    <button
+                      v-if="!isPromoApplied"
+                      @click="applyPromoCode"
+                      :disabled="isPromoLoading"
+                      class="px-4 py-2 bg-brand-primary hover:bg-brand-dark text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-brand-primary/10 disabled:opacity-50 flex items-center justify-center min-w-[80px]"
+                    >
+                      <span v-if="isPromoLoading">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </span>
+                      <span v-else>Áp dụng</span>
+                    </button>
+                    <button
+                      v-else
+                      @click="removePromoCode"
+                      class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-rose-500/10"
+                    >
+                      Hủy bỏ
+                    </button>
+                  </div>
+                  <p v-if="promoError" class="text-xs text-rose-500 font-medium pl-1 flex items-center gap-1">
+                    <Icon name="lucide:circle-alert" class="w-3.5 h-3.5" />
+                    {{ promoError }}
+                  </p>
+                  <p v-if="isPromoApplied && appliedPromo" class="text-xs text-green-600 font-semibold pl-1 flex items-center gap-1">
+                    <Icon name="lucide:circle-check" class="w-3.5 h-3.5" />
+                    Đã áp dụng: <span class="font-bold uppercase text-brand-dark">{{ appliedPromo?.code }}</span>
+                  </p>
+                </div>
+
                 <!-- Chi tiết giá -->
                 <div class="space-y-2.5 pt-2 border-t border-slate-100">
                   <div v-for="item in priceDetails" :key="item.label" class="flex items-center justify-between text-sm">
@@ -700,6 +745,7 @@ import { TripStatus } from "~/config/trip-status";
 import { carService } from "~/services/car.service";
 import { favoriteService } from "~/services/favorite.service";
 import { notificationService } from "~/services/notification.service";
+import { promotionService } from "~/services/promotion.service";
 import DatePickerModal from "~/components/Shared/DatePickerModal.vue";
 
 definePageMeta({ layout: "vehicle-detail" });
@@ -1016,6 +1062,8 @@ const handleBooking = async () => {
       delivery_location: receiveMethod.value === 'delivery' && deliveryCoords.value
         ? `${deliveryCoords.value.lat},${deliveryCoords.value.lng}`
         : car.value.car_location?.location,
+      promo_code: isPromoApplied.value && appliedPromo.value ? appliedPromo.value.code : undefined,
+      delivery_fee: calculatedDeliveryFee.value,
     }
 
     const tripRes = await carService.createTrip(tripPayload)
@@ -1091,6 +1139,114 @@ const formattedEnd = computed(() => {
   return `${pad(d.getHours())}:${pad(d.getMinutes())}, ${pad(d.getDate())}/${pad(d.getMonth() + 1)}`
 })
 
+const rentalDays = computed(() => {
+  if (!selectedStart.value || !selectedEnd.value) return 1
+  const ms = selectedEnd.value.getTime() - selectedStart.value.getTime()
+  const days = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)))
+  return days
+})
+
+// Promotion Code State
+const promoCodeInput = ref("");
+const appliedPromo = ref<any>(null);
+const isPromoApplied = ref(false);
+const promoError = ref("");
+const isPromoLoading = ref(false);
+
+const applyPromoCode = async () => {
+  promoError.value = "";
+  if (!promoCodeInput.value.trim()) {
+    promoError.value = "Vui lòng nhập mã giảm giá.";
+    return;
+  }
+  
+  if (!selectedStart.value || !selectedEnd.value) {
+    promoError.value = "Vui lòng chọn thời gian thuê xe trước.";
+    return;
+  }
+
+  isPromoLoading.value = true;
+  try {
+    const pad = (num: number) => String(num).padStart(2, '0');
+    const formatDbDate = (d: Date) => {
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    };
+
+    const res = await promotionService.checkPromotion({
+      code: promoCodeInput.value.trim(),
+      start_at: formatDbDate(selectedStart.value),
+      end_at: formatDbDate(selectedEnd.value),
+      car_id: car.value.id,
+      delivery_fee: calculatedDeliveryFee.value
+    });
+
+    if (res && res.success) {
+      appliedPromo.value = res.data;
+      isPromoApplied.value = true;
+      showToast("Áp dụng mã giảm giá thành công!", "success");
+    } else {
+      promoError.value = res.message || "Mã giảm giá không hợp lệ.";
+      showToast(promoError.value, "error");
+    }
+  } catch (err: any) {
+    console.error("Lỗi áp dụng mã giảm giá:", err);
+    promoError.value = err.response?._data?.message || "Lỗi khi kiểm tra mã giảm giá.";
+    showToast(promoError.value, "error");
+  } finally {
+    isPromoLoading.value = false;
+  }
+};
+
+const removePromoCode = () => {
+  appliedPromo.value = null;
+  isPromoApplied.value = false;
+  promoCodeInput.value = "";
+  promoError.value = "";
+  showToast("Đã hủy áp dụng mã giảm giá.", "info");
+};
+
+watch([rentalDays, receiveMethod, deliveryCoords], async () => {
+  if (isPromoApplied.value && appliedPromo.value) {
+    // Tự động áp dụng lại để cập nhật tiền giảm giá
+    promoError.value = "";
+    try {
+      const pad = (num: number) => String(num).padStart(2, '0');
+      const formatDbDate = (d: Date) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const hours = String(d.getHours()).padStart(2, '0');
+        const minutes = String(d.getMinutes()).padStart(2, '0');
+        const seconds = String(d.getSeconds()).padStart(2, '0');
+        return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+      };
+
+      const res = await promotionService.checkPromotion({
+        code: appliedPromo.value.code,
+        start_at: formatDbDate(selectedStart.value!),
+        end_at: formatDbDate(selectedEnd.value!),
+        car_id: car.value.id,
+        delivery_fee: calculatedDeliveryFee.value
+      });
+
+      if (res && res.success) {
+        appliedPromo.value = res.data;
+      } else {
+        removePromoCode();
+        showToast("Mã giảm giá không còn hiệu lực cho khoảng thời gian/lựa chọn mới này.", "warning");
+      }
+    } catch (err: any) {
+      removePromoCode();
+    }
+  }
+});
+
 const disabledDates = computed(() => {
   console.log("Raw trips from backend:", car.value?.trips)
   if (!car.value?.trips || car.value.trips.length === 0) return []
@@ -1119,13 +1275,6 @@ watch(disabledDates, (newDisabled) => {
       selectedEnd.value = null
     }
   }
-})
-
-const rentalDays = computed(() => {
-  if (!selectedStart.value || !selectedEnd.value) return 1
-  const ms = selectedEnd.value.getTime() - selectedStart.value.getTime()
-  const days = Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)))
-  return days
 })
 
 const handleApplyDates = (payload: any) => {
@@ -1414,12 +1563,25 @@ const priceDetails = computed(() => {
     });
   }
 
+  if (isPromoApplied.value && appliedPromo.value) {
+    details.push({
+      label: `Mã giảm giá (${appliedPromo.value.code})`,
+      value: `-${appliedPromo.value.discount_amount.toLocaleString('vi-VN')}đ`,
+      info: false,
+      discount: true,
+    });
+  }
+
   return details;
 });
 
 const totalSavings = computed(() => {
   if (!car.value || !selectedStart.value || !selectedEnd.value) return 0;
-  return (car.value.discount_value || 0) * rentalDays.value;
+  let savings = (car.value.discount_value || 0) * rentalDays.value;
+  if (isPromoApplied.value && appliedPromo.value) {
+    savings += appliedPromo.value.discount_amount;
+  }
+  return savings;
 });
 
 const totalPrice = computed(() => {
@@ -1429,7 +1591,11 @@ const totalPrice = computed(() => {
   const insuranceFee = Math.round(unitPrice * 0.09);
   const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
-  return (unitPrice + insuranceFee - discountVal) * rentalDays.value + deliveryFeeVal;
+  let price = (unitPrice + insuranceFee - discountVal) * rentalDays.value + deliveryFeeVal;
+  if (isPromoApplied.value && appliedPromo.value) {
+    price -= appliedPromo.value.discount_amount;
+  }
+  return Math.max(0, price);
 });
 
 const formattedReviews = computed(() => {
