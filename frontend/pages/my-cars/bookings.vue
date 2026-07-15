@@ -86,6 +86,18 @@
                   :class="statusClass(trip.status)">
                   {{ statusLabel(trip.status) }}
                 </span>
+                <!-- Tag hiển thị đã đóng băng/tạm giữ tiền thuê cho chủ xe -->
+                <span v-if="trip.payment_held"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-blue-50 text-[#1e4e57] border border-blue-200/50">
+                  <Icon name="lucide:shield-check" class="w-3 h-3 text-[#1e4e57]" />
+                  Đang giữ tiền
+                </span>
+                <!-- Tag hiển thị khi đã giải ngân về ví chủ xe -->
+                <span v-if="!trip.payment_held && trip.status === 4"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-200/50">
+                  <Icon name="lucide:wallet" class="w-3 h-3 text-emerald-600" />
+                  Đã về ví
+                </span>
                 <!-- Song song status gia hạn nếu có -->
                 <span v-if="trip.latest_extension && trip.latest_extension.status !== 0"
                   class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold border shadow-2xs"

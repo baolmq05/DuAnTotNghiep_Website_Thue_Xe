@@ -11,6 +11,7 @@ use App\Models\Wallet;
 use App\Models\Trip;
 use App\Models\Transaction;
 use App\Models\TripExtension;
+use App\Models\PendingBalance;
 use Illuminate\Support\Facades\DB;
 
 class ZaloPayService
@@ -452,37 +453,7 @@ class ZaloPayService
                         $meta["owner_id"]
                     );
 
-                    if ($owner) {
-
-                        if (!$owner->wallet_id) {
-
-                            $wallet = Wallet::create([
-
-                                "amount" => 0
-
-                            ]);
-
-                            $owner->wallet_id = $wallet->id;
-
-                            $owner->save();
-
-                        } else {
-
-                            $wallet = $owner->wallet;
-
-                        }
-
-                        $wallet->increment(
-
-                            "amount",
-
-                            $amount
-
-                        );
-
-                    }
-
-                    Transaction::create([
+                    $transaction = Transaction::create([
 
                         "user_id" => $trip->user_id,
 
@@ -494,6 +465,17 @@ class ZaloPayService
 
                         "trip_id" => $trip->id
 
+                    ]);
+
+                    PendingBalance::create([
+                        'transaction_id' => $transaction->id,
+                        'trip_id' => $trip->id,
+                        'payer_id' => $trip->user_id,
+                        'receiver_id' => $owner->id ?? ($trip->car->user_id ?? 0),
+                        'amount' => $amount,
+                        'status' => '1',
+                        'expired_at' => \Carbon\Carbon::parse($trip->end_at)->addDays(3),
+                        'released_at' => null
                     ]);
 
                     $trip->status = TripStatus::Confirmed->value;
@@ -628,27 +610,26 @@ class ZaloPayService
                         ];
                     }
                     $owner = User::find($meta["owner_id"] ?? ($trip->car->user_id ?? 0));
-                    if ($owner) {
-                        if (!$owner->wallet_id) {
-                            $wallet = Wallet::create(["amount" => 0]);
-                            $owner->wallet_id = $wallet->id;
-                            $owner->save();
-                        } else {
-                            $wallet = $owner->wallet;
-                        }
-                        $wallet->increment("amount", $amount);
-                    }
-                    Transaction::create([
+                    $transaction = Transaction::create([
                         "user_id" => $trip->user_id,
                         "transaction_code" => $zpTransactionId,
                         "amount" => $amount,
                         "prepay" => 0,
                         "trip_id" => $trip->id
                     ]);
+                    PendingBalance::create([
+                        'transaction_id' => $transaction->id,
+                        'trip_id' => $trip->id,
+                        'payer_id' => $trip->user_id,
+                        'receiver_id' => $owner->id ?? ($trip->car->user_id ?? 0),
+                        'amount' => $amount,
+                        'status' => '1',
+                        'expired_at' => \Carbon\Carbon::parse($extension->end_date)->addDays(3),
+                        'released_at' => null
+                    ]);
                     $extension->update(["status" => 3]);
                     $trip->update([
                         "end_at" => $extension->end_date,
-                        "extended_end_at" => null,
                         "cost" => $trip->cost + $amount,
                     ]);
                     \App\Models\Notification::create([

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Wallet;
 use App\Models\Transaction;
 use App\Models\Trip;
+use App\Models\PendingBalance;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -197,23 +198,8 @@ class VNPayService
                         ];
                     }
 
-                    // 1. Credit the Car Owner's wallet
-                    $owner = User::find($ownerId);
-                    if ($owner) {
-                        if (!$owner->wallet_id) {
-                            $wallet = Wallet::create(['amount' => 0]);
-                            $owner->wallet_id = $wallet->id;
-                            $owner->save();
-                        } else {
-                            $wallet = $owner->wallet;
-                        }
-                        $wallet->increment('amount', $amount);
-                    } else {
-                        Log::warning("VNPay processPayment - Car owner ID {$ownerId} not found, money will only be logged.");
-                    }
-
-                    // 2. Create the Transaction record
-                    Transaction::create([
+                    // 1. Create the Transaction record
+                    $transaction = Transaction::create([
                         'user_id' => $trip->user_id, // customer paying
                         'transaction_code' => $vnpTransactionNo,
                         'amount' => $amount,
@@ -221,11 +207,23 @@ class VNPayService
                         'trip_id' => $trip->id
                     ]);
 
+                    // 2. Create PendingBalance holding record
+                    PendingBalance::create([
+                        'transaction_id' => $transaction->id,
+                        'trip_id' => $trip->id,
+                        'payer_id' => $trip->user_id,
+                        'receiver_id' => $ownerId ?? ($trip->car->user_id ?? 0),
+                        'amount' => $amount,
+                        'status' => '1',
+                        'expired_at' => \Carbon\Carbon::parse($trip->end_at)->addDays(3),
+                        'released_at' => null
+                    ]);
+
                     // 3. Update trip status to Confirmed/active
                     $trip->status = TripStatus::Confirmed->value;
                     $trip->save();
 
-                    Log::info("VNPay rental payment successful for trip {$tripId}, credited owner {$ownerId} amount {$amount}.");
+                    Log::info("VNPay rental payment successful for trip {$tripId}, created pending balance holding amount {$amount}.");
                     break;
 
                 case 'deposit':
@@ -314,23 +312,24 @@ class VNPayService
                     }
 
                     $owner = User::find($ownerId ?? ($trip->car->user_id ?? 0));
-                    if ($owner) {
-                        if (!$owner->wallet_id) {
-                            $wallet = Wallet::create(['amount' => 0]);
-                            $owner->wallet_id = $wallet->id;
-                            $owner->save();
-                        } else {
-                            $wallet = $owner->wallet;
-                        }
-                        $wallet->increment('amount', $amount);
-                    }
 
-                    Transaction::create([
+                    $transaction = Transaction::create([
                         'user_id' => $trip->user_id,
                         'transaction_code' => $vnpTransactionNo,
                         'amount' => $amount,
                         'prepay' => 0,
                         'trip_id' => $trip->id
+                    ]);
+
+                    PendingBalance::create([
+                        'transaction_id' => $transaction->id,
+                        'trip_id' => $trip->id,
+                        'payer_id' => $trip->user_id,
+                        'receiver_id' => $owner->id ?? ($trip->car->user_id ?? 0),
+                        'amount' => $amount,
+                        'status' => '1',
+                        'expired_at' => \Carbon\Carbon::parse($extension->end_date)->addDays(3),
+                        'released_at' => null
                     ]);
 
                     $extension->update(['status' => 3]);

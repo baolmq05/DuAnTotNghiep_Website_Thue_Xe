@@ -68,6 +68,18 @@
                 :class="statusClass(trip.status)">
                 {{ statusLabel(trip.status) }}
               </span>
+              <!-- Tag hiển thị trạng thái tạm giữ tiền cho chủ xe -->
+              <span v-if="isOwner && trip.payment_held"
+                class="px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm bg-blue-50 text-[#1e4e57] border-blue-200/60 flex items-center gap-1.5">
+                <Icon name="lucide:shield-check" class="w-3.5 h-3.5 text-[#1e4e57]" />
+                Đang tạm giữ tiền
+              </span>
+              <!-- Tag hiển thị khi đã giải ngân về ví chủ xe -->
+              <span v-if="isOwner && !trip.payment_held && trip.status === 4"
+                class="px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm bg-emerald-50 text-emerald-600 border-emerald-200/60 flex items-center gap-1.5">
+                <Icon name="lucide:wallet" class="w-3.5 h-3.5 text-emerald-600" />
+                Đã về ví chủ xe
+              </span>
               <!-- Song song status gia hạn nếu có -->
               <span v-if="trip.latest_extension && trip.latest_extension.status !== 0"
                 class="px-4 py-1.5 rounded-full text-xs font-bold border shadow-sm flex items-center gap-1.5"
@@ -210,6 +222,20 @@
                     totalPaid) }}</span>
                 </div>
               </div>
+
+              <!-- Thông báo về tạm giữ/giải ngân tiền dành cho chủ xe -->
+              <div v-if="isOwner && trip.owner_payment_note"
+                class="mt-4 pt-3 border-t border-dashed border-slate-100 animate-fade-in">
+                <div
+                  class="flex items-start gap-2.5 text-xs font-medium bg-[#1e4e57]/5 border border-[#1e4e57]/15 rounded-2xl p-4 text-[#1e4e57] leading-relaxed">
+                  <Icon name="lucide:info" class="w-4.5 h-4.5 shrink-0 mt-0.5 text-[#1e4e57]" />
+                  <div>
+                    <span class="font-bold block mb-0.5">Thông tin tiền thuê:</span>
+                    <span>{{ trip.owner_payment_note }}</span>
+                  </div>
+                </div>
+              </div>
+
             </div>
           </div>
         </div>
@@ -418,7 +444,16 @@
             </div>
             
             <div v-if="!isOwner" class="flex flex-col sm:flex-row gap-3">
-              <button 
+              <!-- Nếu có yêu cầu gia hạn chờ thanh toán -->
+              <button v-if="trip.latest_extension && trip.latest_extension.status === 2"
+                @click="openPayExtensionModal" 
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-amber-500 hover:bg-amber-600 active:scale-[0.98] cursor-pointer shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5"
+              >
+                <Icon name="lucide:credit-card" class="w-4 h-4" />
+                Thanh toán phí gia hạn
+              </button>
+              
+              <button v-else-if="!trip.latest_extension || trip.latest_extension.status === 0"
                 @click="openExtensionModal" 
                 class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5"
               >
@@ -440,6 +475,59 @@
                   Trả xe
                 </span>
               </button>
+            </div>
+
+            <!-- Thông báo yêu cầu gia hạn đã được duyệt và cần thanh toán -->
+            <div v-if="!isOwner && trip.latest_extension && trip.latest_extension.status === 2"
+              class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5 mt-3 animate-fade-in">
+              <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-amber-650" />
+              <div class="leading-relaxed">
+                <p class="font-bold">Yêu cầu gia hạn đã được phê duyệt</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Chủ xe đã đồng ý yêu cầu gia hạn của bạn. Vui lòng thanh toán phí gia hạn để hoàn tất quá trình này.
+                </p>
+              </div>
+            </div>
+
+            <!-- Yêu cầu gia hạn đang chờ duyệt (Hiển thị cho chủ xe) -->
+            <div v-if="isOwner && trip.latest_extension && trip.latest_extension.status === 1"
+              class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 space-y-3 mt-3 animate-fade-in">
+              <div class="flex items-start gap-2.5">
+                <Icon name="lucide:calendar-clock" class="mt-0.5 w-4.5 h-4.5 shrink-0 text-indigo-650" />
+                <div class="leading-relaxed flex-grow">
+                  <p class="font-bold">Khách hàng yêu cầu gia hạn chuyến đi</p>
+                  <p class="mt-0.5 font-medium opacity-90">
+                    Khách hàng đề xuất gia hạn ngày trả xe mới và đang chờ bạn phê duyệt.
+                  </p>
+                  <div class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4 text-[11px]">
+                    <div>
+                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Ngày trả xe mới:</span>
+                      <span class="font-bold text-indigo-950 text-xs">{{ formatDate(trip.latest_extension.end_date) }}</span>
+                    </div>
+                    <div>
+                      <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Phí gia hạn dự kiến:</span>
+                      <span class="font-bold text-[#1e4e57] text-xs">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button 
+                  @click="handleApproveExtension" 
+                  :disabled="processingAction"
+                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
+                >
+                  <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-3.5 h-3.5" />
+                  <span>Đồng ý gia hạn</span>
+                </button>
+                <button 
+                  @click="openRejectExtensionDialog" 
+                  :disabled="processingAction"
+                  class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
+                >
+                  Từ chối gia hạn
+                </button>
+              </div>
             </div>
           </div>
 
@@ -485,23 +573,42 @@
           </div>
 
           <!-- Trip is waiting for extension approval (status = 7) -->
-          <div v-else-if="trip.status === 7" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex items-start gap-2.5">
-            <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-650" />
-            <div class="leading-relaxed flex-grow">
-              <p class="font-bold">Đang chờ chủ xe duyệt gia hạn</p>
-              <p class="mt-0.5 font-medium opacity-90">
-                Yêu cầu gia hạn thêm ngày đang chờ chủ xe phê duyệt.
-              </p>
-              <div v-if="trip.latest_extension?.end_date" class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
-                <div>
-                  <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề xuất:</span>
-                  <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.latest_extension.end_date) }}</span>
-                </div>
-                <div v-if="trip.latest_extension?.extension_amount">
-                  <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Phí gia hạn dự kiến:</span>
-                  <span class="font-bold text-sm text-[#1e4e57]">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
+          <div v-else-if="trip.status === 7" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex flex-col gap-3">
+            <div class="flex items-start gap-2.5">
+              <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-650" />
+              <div class="leading-relaxed flex-grow">
+                <p class="font-bold">Đang chờ chủ xe duyệt gia hạn</p>
+                <p class="mt-0.5 font-medium opacity-90">
+                  Yêu cầu gia hạn thêm ngày đang chờ chủ xe phê duyệt.
+                </p>
+                <div v-if="trip.latest_extension?.end_date" class="mt-2.5 pt-2 border-t border-indigo-200/60 flex flex-col sm:flex-row gap-4">
+                  <div>
+                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề xuất:</span>
+                    <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.latest_extension.end_date) }}</span>
+                  </div>
+                  <div v-if="trip.latest_extension?.extension_amount">
+                    <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Phí gia hạn dự kiến:</span>
+                    <span class="font-bold text-sm text-[#1e4e57]">{{ formatCurrency(trip.latest_extension.extension_amount) }}</span>
+                  </div>
                 </div>
               </div>
+            </div>
+            <div v-if="isOwner" class="flex gap-3 pt-2">
+              <button 
+                @click="handleApproveExtension" 
+                :disabled="processingAction"
+                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
+              >
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-3.5 h-3.5" />
+                <span>Đồng ý gia hạn</span>
+              </button>
+              <button 
+                @click="openRejectExtensionDialog" 
+                :disabled="processingAction"
+                class="flex-1 py-2 px-3 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
+              >
+                Từ chối gia hạn
+              </button>
             </div>
           </div>
 
@@ -560,7 +667,24 @@
           class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-semibold p-4">
           <template v-if="trip.status === 0">
             <Icon name="lucide:hourglass" class="text-amber-500 mb-2 mx-auto block w-6 h-6" />
-            Chuyến đi đang chờ chủ xe duyệt. Bạn sẽ có thể tải ảnh lên sau khi yêu cầu được chấp nhận.
+            <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ chủ xe duyệt.</p>
+            <div v-if="isOwner" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
+              <button 
+                @click="handleConfirmTrip" 
+                :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-[#1e4e57]/10"
+              >
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <span v-else>Đồng ý cho thuê</span>
+              </button>
+              <button 
+                @click="openRejectTripDialog" 
+                :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10"
+              >
+                Từ chối cho thuê
+              </button>
+            </div>
           </template>
           <template v-else-if="trip.status === 1">
             <Icon name="lucide:credit-card" class="text-sky-500 mb-2 mx-auto block w-6 h-6" />
@@ -827,6 +951,86 @@ const handleBack = () => {
     navigateTo('/my-cars/bookings')
   } else {
     navigateTo('/profile/my-trips')
+  }
+}
+
+const processingAction = ref(false)
+
+const handleConfirmTrip = async () => {
+  processingAction.value = true
+  try {
+    const res = await carService.confirmTrip(trip.value.id)
+    if (res && res.success) {
+      showToast('Đã phê duyệt yêu cầu thuê xe thành công!', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Phê duyệt thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi phê duyệt chuyến đi:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi phê duyệt.', 'error')
+  } finally {
+    processingAction.value = false
+  }
+}
+
+const openRejectTripDialog = async () => {
+  const reason = prompt('Nhập lý do từ chối cho thuê:', 'Chủ xe bận lịch đột xuất')
+  if (reason === null) return // Hủy prompt
+  
+  processingAction.value = true
+  try {
+    const res = await carService.rejectTrip(trip.value.id, reason)
+    if (res && res.success) {
+      showToast('Đã từ chối yêu cầu thuê xe.', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Từ chối thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi từ chối chuyến đi:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi từ chối.', 'error')
+  } finally {
+    processingAction.value = false
+  }
+}
+
+const handleApproveExtension = async () => {
+  processingAction.value = true
+  try {
+    const res = await carService.approveExtension(trip.value.id)
+    if (res && res.success) {
+      showToast('Đã đồng ý gia hạn chuyến đi thành công!', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Phê duyệt gia hạn thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi phê duyệt gia hạn:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi phê duyệt gia hạn.', 'error')
+  } finally {
+    processingAction.value = false
+  }
+}
+
+const openRejectExtensionDialog = async () => {
+  const reason = prompt('Nhập lý do từ chối gia hạn:', 'Không bận lịch trống xe')
+  if (reason === null) return
+  
+  processingAction.value = true
+  try {
+    const res = await carService.rejectExtension(trip.value.id, reason)
+    if (res && res.success) {
+      showToast('Đã từ chối yêu cầu gia hạn.', 'success')
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Từ chối gia hạn thất bại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi từ chối gia hạn:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi từ chối gia hạn.', 'error')
+  } finally {
+    processingAction.value = false
   }
 }
 

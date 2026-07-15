@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class PendingBalance extends Model
+{
+    protected $fillable = [
+        'transaction_id',
+        'trip_id',
+        'payer_id',
+        'receiver_id',
+        'amount',
+        'status',
+        'expired_at',
+        'released_at',
+    ];
+
+    protected $casts = [
+        'amount' => 'decimal:2',
+        'expired_at' => 'datetime',
+        'released_at' => 'datetime',
+    ];
+
+    public function transaction()
+    {
+        return $this->belongsTo(Transaction::class);
+    }
+
+    public function trip()
+    {
+        return $this->belongsTo(Trip::class);
+    }
+
+    public function payer()
+    {
+        return $this->belongsTo(User::class, 'payer_id');
+    }
+
+    public function receiver()
+    {
+        return $this->belongsTo(User::class, 'receiver_id');
+    }
+}

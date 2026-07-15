@@ -87,10 +87,16 @@ class WalletController extends Controller
                 ->where('status', TripStatus::Complete->value)
                 ->count();
 
+            // Tính số tiền đang giữ (ví ảo) của chủ xe
+            $pendingBalance = \App\Models\PendingBalance::where('receiver_id', $user->id)
+                ->where('status', '1')
+                ->sum('amount');
+
             return response()->json([
                 'success' => true,
                 'data' => [
                     'balance' => $wallet->amount,
+                    'pending_balance' => floatval($pendingBalance),
                     'rating' => $rating,
                     'completed_trips_count' => $completedTripsCount,
                     'response_rate' => 100,

@@ -6,6 +6,7 @@ use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Trip;
 use App\Models\Car;
+use App\Models\PendingBalance;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -655,12 +656,24 @@ class TripController extends Controller
 
             // Ghi nhận giao dịch thanh toán gia hạn
             if ($amount > 0) {
-                \App\Models\Transaction::create([
+                $transaction = \App\Models\Transaction::create([
                     'user_id' => $user->id,
                     'trip_id' => $trip->id,
                     'amount' => $amount,
                     'prepay' => 0,
                     'transaction_code' => 'EXT_' . time() . '_' . $trip->id,
+                ]);
+
+                // Tạo bản ghi pending_balances để giữ tiền
+                PendingBalance::create([
+                    'transaction_id' => $transaction->id,
+                    'trip_id' => $trip->id,
+                    'payer_id' => $user->id,
+                    'receiver_id' => $trip->car->user_id,
+                    'amount' => $amount,
+                    'status' => '1',
+                    'expired_at' => \Carbon\Carbon::parse($extension->end_date)->addDays(3),
+                    'released_at' => null
                 ]);
             }
 
@@ -879,6 +892,9 @@ class TripController extends Controller
             }
 
             $trip->update(['status' => TripStatus::Complete->value]);
+
+            // Giải ngân tiền từ pending_balances sang ví chủ xe
+            $trip->releasePendingBalances();
 
             \App\Models\Notification::create([
                 'user_id' => $trip->user_id,
