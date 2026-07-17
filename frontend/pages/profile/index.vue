@@ -251,16 +251,56 @@
 
     <!-- Payment -->
     <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm">
-      <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center">
+      <div class="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-center mb-6">
         <h2 class="text-xl md:text-2xl font-semibold">Thẻ thanh toán</h2>
 
-        <button class="border rounded-xl px-4 py-2 w-fit">Thêm thẻ</button>
+        <button
+          v-if="!user?.bank_name"
+          @click="openBankModal"
+          class="px-4 py-2 bg-brand-primary text-white text-sm font-semibold rounded-xl hover:bg-brand-dark transition-colors focus:outline-none shadow-sm flex items-center gap-1.5"
+        >
+          <Icon name="ic:outline-add" />
+          Thêm thẻ
+        </button>
+        <button
+          v-else
+          @click="openBankModal"
+          class="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-semibold rounded-xl hover:bg-slate-50 transition-colors focus:outline-none shadow-sm flex items-center gap-1.5"
+        >
+          <Icon name="ic:outline-edit" />
+          Chỉnh sửa thẻ
+        </button>
       </div>
 
-      <div class="h-[220px] md:h-[300px] flex flex-col justify-center items-center text-gray-500">
-        <Icon name="ic:outline-credit-card" size="80" />
+      <div v-if="user?.bank_name" class="max-w-md">
+        <!-- Bank card using custom premium styling -->
+        <div class="relative overflow-hidden bg-gradient-to-br from-[#1e4e57] to-[#286874] text-white rounded-2xl p-6 shadow-md border border-[#286874]/20 animate-scale-in">
+          <div class="absolute -right-10 -bottom-10 w-40 h-40 rounded-full bg-white/5 pointer-events-none"></div>
+          <div class="absolute -left-10 -top-10 w-32 h-32 rounded-full bg-white/5 pointer-events-none"></div>
+          
+          <div class="flex justify-between items-start mb-8">
+            <div class="flex flex-col">
+              <span class="text-xs uppercase tracking-wider text-cyan-200/80 font-bold">Ngân hàng liên kết</span>
+              <span class="text-lg font-black tracking-tight mt-1">{{ user.bank_name }}</span>
+            </div>
+            <Icon name="lucide:landmark" class="text-cyan-100" size="32" />
+          </div>
+          
+          <div class="mt-8">
+            <span class="text-xs uppercase tracking-wider text-cyan-200/80 font-bold block mb-1">Số tài khoản</span>
+            <span class="text-xl font-mono tracking-widest font-bold">{{ formatAccountNumber(user.bank_account_number) }}</span>
+          </div>
 
-        <p class="mt-4 text-center">Bạn chưa có thẻ nào</p>
+          <div class="flex justify-between items-end mt-6">
+            <span class="text-sm font-semibold uppercase tracking-wider text-white/90">{{ user.name }}</span>
+            <span class="text-xs text-cyan-200/60 font-semibold">Drivio Verified</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-else class="h-[220px] md:h-[300px] flex flex-col justify-center items-center text-gray-500 border border-dashed border-slate-200 rounded-2xl">
+        <Icon name="ic:outline-credit-card" size="80" class="text-slate-300" />
+        <p class="mt-4 text-center text-slate-400 font-medium text-sm">Bạn chưa có tài khoản ngân hàng nào</p>
       </div>
     </div>
 
@@ -380,6 +420,56 @@
             <span>Lưu ảnh mới</span>
           </button>
         </div>
+      </div>
+    </div>
+
+    <!-- Edit Bank Modal -->
+    <div v-if="isBankModalOpen" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+      <!-- Backdrop -->
+      <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeBankModal"></div>
+
+      <!-- Modal Content -->
+      <div
+        class="relative bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl z-10 p-8 border border-slate-100 flex flex-col animate-scale-in">
+        <h3 class="text-xl font-black text-brand-dark mb-6">Liên kết tài khoản ngân hàng</h3>
+
+        <form @submit.prevent="handleUpdateBank" class="space-y-4">
+          <!-- Bank Name Field -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Tên ngân hàng</label>
+            <select v-if="banksList.length > 0" v-model="bankForm.bank_name" required
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-semibold">
+              <option value="" disabled>Chọn ngân hàng</option>
+              <option v-for="bank in banksList" :key="bank.bin" :value="bank.short_name">
+                {{ bank.short_name }} - {{ bank.name }}
+              </option>
+            </select>
+            <input v-else v-model="bankForm.bank_name" type="text" required placeholder="Ví dụ: Vietcombank, Techcombank..."
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-semibold" />
+          </div>
+
+          <!-- Bank Account Number Field -->
+          <div class="space-y-1.5">
+            <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Số tài khoản</label>
+            <input v-model="bankForm.bank_account_number" type="text" required placeholder="Nhập số tài khoản ngân hàng"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-mono font-bold" />
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="grid grid-cols-2 gap-4 pt-4">
+            <!-- Close Button -->
+            <button type="button" @click="closeBankModal"
+              class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-colors focus:outline-none text-sm">
+              Hủy
+            </button>
+            <!-- Submit Button -->
+            <button type="submit" :disabled="submittingBank"
+              class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-sm shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2">
+              <Icon v-if="submittingBank" name="svg-spinners:ring-resize" class="w-4 h-4" />
+              <span>Cập nhật</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -735,6 +825,81 @@ const handleUpdateAvatar = async () => {
     showToast("Đã xảy ra lỗi trong quá trình upload ảnh.", "error")
   } finally {
     isUploadingAvatar.value = false
+  }
+}
+
+// ==========================================
+// BANK ACCOUNT MANAGEMENT
+// ==========================================
+const isBankModalOpen = ref(false)
+const submittingBank = ref(false)
+const banksList = ref<any[]>([])
+const bankForm = reactive({
+  bank_name: '',
+  bank_account_number: ''
+})
+
+const loadBanks = async () => {
+  try {
+    const res = await $fetch<any>('https://vietqr.app/banks.json')
+    if (res && res.data) {
+      banksList.value = res.data
+    }
+  } catch (err) {
+    console.error('Lỗi khi tải danh sách ngân hàng từ VietQR:', err)
+  }
+}
+
+const openBankModal = async () => {
+  bankForm.bank_name = user.value?.bank_name || ''
+  bankForm.bank_account_number = user.value?.bank_account_number || ''
+  isBankModalOpen.value = true
+  if (banksList.value.length === 0) {
+    await loadBanks()
+  }
+}
+
+const closeBankModal = () => {
+  isBankModalOpen.value = false
+}
+
+const formatAccountNumber = (num: string) => {
+  if (!num) return ''
+  return num.replace(/(\d{4})/g, '$1 ').trim()
+}
+
+const handleUpdateBank = async () => {
+  if (!bankForm.bank_name.trim()) {
+    showToast('Vui lòng nhập tên ngân hàng.', 'error')
+    return
+  }
+  if (!bankForm.bank_account_number.trim()) {
+    showToast('Vui lòng nhập số tài khoản.', 'error')
+    return
+  }
+
+  submittingBank.value = true
+  try {
+    const res = await updateProfile({
+      name: user.value?.name || '',
+      phone: user.value?.phone || '',
+      gender: user.value?.gender !== undefined ? user.value?.gender : 1,
+      DOB: user.value?.DOB || '',
+      bank_name: bankForm.bank_name,
+      bank_account_number: bankForm.bank_account_number
+    })
+
+    if (res.success) {
+      showToast('Cập nhật tài khoản ngân hàng thành công!', 'success')
+      closeBankModal()
+    } else {
+      showToast(res.message || 'Cập nhật tài khoản ngân hàng thất bại.', 'error')
+    }
+  } catch (err) {
+    console.error('Lỗi khi cập nhật ngân hàng:', err)
+    showToast('Đã xảy ra lỗi khi lưu thông tin. Vui lòng thử lại sau.', 'error')
+  } finally {
+    submittingBank.value = false
   }
 }
 </script>

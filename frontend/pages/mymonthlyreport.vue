@@ -33,7 +33,9 @@
                         <table class="w-full border-separate border-spacing-y-1 text-sm">
                             <tbody>
                                 <tr>
-                                    <td class="w-20 text-slate-500 font-bold">Chủ xe</td>
+                                    <td class="w-20 text-slate-500 font-bold">
+                                        {{ user?.role_id === 2 ? 'Khách hàng' : 'Chủ xe' }}
+                                    </td>
                                     <td class="bg-slate-50 px-3 py-1.5 text-slate-800 font-semibold rounded-lg">
                                         {{ userName }}
                                     </td>
@@ -76,7 +78,9 @@
                                         <th class="py-3 px-1 border-r border-gray-200">Ngày đi</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Ngày về</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Ngày đặt xe</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Khách hàng</th>
+                                        <th class="py-3 px-1 border-r border-gray-200">
+                                            {{ user?.role_id === 2 ? 'Chủ xe' : 'Khách hàng' }}
+                                        </th>
                                         <th class="py-3 px-1 border-r border-gray-200">Xe thuê</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Đơn giá</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Thanh toán giữ chỗ</th>
@@ -106,7 +110,7 @@
                                                 {{ item.trip.created_at }}
                                             </td>
                                             <td class="py-3 px-1 border-r border-slate-100 font-medium">
-                                                {{ item.trip.customer_name }}
+                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
                                             </td>
                                             <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
                                                 {{ item.trip.car?.name || 'N/A' }}
@@ -212,7 +216,9 @@
                                         <th class="py-3 px-1 border-r border-slate-200">Ngày đi</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Ngày về</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Ngày hủy chuyến</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Khách hàng</th>
+                                        <th class="py-3 px-1 border-r border-slate-200">
+                                            {{ user?.role_id === 2 ? 'Chủ xe' : 'Khách hàng' }}
+                                        </th>
                                         <th class="py-3 px-1 border-r border-slate-200">Xe thuê</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Đơn giá</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Thanh toán giữ chỗ</th>
@@ -240,7 +246,7 @@
                                                 {{ item.created_at }}
                                             </td>
                                             <td class="py-3 px-1 border-r border-slate-100 font-medium">
-                                                {{ item.trip.customer_name }}
+                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
                                             </td>
                                             <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
                                                 {{ item.trip.car?.name || 'N/A' }}
@@ -296,11 +302,11 @@
                             <span>TIỀN CUỐI KÌ</span>
                             <span>{{ formatCurrency(summary.end_balance) }}</span>
                         </div>
-                        <div class="flex justify-between font-semibold text-[#e05638]">
+                        <div v-if="user?.role_id !== 2" class="flex justify-between font-semibold text-[#e05638]">
                             <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ</span>
                             <span>({{ formatCurrency(summary.tax_deducted) }})</span>
                         </div>
-                        <div class="flex justify-between font-bold text-[#2f80ed]">
+                        <div v-if="user?.role_id !== 2" class="flex justify-between font-bold text-[#2f80ed]">
                             <span>THU NHẬP CHỦ XE</span>
                             <span>{{ formatCurrency(summary.owner_income) }}</span>
                         </div>
@@ -324,6 +330,8 @@ import { walletService } from '~/services/wallet.service'
 import { authService } from '~/services/auth.service'
 import { useRouter } from 'vue-router'
 import { TripStatus } from '~/config/trip-status'
+
+const { user } = useAuth()
 
 const router = useRouter()
 

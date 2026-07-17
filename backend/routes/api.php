@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\VNPayController;
 use App\Http\Controllers\Api\ZaloPayController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ReviewController;
+use App\Http\Controllers\Api\SeePayController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -66,11 +67,16 @@ Route::group([
     Route::delete('notifications/{id}', [NotificationController::class, 'destroy']);
 
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
+    Route::post('wallet/withdraw', [WalletController::class, 'withdraw']);
 
     // VNPay Authenticated routes
     Route::post('vnpay/create-payment', [VNPayController::class, 'createPayment']);
     // ZaloPay Authenticated routes
     Route::post('zalopay/create-payment', [ZaloPayController::class, 'createPayment']);
+
+    // SeePay Authenticated routes
+    Route::get('sepay/payment-info', [SeePayController::class, 'getPaymentInfo']);
+    Route::get('sepay/check-status', [SeePayController::class, 'checkStatus']);
     Route::get('chatbot', [AgentController::class, 'index']);
     Route::post('chatbot', [AgentController::class, 'store']);
 });
@@ -132,3 +138,6 @@ Route::get('vnpay/verify', [VNPayController::class, 'verify']);
 Route::post('zalopay/callback', [ZaloPayController::class, 'callback']);
 Route::get('zalopay/verify', [ZaloPayController::class, 'verify']);
 Route::get('zalopay/banks', [ZaloPayController::class, 'getBanks']);
+
+// SeePay Public Webhook callback
+Route::post('sepay/webhook', [SeePayController::class, 'handleWebhook']);

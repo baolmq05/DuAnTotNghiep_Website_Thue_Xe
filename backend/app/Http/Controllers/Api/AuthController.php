@@ -140,6 +140,8 @@ class AuthController extends Controller
             'gender' => 'nullable|integer|in:0,1,2',
             'DOB' => 'nullable|date',
             'avatar' => 'nullable|string|max:2048',
+            'bank_name' => 'nullable|string|max:255',
+            'bank_account_number' => 'nullable|string|max:255',
         ], [
             'name.required' => 'Họ và tên không được để trống.',
             'phone.unique' => 'Số điện thoại này đã được sử dụng.',
@@ -160,7 +162,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        $data = $request->only('name', 'phone', 'gender', 'DOB', 'avatar');
+        $data = $request->only('name', 'phone', 'gender', 'DOB', 'avatar', 'bank_name', 'bank_account_number');
         if (!empty($data['DOB'])) {
             $data['DOB'] = \Carbon\Carbon::parse($data['DOB'])->format('Y-m-d');
         }

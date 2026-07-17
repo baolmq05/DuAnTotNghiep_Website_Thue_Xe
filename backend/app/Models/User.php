@@ -13,7 +13,7 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 use Laravel\Ai\Concerns\HasConversations;
 
-#[Fillable(['name', 'email', 'password', 'provider_id'])]
+#[Fillable(['name', 'email', 'password', 'provider_id', 'bank_name', 'bank_account_number'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject
 {
@@ -77,7 +77,9 @@ class User extends Authenticatable implements JWTSubject
         'role_id',
         'wallet_id',
         'driving_license_id',
-        'provider_id'
+        'provider_id',
+        'bank_name',
+        'bank_account_number'
     ];
 
     public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo

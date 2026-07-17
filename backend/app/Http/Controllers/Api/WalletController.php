@@ -9,7 +9,10 @@ use App\Models\Transaction;
 use App\Models\Car;
 use App\Models\Review;
 use App\Models\Trip;
+use App\Models\Refund;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
 class WalletController extends Controller
@@ -40,7 +43,7 @@ class WalletController extends Controller
 
             // Lấy danh sách giao dịch của user
             $transactionsQuery = Transaction::where('user_id', $user->id)
-                ->with(['trip.car', 'trip.user'])
+                ->with(['trip.car.owner', 'trip.user'])
                 ->orderBy('created_at', 'desc');
 
             $transactions = $transactionsQuery->get();
@@ -118,6 +121,7 @@ class WalletController extends Controller
                                 'discount_amount' => $txn->trip->discount_amount ?? 0,
                                 'status' => $txn->trip->status,
                                 'customer_name' => $txn->trip->user ? $txn->trip->user->name : 'N/A',
+                                'owner_name' => ($txn->trip->car && $txn->trip->car->owner) ? $txn->trip->car->owner->name : 'N/A',
                                 'service_fee' => intval($txn->trip->cost * 0.1),
                                 'tax_deducted' => intval($txn->amount * 0.1),
                                 'car' => $txn->trip->car ? [
@@ -140,6 +144,101 @@ class WalletController extends Controller
                         'owner_income' => $ownerIncome
                     ]
                 ]
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Yêu cầu rút tiền từ ví của user
+     * POST /api/auth/wallet/withdraw
+     */
+    public function withdraw(Request $request)
+    {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy người dùng'
+                ], 404);
+            }
+
+            // Kiểm tra thông tin ngân hàng đã liên kết chưa
+            if (empty($user->bank_name) || empty($user->bank_account_number)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng liên kết tài khoản ngân hàng trong phần Thông tin tài khoản trước khi thực hiện rút tiền.'
+                ], 400);
+            }
+
+            // Đảm bảo user có ví
+            if (!$user->wallet_id) {
+                $wallet = Wallet::create(['amount' => 0]);
+                $user->wallet_id = $wallet->id;
+                $user->save();
+            } else {
+                $wallet = $user->wallet;
+            }
+
+            // Validate số tiền rút
+            $validator = Validator::make($request->all(), [
+                'amount' => 'required|integer|min:20000',
+            ], [
+                'amount.required' => 'Số tiền cần rút không được bỏ trống.',
+                'amount.integer' => 'Số tiền cần rút phải là số nguyên.',
+                'amount.min' => 'Số tiền rút tối thiểu là 20.000đ.',
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $validator->errors()->first(),
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+
+            $amount = intval($request->input('amount'));
+
+            // Kiểm tra số dư ví
+            if ($wallet->amount < $amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số dư trong ví không đủ để thực hiện giao dịch này.'
+                ], 400);
+            }
+
+            // Thực hiện DB transaction để trừ tiền và tạo bản ghi
+            DB::transaction(function () use ($user, $wallet, $amount, $request) {
+                // 1. Trừ tiền ví
+                $wallet->decrement('amount', $amount);
+
+                // 2. Tạo bản ghi hoàn tiền/rút tiền (Refunds)
+                Refund::create([
+                    'wallet_id' => $wallet->id,
+                    'amount' => $amount,
+                    'status' => 'pending',
+                    'description' => $request->input('description') ?: ('Rút tiền về ngân hàng ' . $user->bank_name . ' (' . $user->bank_account_number . ')'),
+                ]);
+
+                // 3. Tạo bản ghi giao dịch (Transactions) để lưu vết lịch sử số dư
+                Transaction::create([
+                    'user_id' => $user->id,
+                    'transaction_code' => 'WD' . strtoupper(uniqid()),
+                    'amount' => -$amount,
+                    'prepay' => 0,
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Gửi yêu cầu rút tiền thành công. Yêu cầu đang được chờ phê duyệt.',
+                'balance' => $wallet->fresh()->amount
             ]);
 
         } catch (\Exception $e) {

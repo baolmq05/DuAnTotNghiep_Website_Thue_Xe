@@ -43,7 +43,7 @@ const mainMenus = [
 
 const filteredMainMenus = computed(() => {
   const menus = [...mainMenus];
-  if (user.value && user.value.role_id === 3) {
+  if (user.value && (user.value.role_id == 3 || user.value.role_id == 2)) {
     menus.push({
       title: "Ví của tôi",
       icon: "ic:outline-account-balance-wallet",

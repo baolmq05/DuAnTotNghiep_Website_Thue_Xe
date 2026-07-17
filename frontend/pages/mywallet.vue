@@ -38,7 +38,7 @@
                     </div>
                 </div>
 
-                <div class="flex w-full text-center bg-white border-b border-slate-200 divide-x divide-slate-100">
+                <div v-if="user?.role_id !== 2" class="flex w-full text-center bg-white border-b border-slate-200 divide-x divide-slate-100">
                     <div class="flex-1 py-3.5 flex flex-col justify-center items-center">
                         <p
                             class="text-base font-bold text-slate-800 flex items-center justify-center gap-0.5 leading-none">
@@ -95,11 +95,11 @@
                             <span>TIỀN CUỐI KÌ</span>
                             <span>{{ formatCurrency(summary.end_balance) }}</span>
                         </div>
-                        <div class="flex justify-between font-semibold text-[#e05638]">
+                        <div v-if="user?.role_id !== 2" class="flex justify-between font-semibold text-[#e05638]">
                             <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ</span>
                             <span>({{ formatCurrency(summary.tax_deducted) }})</span>
                         </div>
-                        <div class="flex justify-between font-bold text-[#2f80ed]">
+                        <div v-if="user?.role_id !== 2" class="flex justify-between font-bold text-[#2f80ed]">
                             <span>THU NHẬP CHỦ XE</span>
                             <span>{{ formatCurrency(summary.owner_income) }}</span>
                         </div>
@@ -107,27 +107,131 @@
                 </div>
             </div>
 
-            <div class="grid gap-4 mt-6">
-                <!-- <button
-                    class="h-12 rounded-lg bg-[#286874] text-white font-bold text-sm hover:bg-[#1d4f59] transition-colors focus:outline-none shadow-sm">
-                    Gửi yêu cầu rút tiền
-                </button> -->
-
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
                 <button
                     @click="navigateToStatement"
-                    class="h-12 rounded-lg border border-[#286874] text-[#286874] font-bold text-sm hover:bg-[#286874]/5 transition-colors text-center focus:outline-none shadow-sm">
+                    class="flex-1 h-12 rounded-lg border border-[#286874] text-[#286874] font-bold text-sm hover:bg-[#286874]/5 transition-colors text-center focus:outline-none shadow-sm flex items-center justify-center gap-1.5">
+                    <Icon name="lucide:file-text" class="w-4 h-4" />
                     Xem Sao kê chi tiết giao dịch
+                </button>
+                <button
+                    @click="openWithdrawModal"
+                    class="flex-1 h-12 rounded-lg bg-[#286874] text-white font-bold text-sm hover:bg-[#1d4f59] transition-colors focus:outline-none shadow-sm flex items-center justify-center gap-1.5">
+                    <Icon name="lucide:hand-coins" class="w-4 h-4" />
+                    Yêu cầu rút tiền
                 </button>
             </div>
 
         </div>
     </div>
+
+    <!-- Modal Yêu cầu rút tiền -->
+    <div v-if="isWithdrawModalOpen" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeWithdrawModal"></div>
+
+        <!-- Modal Content -->
+        <div class="relative bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl z-10 p-8 border border-slate-100 flex flex-col animate-scale-in">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-xl font-black text-[#286874]">Yêu cầu rút tiền</h3>
+                    <p class="text-xs text-slate-500 mt-1">Yêu cầu rút tiền từ số dư ví của bạn về tài khoản ngân hàng.</p>
+                </div>
+                <button @click="closeWithdrawModal" class="h-8 w-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition flex items-center justify-center focus:outline-none">
+                    <Icon name="ic:outline-close" size="20" />
+                </button>
+            </div>
+
+            <!-- Cảnh báo chưa liên kết ngân hàng -->
+            <div v-if="!user?.bank_name" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-center mb-6">
+                <Icon name="lucide:alert-circle" size="44" class="text-amber-500 mx-auto mb-3" />
+                <p class="text-sm font-bold text-slate-800">Chưa liên kết tài khoản ngân hàng</p>
+                <p class="text-xs text-slate-500 mt-1.5 mb-4">Bạn cần liên kết tài khoản ngân hàng thụ hưởng trước khi thực hiện rút tiền.</p>
+                <button @click="goToLinkBank" class="px-5 py-2.5 bg-[#286874] text-white text-xs font-bold rounded-xl hover:bg-[#1d4f59] transition shadow-sm w-full focus:outline-none">
+                    Liên kết ngay
+                </button>
+            </div>
+
+            <form v-else @submit.prevent="handleWithdraw" class="space-y-5">
+                <!-- Thông tin ngân hàng nhận tiền -->
+                <div class="bg-[#286874]/5 border border-[#286874]/10 rounded-2xl p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 rounded-xl bg-[#286874]/10 text-[#286874] flex items-center justify-center">
+                            <Icon name="lucide:landmark" size="22" />
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Tài khoản nhận tiền</p>
+                            <p class="text-sm font-bold text-slate-800 mt-0.5">{{ user.bank_name }}</p>
+                            <p class="text-xs font-mono font-medium text-slate-500">{{ user.bank_account_number }}</p>
+                        </div>
+                    </div>
+                    <span class="text-[10px] font-bold text-[#286874] bg-[#286874]/10 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Thụ hưởng
+                    </span>
+                </div>
+
+                <!-- Số dư khả dụng -->
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-500 px-1">
+                    <span>Số dư khả dụng:</span>
+                    <span class="font-bold text-[#286874] text-sm">{{ formatCurrency(balance) }}</span>
+                </div>
+
+                <!-- Nhập số tiền rút -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Số tiền muốn rút (đ)</label>
+                    <div class="relative">
+                        <input v-model="withdrawForm.amount" type="number" required placeholder="Nhập số tiền muốn rút"
+                            class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold outline-none focus:border-[#286874] focus:bg-white transition-all" />
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">đ</span>
+                    </div>
+                </div>
+
+                <!-- Nút chọn nhanh -->
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" @click="setAmount(100000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition focus:outline-none">
+                        100k
+                    </button>
+                    <button type="button" @click="setAmount(200000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition focus:outline-none">
+                        200k
+                    </button>
+                    <button type="button" @click="setAmount(500000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition focus:outline-none">
+                        500k
+                    </button>
+                    <button type="button" @click="setAllAmount" class="py-2 border border-[#286874] text-[#286874] bg-[#286874]/5 rounded-xl text-xs font-bold hover:bg-[#286874]/10 transition focus:outline-none">
+                        Tất cả
+                    </button>
+                </div>
+
+                <!-- Nhập mô tả -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Mô tả (Không bắt buộc)</label>
+                    <input v-model="withdrawForm.description" type="text" placeholder="Yêu cầu rút tiền..."
+                        class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:border-[#286874] focus:bg-white transition-all font-medium" />
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button type="button" @click="closeWithdrawModal"
+                        class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition focus:outline-none text-sm">
+                        Đóng
+                    </button>
+                    <button type="submit" :disabled="submittingWithdraw"
+                        class="py-3 px-4 bg-[#286874] hover:bg-[#1d4f59] text-white font-bold rounded-xl transition focus:outline-none text-sm shadow-md shadow-[#286874]/10 flex items-center justify-center gap-2">
+                        <Icon v-if="submittingWithdraw" name="svg-spinners:ring-resize" class="w-4 h-4" />
+                        <span>Xác nhận rút</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { walletService } from '~/services/wallet.service'
 import { useRouter } from 'vue-router'
+
+const { user } = useAuth()
 
 const router = useRouter()
 const isLoading = ref(false)
@@ -184,6 +288,74 @@ const navigateToStatement = () => {
 
 const goBack = () => {
     router.back()
+}
+
+// ==========================================
+// WITHDRAWAL MANAGEMENT
+// ==========================================
+const { showToast } = useToast()
+const isWithdrawModalOpen = ref(false)
+const submittingWithdraw = ref(false)
+const withdrawForm = reactive({
+    amount: null,
+    description: ''
+})
+
+const openWithdrawModal = () => {
+    withdrawForm.amount = null
+    withdrawForm.description = ''
+    isWithdrawModalOpen.value = true
+}
+
+const closeWithdrawModal = () => {
+    isWithdrawModalOpen.value = false
+}
+
+const setAmount = (val) => {
+    withdrawForm.amount = val
+}
+
+const setAllAmount = () => {
+    withdrawForm.amount = balance.value
+}
+
+const goToLinkBank = () => {
+    closeWithdrawModal()
+    router.push('/profile')
+}
+
+const handleWithdraw = async () => {
+    if (!withdrawForm.amount || withdrawForm.amount <= 0) {
+        showToast('Vui lòng nhập số tiền hợp lệ.', 'error')
+        return
+    }
+    if (withdrawForm.amount < 20000) {
+        showToast('Số tiền rút tối thiểu là 20.000đ.', 'error')
+        return
+    }
+    if (withdrawForm.amount > balance.value) {
+        showToast('Số dư tài khoản không đủ.', 'error')
+        return
+    }
+
+    submittingWithdraw.value = true
+    try {
+        const response = await walletService.withdraw(withdrawForm.amount, withdrawForm.description)
+        if (response.success) {
+            showToast('Gửi yêu cầu rút tiền thành công!', 'success')
+            closeWithdrawModal()
+            // Tải lại dữ liệu ví
+            await loadWalletDetails()
+        } else {
+            showToast(response.message || 'Rút tiền thất bại.', 'error')
+        }
+    } catch (error) {
+        console.error('Error withdrawing:', error)
+        const errMsg = error.response?._data?.message || 'Có lỗi xảy ra khi thực hiện rút tiền. Vui lòng thử lại sau.'
+        showToast(errMsg, 'error')
+    } finally {
+        submittingWithdraw.value = false
+    }
 }
 </script>
 
