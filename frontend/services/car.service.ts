@@ -383,6 +383,17 @@ export class CarService extends BaseService {
             useAuth: true,
         });
     }
+
+    /**
+     * Lấy thông tin profile (chủ xe hoặc người thuê) và danh sách nhận xét
+     */
+    async getProfileReviews(targetId: string | number, isOwner: boolean): Promise<{ success: boolean; data: any }> {
+        return this.request<{ success: boolean; data: any }>(`reviews/${targetId}`, {
+            method: "GET",
+            params: { isOwner: isOwner ? "true" : "false" },
+            useAuth: true,
+        });
+    }
 }
 
 export const carService = new CarService();

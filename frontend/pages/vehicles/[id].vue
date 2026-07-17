@@ -234,30 +234,32 @@
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Chủ xe
             </h2>
-            <div class="flex items-center gap-4 bg-slate-50/50 p-4 border border-slate-100 rounded-2xl">
-              <div v-if="!car?.owner?.avatar"
-                class="w-14 h-14 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md shadow-brand-primary/10">
-                {{ car?.owner?.name?.charAt(0).toUpperCase() || 'M' }}
-              </div>
-              <img v-else :src="car.owner.avatar" alt="Owner Avatar"
-                class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10" />
-              <div class="flex-1">
-                <p class="font-extrabold text-brand-dark">
-                  {{ car?.owner?.name || 'Chủ xe' }}
-                </p>
-                <div class="flex items-center gap-2 mt-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
-                    viewBox="0 0 24 24">
-                    <path
-                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
-                  <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
-                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
-                  <span class="text-gray-300">•</span>
-                  <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ car?.trips_count || 0 }}
-                    chuyến</span>
+            <div class="bg-slate-50/50 p-4 border border-slate-100 rounded-2xl">
+              <NuxtLink :to="'/profile/' + car?.owner?.id + '?role=owner'" class="flex items-center gap-4 w-full group">
+                <div v-if="!car?.owner?.avatar"
+                  class="w-14 h-14 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md shadow-brand-primary/10">
+                  {{ car?.owner?.name?.charAt(0).toUpperCase() || 'M' }}
                 </div>
-              </div>
+                <img v-else :src="car.owner.avatar" alt="Owner Avatar"
+                  class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10" />
+                <div class="flex-1">
+                  <p class="font-extrabold text-brand-dark group-hover:text-brand-primary transition-colors">
+                    {{ car?.owner?.name || 'Chủ xe' }}
+                  </p>
+                  <div class="flex items-center gap-2 mt-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
+                      viewBox="0 0 24 24">
+                      <path
+                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
+                    </svg>
+                    <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
+                      parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
+                    <span class="text-gray-300">•</span>
+                    <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ car?.trips_count || 0 }}
+                      chuyến</span>
+                  </div>
+                </div>
+              </NuxtLink>
             </div>
             <div class="grid grid-cols-3 gap-3 mt-4">
               <div v-for="stat in hostStats" :key="stat.label"
@@ -282,25 +284,51 @@
               <div v-for="review in formattedReviews" :key="review.name"
                 class="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div class="flex items-center gap-3 mb-2.5">
-                  <div
-                    class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm"
-                    :style="{ backgroundColor: review.color }">
-                    {{ review.name.charAt(0) }}
-                  </div>
-                  <div>
-                    <p class="text-sm font-bold text-brand-dark">
-                      {{ review.name }}
-                    </p>
-                    <div class="flex items-center gap-1.5 mt-0.5">
-                      <div class="flex items-center gap-0.5 text-yellow-400">
-                        <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
-                          viewBox="0 0 24 24">
-                          <path
-                            d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
+                  <NuxtLink v-if="review.id" :to="'/profile/' + review.id + '?role=renter'" class="flex items-center gap-3 group">
+                    <div v-if="!review.avatar"
+                      class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm transition-transform group-hover:scale-105"
+                      :style="{ backgroundColor: review.color }">
+                      {{ review.name.charAt(0) }}
+                    </div>
+                    <img v-else :src="review.avatar" class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="Reviewer Avatar" />
+                    <div>
+                      <p class="text-sm font-bold text-brand-dark group-hover:text-brand-primary transition-colors">
+                        {{ review.name }}
+                      </p>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <div class="flex items-center gap-0.5 text-yellow-400">
+                          <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
+                            :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'"
+                            viewBox="0 0 24 24">
+                            <path
+                              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
                       </div>
-                      <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date
-                      }}</span>
+                    </div>
+                  </NuxtLink>
+
+                  <div v-else class="flex items-center gap-3">
+                    <div
+                      class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm"
+                      :style="{ backgroundColor: review.color }">
+                      {{ review.name.charAt(0) }}
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-brand-dark">
+                        {{ review.name }}
+                      </p>
+                      <div class="flex items-center gap-1.5 mt-0.5">
+                        <div class="flex items-center gap-0.5 text-yellow-400">
+                          <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
+                            viewBox="0 0 24 24">
+                            <path
+                              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                        </div>
+                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1239,7 +1267,7 @@ watch([rentalDays, receiveMethod, deliveryCoords], async () => {
         appliedPromo.value = res.data;
       } else {
         removePromoCode();
-        showToast("Mã giảm giá không còn hiệu lực cho khoảng thời gian/lựa chọn mới này.", "warning");
+        showToast("Mã giảm giá không còn hiệu lực cho khoảng thời gian/lựa chọn mới này.", "error");
       }
     } catch (err: any) {
       removePromoCode();
@@ -1617,10 +1645,12 @@ const formattedReviews = computed(() => {
   }
   const colors = ["#286874", "#A77E52", "#1e4e57", "#286874"];
   return car.value.reviews.map((r: any, idx: number) => ({
+    id: r.reviewer?.id || null,
     name: r.reviewer?.name || "Khách hàng",
     date: new Date(r.created_at || Date.now()).toLocaleDateString('vi-VN'),
     color: colors[idx % colors.length],
     text: r.comment || "Đánh giá tốt!",
+    avatar: r.reviewer?.avatar ? (r.reviewer.avatar.startsWith('http') ? r.reviewer.avatar : 'https://testbackend.teamfpoly.vn/' + r.reviewer.avatar) : null,
   }));
 });
 

@@ -129,7 +129,10 @@
             <div class="bg-slate-50/60 p-3 rounded-2xl border border-slate-100 flex items-center justify-between">
               <div class="min-w-0">
                 <p class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Khách thuê</p>
-                <p class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ trip.renter.name }}</p>
+                <NuxtLink :to="'/profile/' + trip.renter.id + '?role=renter'"
+                  class="text-xs font-bold text-slate-800 mt-0.5 truncate hover:text-brand-primary transition-colors block">
+                  {{ trip.renter.name }}
+                </NuxtLink>
                 <p class="text-[11px] text-slate-500 font-medium mt-0.5">{{ trip.renter.phone }}</p>
               </div>
               <button v-if="trip.status !== TripStatus.Pending" @click="startConversation(trip)"

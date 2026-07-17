@@ -343,32 +343,41 @@
             </div>
           </div>
 
-          <!-- Owner Info Card -->
+          <!-- Owner/Renter Info Card -->
           <div class="bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm space-y-4">
             <h3 class="text-sm font-black text-slate-800 border-b border-slate-100 pb-2.5 uppercase tracking-wider">
-              Thông tin chủ xe
+              {{ isOwner ? 'Thông tin khách thuê' : 'Thông tin chủ xe' }}
             </h3>
             <div class="flex items-center gap-3">
-              <img
-                :src="trip.car?.owner?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'"
-                alt="Owner Avatar" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-sm" />
-              <div class="min-w-0">
-                <p class="text-sm font-bold text-slate-800 truncate">
-                  {{ trip.car?.owner?.name || 'Chưa cập nhật' }}
+              <NuxtLink 
+                :to="'/profile/' + (isOwner ? trip.user?.id : trip.car?.owner?.id) + (isOwner ? '?role=renter' : '?role=owner')" 
+                class="flex items-center gap-3 w-full group"
+              >
+                <img
+                  :src="(isOwner ? trip.user?.avatar : trip.car?.owner?.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'"
+                  alt="Avatar" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-sm shrink-0" />
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-bold text-slate-800 truncate group-hover:text-brand-primary transition-colors">
+                    {{ isOwner ? (trip.user?.name || 'Khách hàng') : (trip.car?.owner?.name || 'Chưa cập nhật') }}
                   </p>
-                <p class="text-xs text-slate-400 font-medium">Chủ sở hữu xe</p>
-              </div>
+                  <p class="text-xs text-slate-400 font-medium">
+                    {{ isOwner ? 'Khách thuê xe' : 'Chủ sở hữu xe' }}
+                  </p>
+                </div>
+              </NuxtLink>
             </div>
             <div class="space-y-1.5 text-xs text-slate-500 font-semibold pt-1">
               <p class="flex items-center gap-2">
                 <Icon name="lucide:phone" class="text-slate-400 w-4 h-4" />
-                {{ trip.car?.owner?.phone || 'Chưa cập nhật SĐT' }}
+                {{ isOwner ? (trip.user?.phone || 'Chưa cập nhật SĐT') : (trip.car?.owner?.phone || 'Chưa cập nhật SĐT') }}
               </p>
               <p class="flex items-center gap-2">
-                <Icon name="lucide:mail" class="text-slate-400 w-4 h-4" /> {{ trip.car?.owner?.email || 'Chưa cập nhật Email' }}
+                <Icon name="lucide:mail" class="text-slate-400 w-4 h-4" /> 
+                {{ isOwner ? (trip.user?.email || 'Chưa cập nhật Email') : (trip.car?.owner?.email || 'Chưa cập nhật Email') }}
               </p>
             </div>
           </div>
+
         </div>
       </div>
 
