@@ -63,66 +63,33 @@ class SearchCarsTool implements Tool
             ->get();
 
         if ($cars->isEmpty()) {
-            return "
-            <div style='padding: 12px; text-align: center; color: #64748b; font-size: 14px;'>
-                Không tìm thấy xe nào phù hợp với yêu cầu của bạn.
-            </div>
-        ";
+            return 'Không tìm thấy xe nào phù hợp với yêu cầu của bạn.';
         }
 
-        $html = "
-        <div style='font-family: system-ui, sans-serif; max-width: 100%;'>
-            <div style='margin-bottom: 10px; font-size: 14px; color: #334155;'>
-                Tìm thấy <strong>{$cars->count()}</strong> xe phù hợp:
-            </div>
-            <div style='display: flex; flex-direction: column; gap: 8px;'>
-        ";
+        $output = "Drivio hiện có " . $cars->count() . " xe phù hợp với yêu cầu của bạn:\n\n";
 
-        foreach ($cars as $car) {
-            $ownerName = $car->owner?->name ?? 'Chưa cập nhật';
-            $price = number_format($car->unit_price, 0, ',', '.');
-            $discountPrice = $car->discount_value > 0
-                ? number_format($car->unit_price - $car->discount_value, 0, ',', '.')
-                : null;
+        foreach ($cars as $index => $car) {
+            $owner = $car->owner?->name ?? 'Chưa cập nhật';
 
-            $url = 'http://localhost:3000/vehicles/' . $car->id;
+            $actualPrice = $car->discount_value > 0
+                ? $car->unit_price - $car->discount_value
+                : $car->unit_price;
 
-            $html .= "
-                <div style='padding: 12px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);'>
-                    <div style='font-weight: 600; font-size: 15px; color: #1e293b;'>{$car->name}</div>
-                    <div style='font-size: 12px; color: #64748b; margin-top: 2px;'>Chủ xe: <strong>{$ownerName}</strong></div>
-                    
-                    <div style='margin-top: 8px;'>
-            ";
+            $price = number_format($actualPrice, 0, ',', '.');
 
-            if ($discountPrice) {
-                $html .= "
-                            <span style='color: #94a3b8; text-decoration: line-through; font-size: 12px; margin-right: 6px;'>{$price}đ</span>
-                            <span style='font-weight: 700; color: #e11d48; font-size: 14px;'>{$discountPrice}đ/ngày</span>
-                ";
-            } else {
-                $html .= "
-                            <span style='font-weight: 700; color: #1e4e57; font-size: 14px;'>{$price}đ/ngày</span>
-                ";
+            $output .= "**" . ($index + 1) . ". " . $car->name . "**\n";
+            $output .= "- **Chủ xe:** " . $owner . "\n";
+            $output .= "- **Giá thuê:** " . $price . "đ/ngày\n";
+
+            if ($car->discount_value > 0) {
+                $oldPrice = number_format($car->unit_price, 0, ',', '.');
+                $output .= "- **Giá gốc:** ~~" . $oldPrice . "đ/ngày~~\n";
             }
 
-            $html .= "
-                    </div>
-                    <div style='margin-top: 10px;'>
-                        <a href='{$url}' target='_blank' style='font-size: 12px; color: #1e4e57; text-decoration: none; font-weight: 600; hover: text-decoration: underline;'>
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
-            ";
+            $output .= "- **Chi tiết:** http://localhost:3000/vehicles/{$car->id}\n\n";
         }
 
-        $html .= "
-            </div>
-        </div>
-        ";
-
-        return $html;
+        return trim($output);
     }
 
     /**
