@@ -134,7 +134,9 @@
                 </div>
                 <div>
                   <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Địa điểm nhận xe</h4>
-                  <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ trip.car?.car_location?.address || 'Chưa cập nhật' }}</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-0.5">
+                    {{ trip.car?.car_location?.address || 'Chưa cập nhật' }}
+                  </p>
                 </div>
               </div>
               <div class="flex gap-3">
@@ -145,7 +147,9 @@
                 </div>
                 <div>
                   <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Địa chỉ giao xe (nếu có)</h4>
-                  <p class="text-sm font-semibold text-slate-800 mt-0.5">{{ trip.delivery_address || 'Nhận xe tại địa điểm đăng ký của xe' }}</p>
+                  <p class="text-sm font-semibold text-slate-800 mt-0.5">
+                    {{ trip.delivery_address || 'Nhận xe tại địa điểm đăng ký của xe' }}
+                  </p>
                   <p v-if="trip.delivery_location" class="text-xs text-slate-400 font-medium mt-0.5">{{
                     trip.delivery_location }}</p>
                 </div>
@@ -228,7 +232,7 @@
                   <div class="flex justify-between items-center text-slate-500 font-medium">
                     <span>Phí hủy chuyến ({{ cancellationDetails.feePercent }}%):</span>
                     <span class="font-bold text-rose-600">{{ formatCurrency(cancellationDetails.cancellationFee)
-                      }}</span>
+                    }}</span>
                   </div>
 
                   <div
@@ -286,13 +290,16 @@
           <!-- Car Card -->
           <div class="bg-white rounded-3xl border border-slate-200/60 overflow-hidden shadow-sm">
             <NuxtLink :to="`/vehicles/${trip.car?.id || trip.car_id}`" class="block relative h-48 bg-slate-100 group">
-              <img :src="carThumbnail(trip.car)" :alt="trip.car?.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <img :src="carThumbnail(trip.car)" :alt="trip.car?.name"
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               <span
                 class="absolute top-4 right-4 bg-slate-900/75 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg shadow-sm border border-white/10 backdrop-blur-sm z-10">
                 {{ trip.car?.license_plate }}
               </span>
-              <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span class="text-white text-[10px] bg-black/60 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 border border-white/10 backdrop-blur-sm">
+              <div
+                class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                <span
+                  class="text-white text-[10px] bg-black/60 px-3 py-1.5 rounded-xl font-bold flex items-center gap-1 border border-white/10 backdrop-blur-sm">
                   <Icon name="lucide:eye" class="w-3.5 h-3.5" />
                   Xem chi tiết xe
                 </span>
@@ -305,7 +312,8 @@
                   {{ trip.car?.car_brand?.brand_name || 'Hãng xe' }} • {{ trip.car?.car_type?.type_name || 'Dòng xe' }}
                 </span>
                 <NuxtLink :to="`/vehicles/${trip.car?.id || trip.car_id}`" class="block group mt-0.5">
-                  <h3 class="text-lg font-black text-slate-900 group-hover:text-[#1e4e57] transition-colors leading-snug">
+                  <h3
+                    class="text-lg font-black text-slate-900 group-hover:text-[#1e4e57] transition-colors leading-snug">
                     {{ trip.car?.name }}
                   </h3>
                 </NuxtLink>
@@ -349,10 +357,9 @@
               {{ isOwner ? 'Thông tin khách thuê' : 'Thông tin chủ xe' }}
             </h3>
             <div class="flex items-center gap-3">
-              <NuxtLink 
-                :to="'/profile/' + (isOwner ? trip.user?.id : trip.car?.owner?.id) + (isOwner ? '?role=renter' : '?role=owner')" 
-                class="flex items-center gap-3 w-full group"
-              >
+              <NuxtLink
+                :to="'/profile/' + (isOwner ? trip.user?.id : trip.car?.owner?.id) + (isOwner ? '?role=renter' : '?role=owner')"
+                class="flex items-center gap-3 w-full group">
                 <img
                   :src="(isOwner ? trip.user?.avatar : trip.car?.owner?.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'"
                   alt="Avatar" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-sm shrink-0" />
@@ -369,11 +376,16 @@
             <div class="space-y-1.5 text-xs text-slate-500 font-semibold pt-1">
               <p class="flex items-center gap-2">
                 <Icon name="lucide:phone" class="text-slate-400 w-4 h-4" />
-                {{ isOwner ? (trip.user?.phone || 'Chưa cập nhật SĐT') : (trip.car?.owner?.phone || 'Chưa cập nhật SĐT') }}
+                {{
+                  isOwner ? (trip.user?.phone || 'Chưa cập nhật SĐT') : (trip.car?.owner?.phone || 'Chưa cập nhật SĐT')
+                }}
               </p>
               <p class="flex items-center gap-2">
-                <Icon name="lucide:mail" class="text-slate-400 w-4 h-4" /> 
-                {{ isOwner ? (trip.user?.email || 'Chưa cập nhật Email') : (trip.car?.owner?.email || 'Chưa cập nhật Email') }}
+                <Icon name="lucide:mail" class="text-slate-400 w-4 h-4" />
+                {{
+                  isOwner ? (trip.user?.email || 'Chưa cập nhật Email') :
+                    (trip.car?.owner?.email || 'Chưa cập nhật Email')
+                }}
               </p>
             </div>
           </div>
@@ -394,7 +406,8 @@
           <!-- If owner of the car -->
           <div v-if="isOwner" class="space-y-4 animate-fade-in">
             <p class="text-xs text-slate-500 leading-relaxed font-medium">
-              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe trước khi bàn bàn giao xe cho khách thuê và khởi hành. Đây là cơ sở để đối chiếu khi nhận lại xe.
+              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe trước khi bàn bàn giao xe cho khách thuê và khởi hành.
+              Đây là cơ sở để đối chiếu khi nhận lại xe.
             </p>
 
             <!-- Premium Cloud ImageUpload Component -->
@@ -434,7 +447,8 @@
               <div class="leading-relaxed">
                 <p class="font-bold">Đang chờ chủ xe bàn giao xe và bắt đầu chuyến đi</p>
                 <p class="mt-0.5 font-medium opacity-90">
-                  Chủ xe sẽ kiểm tra hiện trạng xe và chụp ảnh tải lên hệ thống trước khi bắt đầu chuyến đi của bạn. Vui lòng liên hệ với chủ xe nếu cần thêm thông tin.
+                  Chủ xe sẽ kiểm tra hiện trạng xe và chụp ảnh tải lên hệ thống trước khi bắt đầu chuyến đi của bạn. Vui
+                  lòng liên hệ với chủ xe nếu cần thêm thông tin.
                 </p>
               </div>
             </div>
@@ -574,7 +588,7 @@
                       <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Ngày trả xe
                         mới:</span>
                       <span class="font-bold text-indigo-950 text-xs">{{ formatDate(trip.latest_extension.end_date)
-                        }}</span>
+                      }}</span>
                     </div>
                     <div>
                       <span class="text-slate-500 font-semibold block uppercase tracking-wider text-[9px]">Phí gia hạn
@@ -653,7 +667,7 @@
                     <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Ngày trả xe đề
                       xuất:</span>
                     <span class="font-bold text-sm text-indigo-950">{{ formatDate(trip.latest_extension.end_date)
-                      }}</span>
+                    }}</span>
                   </div>
                   <div v-if="trip.latest_extension?.extension_amount">
                     <span class="text-slate-500 font-semibold block text-[10px] uppercase tracking-wider">Phí gia hạn dự
@@ -1063,6 +1077,12 @@
       </Transition>
     </Teleport>
 
+    <!-- Modal confirm return trip early -->
+    <CommonConfirmModal :show="showReturnConfirm" title="Xác nhận trả xe sớm"
+      message="Bạn có chắc chắn muốn gửi yêu cầu trả xe sớm không? Yêu cầu này sẽ cần được chủ xe phê duyệt để hoàn tất."
+      confirm-text="Đồng ý trả xe" cancel-text="Hủy" type="warning" @confirm="executeReturnRequest"
+      @close="showReturnConfirm = false" />
+
   </div>
 </template>
 
@@ -1092,6 +1112,7 @@ const trip = ref<any>(null)
 const loading = ref(true)
 const error = ref<string | null>(null)
 const uploading = ref(false)
+const showReturnConfirm = ref(false)
 
 const isOwner = computed(() => {
   if (!user.value || !trip.value || !trip.value.car) return false
@@ -1671,9 +1692,7 @@ const submitTripReview = async () => {
 }
 
 // Return Trip Early Request
-const handleReturnRequest = async () => {
-  if (!confirm('Bạn có chắc chắn muốn trả xe sớm?')) return
-
+const executeReturnRequest = async () => {
   returningTrip.value = true
   try {
     const tripId = route.params.id as string
@@ -1690,6 +1709,10 @@ const handleReturnRequest = async () => {
   } finally {
     returningTrip.value = false
   }
+}
+
+const handleReturnRequest = () => {
+  showReturnConfirm.value = true
 }
 
 // Owner Confirms Complete Trip
