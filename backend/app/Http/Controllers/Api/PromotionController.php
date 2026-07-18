@@ -7,7 +7,7 @@ class PromotionController extends Controller
 {
     public function index()
     {
-        $promotions = Promotion::with('images')->get();
+        $promotions = Promotion::with('images')->where('end_date', '>=', now()->toDateString())->where('status', '1')->get();
         return response()->json([
             'success' => true,
             'message' => 'Danh sách khuyến mãi.',
@@ -17,10 +17,10 @@ class PromotionController extends Controller
     public function show($id)
     {
         $promotion = Promotion::with('images')->find($id);
-        if (!$promotion) {
+        if (!$promotion || $promotion->end_date < now()->toDateString() || $promotion->status != 1) {
             return response()->json([
                 'success' => false,
-                'message' => 'Khuyến mãi không tồn tại.',
+                'message' => 'Khuyến mãi không tồn tại hoặc đã hết hạn.',
             ], 404);
         }
         return response()->json([
