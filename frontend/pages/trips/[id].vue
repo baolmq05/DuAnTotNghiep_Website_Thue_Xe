@@ -619,8 +619,8 @@
                 <div class="flex items-center gap-1.5">
                   <span class="font-bold text-xs text-slate-800">Đánh giá của bạn về chủ xe:</span>
                   <div class="flex items-center gap-0.5">
-                    <Icon v-for="star in 5" :key="star" name="lucide:star" class="w-3.5 h-3.5"
-                      :class="star <= renterReview.rating ? 'text-amber-400 fill-amber-400' : 'text-slate-200'" />
+                    <Icon v-for="star in 5" :key="star" name="heroicons:star-solid" class="w-3.5 h-3.5"
+                      :class="star <= renterReview.rating ? 'text-amber-400' : 'text-slate-200'" />
                   </div>
                 </div>
                 <p class="text-slate-600 italic text-[11px] font-medium" v-if="renterReview.comment">
@@ -949,8 +949,8 @@
                 <div class="flex items-center gap-2">
                   <button v-for="star in 5" :key="star" type="button" @click="reviewRating = star"
                     class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-350 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none">
-                    <Icon name="lucide:star" class="w-8 h-8"
-                      :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-300'" />
+                    <Icon name="heroicons:star-solid" class="w-8 h-8"
+                      :class="star <= reviewRating ? 'text-amber-400' : 'text-slate-200'" />
                   </button>
                 </div>
                 <span class="font-bold text-[#1e4e57] text-[11px] mt-1">

@@ -54,11 +54,7 @@
                 </h1>
                 <div class="flex items-center gap-3 mt-2 flex-wrap">
                   <div class="flex items-center gap-1.5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
-                      viewBox="0 0 24 24">
-                      <path
-                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
+                    <Icon name="heroicons:star-solid" class="w-4 h-4 text-yellow-400" />
                     <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
                       parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
                     <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">• {{ car?.trips_count || 0 }}
@@ -247,11 +243,7 @@
                     {{ car?.owner?.name || 'Chủ xe' }}
                   </p>
                   <div class="flex items-center gap-2 mt-1">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400 fill-current"
-                      viewBox="0 0 24 24">
-                      <path
-                        d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                    </svg>
+                    <Icon name="heroicons:star-solid" class="w-4 h-4 text-yellow-400" />
                     <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
                       parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
                     <span class="text-gray-300">•</span>
@@ -296,13 +288,9 @@
                         {{ review.name }}
                       </p>
                       <div class="flex items-center gap-1.5 mt-0.5">
-                        <div class="flex items-center gap-0.5 text-yellow-400">
-                          <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
-                            :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'"
-                            viewBox="0 0 24 24">
-                            <path
-                              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                          </svg>
+                        <div class="flex items-center gap-0.5">
+                          <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3.5 h-3.5"
+                            :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'" />
                         </div>
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
                       </div>
@@ -320,12 +308,9 @@
                         {{ review.name }}
                       </p>
                       <div class="flex items-center gap-1.5 mt-0.5">
-                        <div class="flex items-center gap-0.5 text-yellow-400">
-                          <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 fill-current"
-                            viewBox="0 0 24 24">
-                            <path
-                              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                          </svg>
+                        <div class="flex items-center gap-0.5">
+                          <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3.5 h-3.5"
+                            :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'" />
                         </div>
                         <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
                       </div>
@@ -355,11 +340,7 @@
                   <span class="text-brand-light text-sm font-medium pb-0.5">/ngày</span>
                 </div>
                 <div class="flex items-center gap-2 mt-1.5 text-white">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-yellow-400 fill-current"
-                    viewBox="0 0 24 24">
-                    <path
-                      d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                  </svg>
+                  <Icon name="heroicons:star-solid" class="w-3.5 h-3.5 text-yellow-400" />
                   <span class="text-xs text-white/70 font-semibold">{{ car?.reviews_avg_rating ?
                     parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến • Miễn
                     thế chấp</span>
@@ -622,9 +603,7 @@
               {{ simCar.name }}
             </p>
             <div class="flex items-center gap-1 mt-1">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-yellow-400 fill-current" viewBox="0 0 24 24">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-              </svg>
+              <Icon name="heroicons:star-solid" class="w-3 h-3 text-yellow-400" />
               <span class="text-[10px] font-bold text-gray-500">{{ simCar.rating }} • {{ simCar.trips }} chuyến</span>
             </div>
             <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
@@ -1631,12 +1610,14 @@ const formattedReviews = computed(() => {
         date: "15/06/2025",
         color: "#286874",
         text: "Xe sạch đẹp, chủ xe nhiệt tình. Chuyến đi rất tuyệt vời, sẽ thuê lại lần sau!",
+        rating: 5,
       },
       {
         name: "Nguyễn Minh Nghĩa",
         date: "11/06/2025",
         color: "#A77E52",
         text: "Xe mới, êm, tiết kiệm xăng. Thủ tục nhanh gọn, không rắc rối. Highly recommended!",
+        rating: 5,
       },
     ];
   }
@@ -1647,6 +1628,7 @@ const formattedReviews = computed(() => {
     date: new Date(r.created_at || Date.now()).toLocaleDateString('vi-VN'),
     color: colors[idx % colors.length],
     text: r.comment || "Đánh giá tốt!",
+    rating: r.rating,
     avatar: r.reviewer?.avatar ? (r.reviewer.avatar.startsWith('http') ? r.reviewer.avatar : 'https://testbackend.teamfpoly.vn/' + r.reviewer.avatar) : null,
   }));
 });

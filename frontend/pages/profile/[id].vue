@@ -186,13 +186,9 @@
                           {{ review.reviewer_name }}
                         </h5>
                         <div class="flex items-center gap-1.5 mt-0.5">
-                          <div class="flex items-center gap-0.5 text-yellow-400">
-                            <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 fill-current"
-                              :class="s <= review.rating ? 'text-amber-400' : 'text-slate-200'"
-                              viewBox="0 0 24 24">
-                              <path
-                                d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                            </svg>
+                          <div class="flex items-center gap-0.5">
+                            <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3 h-3"
+                              :class="s <= review.rating ? 'text-amber-400' : 'text-slate-200'" />
                           </div>
                           <span class="text-[10px] text-slate-400 font-bold">{{ review.created_at }}</span>
                         </div>
@@ -239,13 +235,9 @@
                         {{ review.reviewer_name }}
                       </h5>
                       <div class="flex items-center gap-1.5 mt-0.5">
-                        <div class="flex items-center gap-0.5 text-yellow-400">
-                          <svg v-for="s in 5" :key="s" xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 fill-current"
-                            :class="s <= review.rating ? 'text-amber-400' : 'text-slate-200'"
-                            viewBox="0 0 24 24">
-                            <path
-                              d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2L9.19 8.63L2 9.24l5.46 4.73L5.82 21z" />
-                          </svg>
+                        <div class="flex items-center gap-0.5">
+                          <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3 h-3"
+                            :class="s <= review.rating ? 'text-amber-400' : 'text-slate-200'" />
                         </div>
                         <span class="text-[10px] text-slate-400 font-bold">{{ review.created_at }}</span>
                       </div>

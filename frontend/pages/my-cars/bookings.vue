@@ -556,11 +556,8 @@
                   @click="reviewRating = star"
                   class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-300 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none"
                 >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                    :class="star <= reviewRating ? 'text-amber-400 fill-amber-400' : 'text-slate-350'">
-                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                  </svg>
+                  <Icon name="heroicons:star-solid" class="w-8 h-8"
+                    :class="star <= reviewRating ? 'text-amber-400' : 'text-slate-200'" />
                 </button>
               </div>
               <span class="font-bold text-[#1e4e57] text-[11px] mt-1">
