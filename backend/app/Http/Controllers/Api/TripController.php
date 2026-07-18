@@ -106,11 +106,11 @@ class TripController extends Controller
         $days = max(1, ceil($diffMinutes / 1440));
 
         $unitPrice = $car->unit_price;
-        $insuranceFee = round($unitPrice * 0.09);
+        $insuranceFee = 0;
         $discountVal = $car->discount_value ?? 0;
         $carDiscountTotal = $discountVal * $days;
 
-        $baseRentalPrice = ($unitPrice + $insuranceFee - $discountVal) * $days;
+        $baseRentalPrice = ($unitPrice + $insuranceFee) * $days;
         $deliveryFee = $request->input('delivery_fee', 0);
         $totalPriceBeforePromo = $baseRentalPrice + $deliveryFee;
 

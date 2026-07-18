@@ -1566,14 +1566,12 @@ const hostStats = [
 const priceDetails = computed(() => {
   if (!car.value || !selectedStart.value || !selectedEnd.value) return [];
   const unitPrice = car.value.unit_price;
-  const insuranceFee = Math.round(unitPrice * 0.09); // Phí bảo hiểm 9%
   const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
   const days = rentalDays.value;
 
   const details: { label: string; value: string; info: boolean; discount?: boolean }[] = [
     { label: "Đơn giá thuê", value: `${(unitPrice * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
-    { label: "Bảo hiểm thuê xe", value: `${(insuranceFee * days).toLocaleString('vi-VN')}đ (${days} ngày)`, info: true },
   ];
 
   if (deliveryFeeVal > 0) {
@@ -1616,10 +1614,9 @@ const totalPrice = computed(() => {
   if (!car.value) return 0;
   if (!selectedStart.value || !selectedEnd.value) return 0;
   const unitPrice = car.value.unit_price;
-  const insuranceFee = Math.round(unitPrice * 0.09);
   const deliveryFeeVal = calculatedDeliveryFee.value;
   const discountVal = car.value.discount_value || 0;
-  let price = (unitPrice + insuranceFee - discountVal) * rentalDays.value + deliveryFeeVal;
+  let price = (unitPrice - discountVal) * rentalDays.value + deliveryFeeVal;
   if (isPromoApplied.value && appliedPromo.value) {
     price -= appliedPromo.value.discount_amount;
   }

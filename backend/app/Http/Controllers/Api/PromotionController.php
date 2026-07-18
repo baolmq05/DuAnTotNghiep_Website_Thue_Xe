@@ -179,7 +179,7 @@ class PromotionController extends Controller
         // Calculate pricing and discount
         $car = \App\Models\Car::find($request->car_id);
         $unitPrice = $car->unit_price;
-        $insuranceFee = round($unitPrice * 0.09);
+        $insuranceFee = 0;
         $discountVal = $car->discount_value ?? 0;
 
         $start = \Carbon\Carbon::parse($request->start_at);
