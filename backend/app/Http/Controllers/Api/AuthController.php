@@ -511,7 +511,7 @@ class AuthController extends Controller
         }
 
         // Check expiration (15 minutes)
-        if (now()->diffInMinutes(\Carbon\Carbon::parse($record->created_at)) > 15) {
+        if (now()->diffInMinutes(\Carbon\Carbon::parse($record->created_at), true) > 15) {
             \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $email)->delete();
             return response()->json([
                 'success' => false,

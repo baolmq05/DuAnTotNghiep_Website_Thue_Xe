@@ -1165,13 +1165,13 @@ class TripController extends Controller
         // Tính phí hủy chuyến và hoàn tiền theo chính sách
         // 1. Tổng tiền thực tế của chuyến đi (giá trị chuyến đi)
         $tripValue = $trip->cost - $trip->discount_amount;
-        $bookingTime = $trip->created_at;
-        $startTime = \Carbon\Carbon::parse($trip->start_at);
-        $now = now();
+        $bookingTime = $trip->created_at->timezone('Asia/Ho_Chi_Minh');
+        $startTime = \Carbon\Carbon::parse($trip->start_at, 'Asia/Ho_Chi_Minh');
+        $now = now()->timezone('Asia/Ho_Chi_Minh');
 
         // 2. Xác định phần trăm phí hủy chuyến
         // - Trong vòng 1h sau khi đặt xe (booking time): Miễn phí
-        if ($now->diffInMinutes($bookingTime) <= 60) {
+        if ($bookingTime->diffInMinutes($now) <= 60) {
             $feePercent = 0;
         } else {
             // - Trước chuyến đi 7 ngày (Sau 1h khi đặt): 10% giá trị chuyến đi
