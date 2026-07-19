@@ -1048,14 +1048,14 @@
                 </div>
 
                 <div v-if="cancelModalCompensationAmount > 0"
-                  class="flex justify-between items-center text-[10px] text-slate-400 font-medium">
+                  class="flex justify-between items-center text-[16px] text-rose-600 font-medium">
                   <span>Bồi thường chủ xe:</span>
                   <span>{{ formatCurrency(cancelModalCompensationAmount) }}</span>
                 </div>
               </div>
 
               <!-- Note -->
-              <p class="text-slate-400 italic text-[10px] leading-normal">
+              <p class="italic text-[13px] leading-normal">
                 * Tiền hoàn sẽ được chuyển trực tiếp vào ví điện tử trên hệ thống ngay sau khi lệnh hủy được xác nhận.
               </p>
 
