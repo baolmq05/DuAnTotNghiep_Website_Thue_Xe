@@ -505,6 +505,28 @@
 
             <!-- STEP 3: HÌNH ẢNH & HOÀN TẤT -->
             <div v-show="activeStep === 3" class="space-y-8">
+              <!-- Hiển thị ảnh cũ ở trên -->
+              <div v-if="existingImages.length > 0" class="space-y-4 rounded-3xl border border-slate-100 bg-slate-50/50 p-6">
+                <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Hình ảnh hiện tại của xe</h4>
+                    <p class="text-xs text-slate-400 mt-1">Khi bạn tải lên ảnh mới bên dưới, tất cả ảnh hiện tại này sẽ bị thay thế.</p>
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+                  <div v-for="(img, idx) in existingImages" :key="img" class="group relative aspect-[4/3] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <img :src="img" class="h-full w-full object-cover" />
+                    <span v-if="idx === 0" class="absolute left-2.5 top-2.5 rounded-full bg-[#1e4e57] px-2.5 py-1 text-[10px] font-bold text-white shadow-sm flex items-center gap-1">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      Ảnh đại diện
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Component tải ảnh ở dưới -->
               <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
 
               <section class="rounded-3xl border border-slate-100 bg-slate-50/70 p-6">
@@ -513,13 +535,13 @@
                   <li class="flex items-center gap-3">
                     <span
                       class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full"
-                      :class="uploadedImages.length > 0 ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'"
+                      :class="(uploadedImages.length > 0 || existingImages.length > 0) ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-400'"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="20 6 9 17 4 12"></polyline>
                       </svg>
                     </span>
-                    <span :class="uploadedImages.length > 0 ? 'text-slate-700 font-medium' : 'text-slate-400'">
+                    <span :class="(uploadedImages.length > 0 || existingImages.length > 0) ? 'text-slate-700 font-medium' : 'text-slate-400'">
                       Đã có ít nhất 1 ảnh xe được chọn.
                     </span>
                   </li>
@@ -574,7 +596,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { carService } from '~/services/car.service'
 import { useAuth } from '~/composables/useAuth'
@@ -668,8 +690,15 @@ const toggleFeature = (name: string) => {
 }
 
 // Step 3 images
+const existingImages = ref<string[]>([])
 const uploadedImages = ref<string[]>([])
 const imageUploadRef = ref<any>(null)
+
+watch(uploadedImages, (newVal) => {
+  if (newVal.length > 0 && existingImages.value.length > 0) {
+    existingImages.value = []
+  }
+}, { deep: true })
 
 const { isLoggedIn, user } = useAuth()
 const { openLogin } = useAuthModal()
@@ -800,7 +829,7 @@ const fetchCarData = async () => {
       if (car.images && car.images.length > 0) {
         // Đưa ảnh thumbnail lên trước
         const sortedImages = [...car.images].sort((a, b) => b.is_thumbnail - a.is_thumbnail)
-        uploadedImages.value = sortedImages.map((img) => img.image_url)
+        existingImages.value = sortedImages.map((img) => img.image_url)
       }
     } else {
       showToast('Không tìm thấy thông tin xe.', 'error')
@@ -831,7 +860,7 @@ const onSubmit = async () => {
     activeStep.value = 2
     return
   }
-  if (uploadedImages.value.length === 0) {
+  if (uploadedImages.value.length === 0 && existingImages.value.length === 0) {
     showToast('Vui lòng tải lên ít nhất 1 hình ảnh của xe.', 'error')
     activeStep.value = 3
     return
@@ -840,12 +869,22 @@ const onSubmit = async () => {
   submitting.value = true
 
   try {
-    // Tải ảnh mới lên Cloudinary (nếu có) thông qua uploader component
-    const imageUrls = await imageUploadRef.value?.upload()
+    let imageUrls: string[] = []
+    let thumbnailIndex = 0
 
-    if (!imageUrls || imageUrls.length === 0) {
-      showToast("Không thể upload hình ảnh", "error")
-      return
+    if (uploadedImages.value.length > 0) {
+      // Tải ảnh mới lên Cloudinary (nếu có) thông qua uploader component
+      const uploaded = await imageUploadRef.value?.upload()
+
+      if (!uploaded || uploaded.length === 0) {
+        showToast("Không thể upload hình ảnh", "error")
+        return
+      }
+      imageUrls = uploaded
+      thumbnailIndex = imageUploadRef.value?.getThumbnailIndex() !== -1 ? imageUploadRef.value?.getThumbnailIndex() : 0
+    } else {
+      imageUrls = existingImages.value
+      thumbnailIndex = 0
     }
 
     const selectedFeatureIds = featureItems.value
@@ -885,7 +924,7 @@ const onSubmit = async () => {
       rental_terms: rentalTerms.value,
       features: selectedFeatureIds,
       images: imageUrls,
-      thumbnail_index: imageUploadRef.value?.getThumbnailIndex() !== -1 ? imageUploadRef.value?.getThumbnailIndex() : 0
+      thumbnail_index: thumbnailIndex
     }
 
     const res = await carService.updateCar(carId, payload)

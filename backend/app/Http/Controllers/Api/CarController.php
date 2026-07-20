@@ -649,7 +649,10 @@ class CarController extends Controller
             }
             $thumbnailIndex = intval($request->thumbnail_index);
 
-            // Xóa hình ảnh cũ và cập nhật hình ảnh mới
+            // Lấy danh sách ảnh cũ trước khi xóa
+            $oldImageUrls = $car->images()->pluck('image_url')->toArray();
+
+            // Xóa hình ảnh cũ ở database và cập nhật hình ảnh mới
             $car->images()->delete();
             foreach ($imageUrls as $index => $url) {
                 CarImage::create([
@@ -657,6 +660,12 @@ class CarController extends Controller
                     'image_url' => $url,
                     'is_thumbnail' => $index == $thumbnailIndex
                 ]);
+            }
+
+            // Tìm các ảnh cũ bị xóa bỏ khỏi danh sách mới để xóa trên Cloudinary
+            $removedUrls = array_diff($oldImageUrls, $imageUrls);
+            foreach ($removedUrls as $url) {
+                $this->deleteFromCloudinary($url);
             }
 
             DB::commit();
@@ -675,5 +684,67 @@ class CarController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Xóa hình ảnh trên Cloudinary bằng URL
+     */
+    private function deleteFromCloudinary($url)
+    {
+        $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
+        $apiKey = env('CLOUDINARY_API_KEY');
+        $apiSecret = env('CLOUDINARY_API_SECRET');
+
+        if (!$apiKey || !$apiSecret) {
+            \Illuminate\Support\Facades\Log::warning("Cloudinary credentials missing, skipped deleting image: " . $url);
+            return false;
+        }
+
+        // Tách public ID từ URL
+        $parts = explode('/image/upload/', $url);
+        if (count($parts) === 2) {
+            $path = $parts[1];
+            // Loại bỏ version dạng v1234567/
+            $path = preg_replace('/^v\d+\//', '', $path);
+            // Loại bỏ phần mở rộng (ví dụ: .jpg)
+            $pathParts = explode('.', $path);
+            array_pop($pathParts);
+            $publicId = implode('.', $pathParts);
+
+            $timestamp = time();
+            $params = [
+                'public_id' => $publicId,
+                'timestamp' => $timestamp,
+            ];
+
+            // Tạo chữ ký
+            ksort($params);
+            $signString = "";
+            foreach ($params as $key => $val) {
+                $signString .= "{$key}={$val}&";
+            }
+            $signString = rtrim($signString, '&') . $apiSecret;
+            $signature = sha1($signString);
+
+            try {
+                $response = \Illuminate\Support\Facades\Http::post("https://api.cloudinary.com/v1_1/{$cloudName}/image/destroy", [
+                    'public_id' => $publicId,
+                    'timestamp' => $timestamp,
+                    'api_key' => $apiKey,
+                    'signature' => $signature,
+                ]);
+
+                if ($response->successful()) {
+                    \Illuminate\Support\Facades\Log::info("Deleted from Cloudinary: " . $publicId);
+                    return true;
+                } else {
+                    \Illuminate\Support\Facades\Log::error("Failed to delete from Cloudinary: " . $response->body());
+                }
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error deleting from Cloudinary: " . $e->getMessage());
+            }
+        }
+
+        return false;
     }
 }
