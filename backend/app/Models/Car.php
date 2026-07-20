@@ -28,8 +28,33 @@ class Car extends Model
         'delivery_option_id',
         'usage_limit_id',
         'status'
-  
     ];
+
+    protected static function booted()
+    {
+        static::updated(function ($car) {
+            if ($car->wasChanged('status')) {
+                $owner = $car->owner;
+                if ($owner) {
+                    $status = (int) $car->status;
+                    $message = '';
+                    if ($status === 1) {
+                        $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã được phê duyệt thành công. Xe đã sẵn sàng để hoạt động!";
+                    } elseif ($status === 3) {
+                        $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã bị từ chối phê duyệt. Vui lòng kiểm tra lại thông tin xe.";
+                    }
+
+                    if ($message) {
+                        Notification::create([
+                            'user_id' => $owner->id,
+                            'message' => $message,
+                            'is_read' => '0',
+                        ]);
+                    }
+                }
+            }
+        });
+    }
 
     public function carLocation()
     {

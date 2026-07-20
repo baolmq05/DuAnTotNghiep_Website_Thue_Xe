@@ -187,4 +187,59 @@ class NotificationApiTest extends TestCase
             'id' => $notification->id
         ]);
     }
+
+    /**
+     * Test notification is created when car status is updated to approved or rejected
+     */
+    public function test_car_status_change_creates_notification(): void
+    {
+        $owner = User::first();
+        $car = \App\Models\Car::create([
+            'name' => 'Tesla Model S',
+            'license_plate' => '29A-99999',
+            'VIN' => 'TESTVIN123456789',
+            'engine_number' => 'TESTENGINE123456',
+            'fuel_consumption' => 0,
+            'unit_price' => 2000000,
+            'discount_value' => 0,
+            'description' => 'Tesla test',
+            'rental_terms' => 'Test terms',
+            'car_location_id' => 1,
+            'car_brand_id' => 1,
+            'car_type_id' => 1,
+            'seat_count' => 5,
+            'manufacture_year' => '2023-01-01',
+            'fuel_type' => 'Electric',
+            'transmission' => 'Automatic',
+            'user_id' => $owner->id,
+            'delivery_option_id' => 1,
+            'usage_limit_id' => 1,
+            'status' => 2 // Chờ duyệt
+        ]);
+
+        // Clear existing notifications for this user
+        Notification::where('user_id', $owner->id)->delete();
+
+        // 1. Approve the car
+        $car->update(['status' => 1]);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $owner->id,
+            'message' => "Xe 'Tesla Model S' (Biển số: 29A-99999) của bạn đã được phê duyệt thành công. Xe đã sẵn sàng để hoạt động!",
+            'is_read' => '0'
+        ]);
+
+        // Clear notifications
+        Notification::where('user_id', $owner->id)->delete();
+
+        // 2. Reject the car
+        $car->update(['status' => 3]);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $owner->id,
+            'message' => "Xe 'Tesla Model S' (Biển số: 29A-99999) của bạn đã bị từ chối phê duyệt. Vui lòng kiểm tra lại thông tin xe.",
+            'is_read' => '0'
+        ]);
+    }
 }
+
