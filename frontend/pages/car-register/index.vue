@@ -105,24 +105,76 @@
                             </div>
 
                             <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
-                                <div>
+                                <!-- Searchable Hãng xe -->
+                                <div class="relative id-brand-dropdown">
                                     <label class="mb-1 block text-sm font-medium text-slate-700">Hãng xe</label>
-                                    <select v-model="selectedBrandId" @change="onBrandChange"
-                                        class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                        <option :value="null">Chọn hãng xe</option>
-                                        <option v-for="brand in brands" :key="brand.id" :value="brand.id">{{
-                                            brand.brand_name }}</option>
-                                    </select>
+                                    <div @click="toggleBrandDropdown"
+                                        class="w-full flex items-center justify-between cursor-pointer rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus-within:border-[#1e4e57] focus-within:ring-4 focus-within:ring-[#1e4e57]/10">
+                                        <span :class="selectedBrand ? 'text-slate-900' : 'text-slate-400'">
+                                            {{ selectedBrand ? selectedBrand.brand_name : 'Chọn hãng xe' }}
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"
+                                            :class="{ 'rotate-180': isBrandOpen }"></i>
+                                    </div>
+
+                                    <!-- Dropdown Menu Hãng Xe -->
+                                    <div v-if="isBrandOpen" @click.stop
+                                        class="absolute z-50 mt-1 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                                        <div class="relative mb-2">
+                                            <i
+                                                class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                                            <input type="text" v-model="brandSearch" placeholder="Tìm tên hãng..."
+                                                class="w-full rounded-xl border border-slate-200 py-2 pl-8 pr-4 text-sm outline-none focus:border-[#1e4e57]" />
+                                        </div>
+                                        <div class="max-h-48 overflow-y-auto divide-y divide-slate-50">
+                                            <div v-for="brand in filteredBrands" :key="brand.id"
+                                                @click="selectBrand(brand)"
+                                                class="cursor-pointer rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                {{ brand.brand_name }}
+                                            </div>
+                                            <div v-if="filteredBrands.length === 0"
+                                                class="p-3 text-center text-xs text-slate-400">
+                                                Không tìm thấy hãng xe phù hợp
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div>
+
+                                <!-- Searchable Mẫu xe -->
+                                <div class="relative id-type-dropdown">
                                     <label class="mb-1 block text-sm font-medium text-slate-700">Mẫu xe</label>
-                                    <select v-model="selectedTypeId" :disabled="!selectedBrandId"
-                                        class="w-full cursor-pointer appearance-none rounded-2xl border border-slate-300 bg-white px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                                        <option :value="null">{{ selectedBrandId ? 'Chọn mẫu xe' : 'Chọn dòng xe trước'
-                                        }}</option>
-                                        <option v-for="type in carTypes" :key="type.id" :value="type.id">{{
-                                            type.type_name }}</option>
-                                    </select>
+                                    <div @click="toggleTypeDropdown"
+                                        :class="!selectedBrandId ? 'bg-slate-50 opacity-60 cursor-not-allowed' : 'bg-white cursor-pointer'"
+                                        class="w-full flex items-center justify-between rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus-within:border-[#1e4e57] focus-within:ring-4 focus-within:ring-[#1e4e57]/10">
+                                        <span :class="selectedType ? 'text-slate-900' : 'text-slate-400'">
+                                            {{ selectedBrandId ? (selectedType ? selectedType.type_name : 'Chọn mẫu xe')
+                                                : 'Chọn dòng xe trước' }}
+                                        </span>
+                                        <i class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform duration-200"
+                                            :class="{ 'rotate-180': isTypeOpen }"></i>
+                                    </div>
+
+                                    <!-- Dropdown Menu Mẫu Xe -->
+                                    <div v-if="isTypeOpen && selectedBrandId" @click.stop
+                                        class="absolute z-50 mt-1 w-full rounded-2xl border border-slate-200 bg-white p-2 shadow-xl">
+                                        <div class="relative mb-2">
+                                            <i
+                                                class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-xs text-slate-400"></i>
+                                            <input type="text" v-model="typeSearch" placeholder="Tìm tên mẫu xe..."
+                                                class="w-full rounded-xl border border-slate-200 py-2 pl-8 pr-4 text-sm outline-none focus:border-[#1e4e57]" />
+                                        </div>
+                                        <div class="max-h-48 overflow-y-auto divide-y divide-slate-50">
+                                            <div v-for="type in filteredCarTypes" :key="type.id"
+                                                @click="selectType(type)"
+                                                class="cursor-pointer rounded-xl px-3 py-2 text-sm text-slate-700 hover:bg-slate-50 transition-colors">
+                                                {{ type.type_name }}
+                                            </div>
+                                            <div v-if="filteredCarTypes.length === 0"
+                                                class="p-3 text-center text-xs text-slate-400">
+                                                Không tìm thấy mẫu xe phù hợp
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div>
                                     <label class="mb-1 block text-sm font-medium text-slate-700">Số ghế</label>
@@ -260,7 +312,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Mức giảm đề xuất: <strong class="text-slate-800">{{ discountVal
-                                            }}%</strong></span>
+                                                    }}%</strong></span>
                                             <span class="font-bold">5%</span>
                                         </div>
                                     </div>
@@ -360,7 +412,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ maxDistVal
-                                                    }}km</strong></span>
+                                            }}km</strong></span>
                                             <span class="font-bold">50km</span>
                                         </div>
                                     </div>
@@ -371,7 +423,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ feeVal
-                                                    }}K/km</strong></span>
+                                            }}K/km</strong></span>
                                             <span class="font-bold">30K</span>
                                         </div>
                                     </div>
@@ -382,7 +434,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ freeLimitVal
-                                                    }}km</strong></span>
+                                            }}km</strong></span>
                                             <span class="font-bold">15km</span>
                                         </div>
                                     </div>
@@ -416,7 +468,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ kmLimitVal
-                                                    }}km</strong></span>
+                                            }}km</strong></span>
                                             <span class="font-bold">500km</span>
                                         </div>
                                     </div>
@@ -427,7 +479,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ overFeeVal
-                                                    }}K/km</strong></span>
+                                            }}K/km</strong></span>
                                             <span class="font-bold">10K</span>
                                         </div>
                                     </div>
@@ -507,7 +559,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { carService } from '~/services/car.service'
 import { useAuth } from '~/composables/useAuth'
 import { useToast } from '~/composables/useToast'
@@ -548,6 +600,12 @@ const brands = ref<any[]>([])
 const carTypes = ref<any[]>([])
 const manufactureYears = ref<number[]>([])
 const submitting = ref(false)
+
+// State quản lý Searchable Select
+const isBrandOpen = ref(false)
+const brandSearch = ref('')
+const isTypeOpen = ref(false)
+const typeSearch = ref('')
 
 const currentYear = new Date().getFullYear()
 for (let y = currentYear + 1; y >= 2005; y--) {
@@ -610,6 +668,61 @@ const imageUploadRef = ref<any>(null)
 
 const { isLoggedIn } = useAuth()
 const { openLogin } = useAuthModal()
+
+// Computed filters phục vụ tính năng tìm kiếm real-time
+const filteredBrands = computed(() => {
+    if (!brandSearch.value.trim()) return brands.value
+    return brands.value.filter(b =>
+        b.brand_name.toLowerCase().includes(brandSearch.value.toLowerCase())
+    )
+})
+
+const filteredCarTypes = computed(() => {
+    if (!typeSearch.value.trim()) return carTypes.value
+    return carTypes.value.filter(t =>
+        t.type_name.toLowerCase().includes(typeSearch.value.toLowerCase())
+    )
+})
+
+const selectedBrand = computed(() => {
+    return brands.value.find(b => b.id === selectedBrandId.value) || null
+})
+
+const selectedType = computed(() => {
+    return carTypes.value.find(t => t.id === selectedTypeId.value) || null
+})
+
+// Các hàm tương tác đóng mở / chọn của Hãng Xe
+const toggleBrandDropdown = () => {
+    isBrandOpen.value = !isBrandOpen.value
+    if (isBrandOpen.value) {
+        isTypeOpen.value = false
+        brandSearch.value = ''
+    }
+}
+
+const selectBrand = (brand: any) => {
+    selectedBrandId.value = brand.id
+    isBrandOpen.value = false
+    brandSearch.value = ''
+    onBrandChange()
+}
+
+// Các hàm tương tác đóng mở / chọn của Mẫu Xe
+const toggleTypeDropdown = () => {
+    if (!selectedBrandId.value) return
+    isTypeOpen.value = !isTypeOpen.value
+    if (isTypeOpen.value) {
+        isBrandOpen.value = false
+        typeSearch.value = ''
+    }
+}
+
+const selectType = (type: any) => {
+    selectedTypeId.value = type.id
+    isTypeOpen.value = false
+    typeSearch.value = '' // Thêm dòng này để reset từ khóa mẫu xe
+}
 
 const loadBrands = async () => {
     try {
@@ -815,7 +928,7 @@ const onSubmit = async () => {
     } catch (e: any) {
         console.error('Đăng ký xe thất bại:', e);
         let errMsg = 'Có lỗi xảy ra khi kết nối máy chủ.';
-        
+
         const data = e.response?._data;
         if (data) {
             if (data.errors) {
@@ -974,6 +1087,16 @@ const prevStep = () => {
     }
 };
 
+const handleOutsideClick = (e: MouseEvent) => {
+    const target = e.target as HTMLElement
+    if (isBrandOpen.value && !target.closest('.id-brand-dropdown')) {
+        isBrandOpen.value = false
+    }
+    if (isTypeOpen.value && !target.closest('.id-type-dropdown')) {
+        isTypeOpen.value = false
+    }
+}
+
 onMounted(async () => {
     if (!isLoggedIn.value) {
         showToast('Vui lòng đăng nhập trước khi đăng ký xe.', 'error');
@@ -981,7 +1104,6 @@ onMounted(async () => {
         navigateTo('/');
         return;
     }
-    // Load maplibre-gl dynamically on client side to avoid SSR errors
     if (process.client) {
         try {
             const module = await import('maplibre-gl');
@@ -990,13 +1112,17 @@ onMounted(async () => {
         } catch (e) {
             console.error('Không tải được thư viện bản đồ:', e);
         }
+        // Lắng nghe sự kiện click ngoài để ẩn dropdown
+        window.addEventListener('click', handleOutsideClick)
     }
     await loadBrands();
     await loadFeatures();
 })
 
-useHead({
-    title: 'Đăng ký xe | DRIVIO'
+// Hủy lắng nghe khi hủy component tránh rò rỉ bộ nhớ
+onUnmounted(() => {
+    if (process.client) {
+        window.removeEventListener('click', handleOutsideClick)
+    }
 })
-
 </script>
