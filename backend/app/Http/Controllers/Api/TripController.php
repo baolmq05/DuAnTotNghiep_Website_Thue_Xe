@@ -168,7 +168,7 @@ class TripController extends Controller
             $promoDiscount = min($promoDiscount, $baseRentalPrice);
         }
 
-        $calculatedCost = max(0, $totalPriceBeforePromo - $promoDiscount);
+        $calculatedCost = $totalPriceBeforePromo; // cost = tiền thuê + phí giao xe (chưa trừ giảm giá)
         $calculatedDiscountAmount = $carDiscountTotal + $promoDiscount;
 
         try {
