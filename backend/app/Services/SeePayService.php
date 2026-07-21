@@ -106,7 +106,7 @@ class SeePayService
             switch ($paymentType) {
                 case 'rental':
                     $tripId = $meta['trip_id'] ?? null;
-                    $trip = Trip::with('car')->find($tripId);
+                    $trip = Trip::with(['car', 'user'])->find($tripId);
                     if (!$trip) {
                         Log::error("SeePay processPayment - Trip ID {$tripId} not found.");
                         return [
@@ -143,6 +143,26 @@ class SeePayService
                     // 3. Update trip status to Confirmed/active
                     $trip->status = TripStatus::Confirmed->value;
                     $trip->save();
+
+                    // 4. Notifications
+                    $carName = $trip->car->name ?? 'xe';
+                    $renterName = $trip->user->name ?? 'Khách hàng';
+
+                    if ($ownerId) {
+                        \App\Models\Notification::create([
+                            'user_id' => $ownerId,
+                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay).",
+                            'is_read' => '0',
+                        ]);
+                    }
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Chuyến đi đã được xác nhận.",
+                            'is_read' => '0',
+                        ]);
+                    }
 
                     Log::info("SeePay rental payment successful for trip {$tripId}, credited owner {$ownerId} amount {$amount}.");
                     break;
@@ -259,6 +279,14 @@ class SeePayService
                         'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                         'is_read' => '0',
                     ]);
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                            'is_read' => '0',
+                        ]);
+                    }
                     break;
 
                 default:

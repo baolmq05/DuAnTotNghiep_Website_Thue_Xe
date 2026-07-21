@@ -562,10 +562,7 @@
                   <span v-else>CHỌN THUÊ</span>
                 </button>
 
-                <!-- Phụ phí -->
-                <button class="w-full text-center text-sm text-brand-primary hover:underline font-semibold">
-                  Xem phụ phí có thể phát sinh →
-                </button>
+      
               </div>
             </div>
 

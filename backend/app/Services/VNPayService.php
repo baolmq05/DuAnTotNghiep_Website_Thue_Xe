@@ -188,7 +188,7 @@ class VNPayService
                     $tripId = $meta['trip_id'] ?? null;
                     $ownerId = $meta['owner_id'] ?? null;
 
-                    $trip = Trip::find($tripId);
+                    $trip = Trip::with(['car', 'user'])->find($tripId);
                     if (!$trip) {
                         Log::error("VNPay processPayment - Trip ID {$tripId} not found.");
                         return [
@@ -222,6 +222,27 @@ class VNPayService
                     // 3. Update trip status to Confirmed/active
                     $trip->status = TripStatus::Confirmed->value;
                     $trip->save();
+
+                    // 4. Notifications
+                    $carOwnerId = $ownerId ?? ($trip->car->user_id ?? 0);
+                    $carName = $trip->car->name ?? 'xe';
+                    $renterName = $trip->user->name ?? 'Khách hàng';
+
+                    if ($carOwnerId) {
+                        \App\Models\Notification::create([
+                            'user_id' => $carOwnerId,
+                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua VNPay.",
+                            'is_read' => '0',
+                        ]);
+                    }
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua VNPay. Chuyến đi đã được xác nhận.",
+                            'is_read' => '0',
+                        ]);
+                    }
 
                     Log::info("VNPay rental payment successful for trip {$tripId}, created pending balance holding amount {$amount}.");
                     break;
@@ -344,6 +365,14 @@ class VNPayService
                         'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua VNPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                         'is_read' => '0',
                     ]);
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua VNPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                            'is_read' => '0',
+                        ]);
+                    }
                     break;
 
                 default:

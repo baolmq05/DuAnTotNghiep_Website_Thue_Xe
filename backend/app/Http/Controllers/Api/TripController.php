@@ -785,10 +785,16 @@ class TripController extends Controller
 
             \Illuminate\Support\Facades\DB::commit();
 
-            // Tạo thông báo
+            // Tạo thông báo cho chủ xe và khách thuê
             \App\Models\Notification::create([
                 'user_id' => $trip->car->user_id,
                 'message' => "Khách hàng {$user->name} đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id}. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                'is_read' => '0',
+            ]);
+
+            \App\Models\Notification::create([
+                'user_id' => $user->id,
+                'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id}. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                 'is_read' => '0',
             ]);
 

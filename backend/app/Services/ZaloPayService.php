@@ -433,7 +433,7 @@ class ZaloPayService
 
                 case "rental":
 
-                    $trip = Trip::find(
+                    $trip = Trip::with(['car', 'user'])->find(
                         $meta["trip_id"]
                     );
 
@@ -481,6 +481,27 @@ class ZaloPayService
                     $trip->status = TripStatus::Confirmed->value;
 
                     $trip->save();
+
+                    // Notifications
+                    $carOwnerId = $owner->id ?? ($trip->car->user_id ?? 0);
+                    $carName = $trip->car->name ?? 'xe';
+                    $renterName = $trip->user->name ?? 'Khách hàng';
+
+                    if ($carOwnerId) {
+                        \App\Models\Notification::create([
+                            'user_id' => $carOwnerId,
+                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua ZaloPay.",
+                            'is_read' => '0',
+                        ]);
+                    }
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua ZaloPay. Chuyến đi đã được xác nhận.",
+                            'is_read' => '0',
+                        ]);
+                    }
 
                     break;
 
@@ -637,6 +658,14 @@ class ZaloPayService
                         'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                         'is_read' => '0',
                     ]);
+
+                    if ($trip->user_id) {
+                        \App\Models\Notification::create([
+                            'user_id' => $trip->user_id,
+                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                            'is_read' => '0',
+                        ]);
+                    }
                     break;
 
                 default:
