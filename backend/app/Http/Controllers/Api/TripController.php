@@ -111,6 +111,7 @@ class TripController extends Controller
         $carDiscountTotal = $discountVal * $days;
 
         $baseRentalPrice = ($unitPrice + $insuranceFee) * $days;
+        $baseRentalPriceForPromo = max(0, ($unitPrice + $insuranceFee - $discountVal) * $days);
         $deliveryFee = $request->input('delivery_fee', 0);
         $totalPriceBeforePromo = $baseRentalPrice + $deliveryFee;
 
@@ -160,12 +161,12 @@ class TripController extends Controller
             }
 
             if ($promotion->discount_type == 0) { // percentage
-                $promoDiscount = round(($baseRentalPrice * $promotion->discount_value) / 100);
+                 $promoDiscount = round(($baseRentalPriceForPromo * $promotion->discount_value) / 100);
             } else { // fixed amount
                 $promoDiscount = $promotion->discount_value;
             }
 
-            $promoDiscount = min($promoDiscount, $baseRentalPrice);
+            $promoDiscount = min($promoDiscount, $baseRentalPriceForPromo);
         }
 
         $calculatedCost = $totalPriceBeforePromo; // cost = tiền thuê + phí giao xe (chưa trừ giảm giá)
