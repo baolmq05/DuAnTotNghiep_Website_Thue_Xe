@@ -26,7 +26,6 @@
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
-                  <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
                 </div>
                 <p class="text-xs text-gray-500 truncate">
                   {{ lastBotMessage }}
@@ -51,8 +50,6 @@
                     class="w-10 h-10 rounded-full bg-brand-secondary text-brand-primary flex items-center justify-center text-sm font-bold">
                     {{ conversation.other_user?.name?.charAt(0) || 'U' }}
                   </div>
-                  <span v-if="conversation.other_user?.online"
-                    class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
@@ -108,10 +105,6 @@
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
-              <div class="flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                <span class="text-xs text-gray-500">Đang hoạt động</span>
-              </div>
             </div>
           </template>
 
@@ -124,18 +117,10 @@
                 class="w-9 h-9 rounded-full bg-brand-secondary text-brand-primary flex items-center justify-center text-sm font-bold">
                 {{ activeHost.other_user?.name?.charAt(0) }}
               </div>
-              <span v-if="activeHost.other_user?.online"
-                class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-white"></span>
             </div>
             <div>
               <p class="text-sm font-semibold text-gray-800">{{ activeHost.other_user?.name }}</p>
-              <div class="flex items-center gap-1.5">
-                <span v-if="activeHost.other_user?.online" class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                <span class="text-xs text-gray-500">
-                  {{ activeHost.other_user?.online ? 'Đang online' : 'Offline' }}
-                  <span v-if="activeHost.car"> • {{ activeHost.car.name }}</span>
-                </span>
-              </div>
+              <p v-if="activeHost.car" class="text-xs text-gray-500">{{ activeHost.car.name }}</p>
             </div>
             <!-- Car info pill -->
             <div v-if="activeHost.car"

@@ -332,7 +332,7 @@
                             <hr class="border-slate-100">
 
                             <!-- SECTION 3: TỐI ƯU NHẬN CHUYẾN -->
-                            <section>
+                            <!-- <section>
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-slate-900">Tối ưu nhận chuyến</h3>
@@ -347,7 +347,7 @@
                                             :class="optimizeEnabled ? 'translate-x-5' : 'translate-x-0'" />
                                     </button>
                                 </div>
-                            </section>
+                            </section> -->
 
                             <hr class="border-slate-100">
 
