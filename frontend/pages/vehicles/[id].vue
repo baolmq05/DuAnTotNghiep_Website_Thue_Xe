@@ -836,8 +836,9 @@ const selectDeliveryPlace = async (item: any) => {
         const [carLat, carLng] = carLocStr.split(',').map(Number)
 
         if (carLat && carLng) {
-          const dist = await calculateDistance(carLat, carLng, loc.lat, loc.lng)
-          deliveryDistance.value = parseFloat(dist.toFixed(1))
+          const rawDist = await calculateDistance(carLat, carLng, loc.lat, loc.lng)
+          const dist = Math.round(rawDist * 10) / 10 // Làm tròn 1 chữ số thập phân (VD: 7.333 -> 7.3, 7.355 -> 7.4)
+          deliveryDistance.value = dist
 
           const deliveryOpt = car.value.delivery_option
           if (deliveryOpt) {
@@ -854,7 +855,7 @@ const selectDeliveryPlace = async (item: any) => {
               if (dist <= freeDist) {
                 deliveryFee.value = 0
               } else {
-                const extraKm = dist - freeDist
+                const extraKm = Math.round((dist - freeDist) * 10) / 10
                 deliveryFee.value = Math.round(extraKm * feeDistance)
               }
             }
