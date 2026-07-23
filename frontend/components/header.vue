@@ -82,43 +82,47 @@
 
   <!-- Bottom Navigation (Mobile Only, Google Material 3 style) -->
   <div
-    class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#f8f0e8]/95 backdrop-blur-md border-t border-slate-200/40 h-[80px] flex items-center justify-around pb-safe px-2 shadow-[0_-4px_12px_rgba(0,0,0,0.03)]">
-    <div v-for="(item, idx) in bottomNavItems" :key="item.text" @click="handleBottomNavClick(item, idx)"
-      class="flex flex-col items-center justify-center flex-grow py-1 select-none cursor-pointer focus:outline-none">
+    class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#f8f0e8]/95 backdrop-blur-md border-t border-slate-200/40 h-[72px] flex items-center justify-around pb-safe px-1 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+    <div v-for="item in bottomNavItems" :key="item.text" @click="handleBottomNavClick(item)"
+      class="flex flex-col items-center justify-center flex-1 min-w-0 py-1 select-none cursor-pointer focus:outline-none">
       <!-- Icon Wrapper (Material 3 Pill active indicator) -->
       <div :class="[
-        'px-5 py-1.5 rounded-full transition-all duration-300 flex items-center justify-center',
-        activeTab === idx
+        'px-3 py-1 rounded-full transition-all duration-300 flex items-center justify-center',
+        isItemActive(item)
           ? 'bg-brand-primary/15 text-brand-primary scale-105 shadow-sm'
           : 'text-slate-600 hover:text-brand-primary'
       ]">
         <!-- Home Icon -->
-        <svg v-if="item.icon === 'home'" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+        <svg v-if="item.icon === 'home'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
           <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z" />
         </svg>
 
         <!-- About Icon -->
-        <svg v-else-if="item.icon === 'info'" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'info'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z" />
         </svg>
 
         <!-- Blog Icon -->
-        <svg v-else-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M21 5c-1.11-.35-2.33-.5-3.5-.5c-1.95 0-4.05.4-5.5 1.5c-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5c.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5c1.35-.85 3.8-1.5 5.5-1.5c1.65 0 3.35.3 4.75 1.05c.1.05.15.05.25.05c.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5c-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5c1.2 0 2.4.15 3.5.5z" />
-          <path fill="currentColor"
-            d="M17.5 10.5c.88 0 1.73.09 2.5.26V9.24c-.79-.15-1.64-.24-2.5-.24c-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99M13 12.49v1.66c1.13-.64 2.7-.99 4.5-.99c.88 0 1.73.09 2.5.26V11.9c-.79-.15-1.64-.24-2.5-.24c-1.7 0-3.24.3-4.5.83m4.5 1.84c-1.7 0-3.24.29-4.5.83v1.66c1.13-.64 2.7-.99 4.5-.99c.88 0 1.73.09 2.5.26v-1.52c-.79-.16-1.64-.24-2.5-.24" />
         </svg>
 
-        <!-- Đăng ký chủ xe -->
-        <svg v-else-if="item.icon === 'host'" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+        <!-- Policy Icon -->
+        <svg v-else-if="item.icon === 'policy'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+          <path fill="currentColor"
+            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z" />
+        </svg>
+
+        <!-- Đăng ký chủ xe / Quản lý xe -->
+        <svg v-else-if="item.icon === 'host'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H15V3H9v2H6.5c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16m11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5M5 11l1.5-4.5h11L19 11z" />
         </svg>
 
         <!-- Tài khoản -->
-        <svg v-else-if="item.icon === 'account'" xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'account'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6m0 14c-2.03 0-4.43-.82-6.14-2.88a9.95 9.95 0 0 1 12.28 0C16.43 19.18 14.03 20 12 20" />
         </svg>
@@ -126,8 +130,8 @@
 
       <!-- Label -->
       <span :class="[
-        'text-[10px] tracking-wide mt-1 transition-all duration-300',
-        activeTab === idx
+        'text-[10px] sm:text-[11px] tracking-tight mt-1 transition-all duration-300 truncate max-w-full px-0.5',
+        isItemActive(item)
           ? 'text-brand-primary font-bold scale-105'
           : 'text-slate-500 font-medium'
       ]">
@@ -145,7 +149,7 @@ const { user, isLoggedIn } = useAuth()
 const { unreadCount, fetchNotifications } = useNotifications()
 
 const isScrolled = ref(false)
-const activeTab = ref(0)
+const route = useRoute()
 
 const isOwner = computed(() => {
   return isLoggedIn.value && user.value && (user.value.role_id === 3 || user.value.role_id === 1)
@@ -174,9 +178,20 @@ const bottomNavItems = computed(() => [
     : { text: 'Chủ xe', icon: 'host', to: '/car-register' },
 
 ])
+
+const isItemActive = (item: any) => {
+  if (item.to) {
+    if (item.to === '/') return route.path === '/'
+    return route.path.startsWith(item.to)
+  }
+  if (item.icon === 'account') {
+    return route.path.startsWith('/profile')
+  }
+  return false
+}
+
 // mở modal
 const showNotificationModal = ref(false);
-const route = useRoute();
 
 watch(() => route.path, (newPath) => {
   if (newPath === '/notifications') {
@@ -192,8 +207,7 @@ const closeNotificationModal = () => {
   showNotificationModal.value = false;
 };
 
-const handleBottomNavClick = (item: any, idx: number) => {
-  activeTab.value = idx
+const handleBottomNavClick = (item: any) => {
   if (item.icon === 'account') {
     if (isLoggedIn.value) {
       navigateTo('/profile')
