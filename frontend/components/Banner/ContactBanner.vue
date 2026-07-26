@@ -4,7 +4,7 @@
 
         <!-- Background effects & overlay image -->
         <div class="absolute inset-0 z-0 pointer-events-none">
-            <img src="https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=1200&auto=format&fit=crop" alt="Support Background" loading="eager" fetchpriority="high"
+            <img src="/images/about/aboutHero.jpg" alt="Support Background" loading="eager" fetchpriority="high"
                 decoding="async" class="w-full h-full object-cover opacity-[0.12] mix-blend-overlay" />
             <div class="absolute inset-0 bg-gradient-to-t from-brand-dark/75 via-brand-primary/45 to-transparent" />
             <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-cyan-500/10 blur-[120px]" />
@@ -16,16 +16,13 @@
 
                 <!-- Left Column: Title, Description, Quick Actions -->
                 <div class="lg:col-span-7 text-left space-y-6 max-w-2xl mx-auto lg:mx-0">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-brand-light text-xs font-semibold uppercase tracking-wider">
-                        <Icon name="heroicons:chat-bubble-left-right" class="w-4 h-4" />
-                        Hỗ trợ 24/7
-                    </div>
                     <h1 class="text-3xl md:text-5xl lg:text-6xl font-black text-white leading-tight">
                         Liên hệ & Hỗ trợ
                     </h1>
 
                     <p class="text-base md:text-lg text-gray-200/90 leading-relaxed">
-                        Bạn có câu hỏi, đóng góp ý kiến hoặc cần hỗ trợ kỹ thuật? Đội ngũ hỗ trợ của DRIVIO luôn sẵn sàng đồng hành cùng bạn trên mọi cung đường.
+                        Bạn có câu hỏi, đóng góp ý kiến hoặc cần hỗ trợ kỹ thuật? Đội ngũ hỗ trợ của DRIVIO luôn sẵn
+                        sàng đồng hành cùng bạn trên mọi cung đường.
                     </p>
 
                     <div class="flex flex-wrap gap-4 pt-2">

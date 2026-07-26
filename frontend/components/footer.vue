@@ -6,12 +6,6 @@
       <div class="flex flex-col space-y-4 px-3">
         <div class="flex-shrink-0">
           <NuxtLink to="/" class="flex items-center gap-2 group focus:outline-none">
-            <!-- Stylized modern D-shaped logo -->
-            <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"
-              class="w-8 h-8 text-brand-light fill-current drop-shadow-[0_2px_8px_rgba(254,227,206,0.2)] transition-transform duration-300 group-hover:scale-105">
-              <path d="M20 15h30c20 0 35 15 35 35s-15 35-35 35H20V15zm16 16v38h14c10 0 18-8 18-19s-8-19-18-19H36z" />
-              <circle cx="50" cy="50" r="10" class="text-brand-accent" />
-            </svg> -->
             <span
               class="text-2xl font-black tracking-wider text-white group-hover:text-brand-light transition-colors duration-200">
               DRIVIO
@@ -51,9 +45,6 @@
           <li>
             <NuxtLink to="/">Hướng dẫn đặt xe</NuxtLink>
           </li>
-          <li>
-            <NuxtLink to="/">Hỏi và trả lời</NuxtLink>
-          </li>
         </ul>
       </div>
 
@@ -65,7 +56,7 @@
 
         <ul class="space-y-2 text-sm text-gray-300">
           <li>
-            <NuxtLink to="/">
+            <NuxtLink to="/car-register">
               Đăng ký chủ xe DRIVIO
             </NuxtLink>
           </li>
@@ -79,12 +70,6 @@
         </h3>
 
         <ul class="space-y-2 text-sm text-gray-300">
-          <li>
-            <NuxtLink to="/contact">
-              Contact us
-            </NuxtLink>
-          </li>
-
           <li>
             <NuxtLink to="/contact">
               Liên hệ & Hỗ trợ
@@ -114,10 +99,10 @@
             <Icon name="fa6-brands:facebook-f" class="text-xl" />
           </a>
 
-          <a href="#"
+          <!-- <a href="#"
             class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center hover:border-white transition">
             <Icon name="simple-icons:tiktok" class="text-xl" />
-          </a>
+          </a> -->
 
           <a href="#"
             class="w-10 h-10 rounded-full border border-gray-500 flex items-center justify-center hover:border-white transition">
@@ -125,9 +110,9 @@
           </a>
         </div>
               <div class="flex items-center gap-2 flex-wrap">
-                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782293102/download_osrbwg.png" alt="" class="h-10"></a>
+                <!-- <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782293102/download_osrbwg.png" alt="" class="h-10"></a> -->
                 <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292713/vnpay.780689d6_ftuqtj.png" alt="" class="h-10"></a>
-                <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292711/download_1_zbu7en.png" alt="" class="h-10"></a>
+                <!-- <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292711/download_1_zbu7en.png" alt="" class="h-10"></a> -->
                 <a href=""><img src="https://res.cloudinary.com/dfmoftnpw/image/upload/v1782292709/download_2_v3hdjk.png" alt="" class="h-10"></a>
       </div>
       </div>
