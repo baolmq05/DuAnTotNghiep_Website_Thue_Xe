@@ -3,7 +3,7 @@
 	<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
 		<div class="text-center max-w-xl mx-auto mb-12">
 			<h2 class="text-3xl font-extrabold text-black tracking-tight">Hướng dẫn đặt xe</h2>
-			<p class="text-slate-800 mt-3 text-sm md:text-base">Chỉ với 4 bước đơn giản để trải nghiệm thuê xe Mioto một cách nhanh chóng</p>
+			<p class="text-slate-800 mt-3 text-sm md:text-base">Chỉ với 4 bước đơn giản để trải nghiệm thuê xe DRIVIO một cách nhanh chóng</p>
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
@@ -78,6 +78,13 @@
 					</div>
 				</div>
 			</div>
+		</div>
+
+		<div class="mt-10 text-center">
+			<NuxtLink to="/bookinghowto" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary text-white rounded-xl font-semibold hover:bg-brand-dark transition duration-200 shadow-sm">
+				<span>Xem hướng dẫn chi tiết</span>
+				<Icon name="lucide:arrow-right" class="w-4 h-4" />
+			</NuxtLink>
 		</div>
 	</section>
 </template>

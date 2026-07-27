@@ -37,13 +37,13 @@
 
         <ul class="space-y-2 text-sm text-gray-300">
           <li>
-            <NuxtLink to="/howitwork">Hướng dẫn chung</NuxtLink>
+            <NuxtLink to="/bookinghowto">Hướng dẫn chung</NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/">Hướng dẫn thanh toán</NuxtLink>
+            <NuxtLink to="/bookinghowto#payment">Hướng dẫn thanh toán</NuxtLink>
           </li>
           <li>
-            <NuxtLink to="/">Hướng dẫn đặt xe</NuxtLink>
+            <NuxtLink to="/bookinghowto">Hướng dẫn đặt xe</NuxtLink>
           </li>
         </ul>
       </div>
