@@ -559,6 +559,22 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: 'Đăng Ký Cho Thuê Xe — Kiếm Thu Nhập Thụ Động | DRIVIO',
+  description: 'Đăng ký cho thuê xe trên DRIVIO — kiếm thu nhập thụ động từ xe nhàn rỗi. Bảo hiểm toàn diện, hỗ trợ quản lý xe, thanh toán nhanh chóng.',
+  keywords: 'đăng ký cho thuê xe, cho thuê xe kiếm tiền, chủ xe drivio, thu nhập thụ động xe ô tô, đăng xe cho thuê',
+  ogTitle: 'Trở Thành Chủ Xe Trên DRIVIO',
+  ogDescription: 'Cho thuê xe nhàn rỗi, kiếm thu nhập thụ động với DRIVIO.',
+  ogImage: '/images/og/car-register.jpg',
+  twitterCard: 'summary_large_image',
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: 'https://drivio.vn/car-register' }
+  ]
+})
+
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
 import { carService } from '~/services/car.service'
 import { useAuth } from '~/composables/useAuth'

@@ -765,6 +765,54 @@ const loading = ref(true);
 const error = ref<string | null>(null);
 const isFavorite = ref(false);
 
+const seoTitle = computed(() => {
+  if (!car.value) return 'Đang tải thông tin xe... | DRIVIO';
+  return `Thuê Xe ${car.value.name} — ${car.value.unit_price ? car.value.unit_price.toLocaleString('vi-VN') : ''}đ/ngày | DRIVIO`;
+})
+
+const seoDescription = computed(() => {
+  if (!car.value) return 'Chi tiết xe cho thuê tự lái tại DRIVIO.';
+  const seat = car.value.seat_count || 4;
+  const transmissionStr = normalizeTransmission(car.value.transmission);
+  const fuelStr = normalizeFuel(car.value.fuel_type);
+  const price = car.value.unit_price ? car.value.unit_price.toLocaleString('vi-VN') : '';
+  return `Thuê xe tự lái ${car.value.name} ${seat} chỗ, ${transmissionStr}, ${fuelStr} tại DRIVIO. Giá chỉ từ ${price}đ/ngày. Đầy đủ bảo hiểm, thủ tục đơn giản. Đặt xe ngay!`;
+})
+
+const seoKeywords = computed(() => {
+  if (!car.value) return 'thuê xe tự lái, drivio';
+  const brandName = car.value.car_brand?.brand_name || '';
+  return `thuê xe ${car.value.name}, thuê xe ${brandName}, cho thuê xe ${car.value.name}, thuê xe tự lái ${car.value.name}, drivio`;
+})
+
+const seoImage = computed(() => {
+  if (car.value && car.value.images && car.value.images.length > 0) {
+    const thumb = car.value.images.find((img: any) => img.is_thumbnail === 1) || car.value.images[0];
+    return thumb.image_url;
+  }
+  return 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000';
+})
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDescription,
+  keywords: seoKeywords,
+  ogTitle: seoTitle,
+  ogDescription: seoDescription,
+  ogImage: seoImage,
+  ogType: 'product',
+  twitterCard: 'summary_large_image',
+})
+
+useHead({
+  link: [
+    {
+      rel: 'canonical',
+      href: computed(() => `https://drivio.vn/vehicles/${carId}`)
+    }
+  ]
+})
+
 // Goong Map for Delivery Location
 const MAP_KEY = '8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex'
 const API_KEY = 'xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V'

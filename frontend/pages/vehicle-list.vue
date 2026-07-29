@@ -50,6 +50,22 @@
 </template>
 
 <script setup lang="ts">
+useSeoMeta({
+  title: 'Danh Sách Xe Cho Thuê Tự Lái | DRIVIO',
+  description: 'Tìm và đặt thuê xe tự lái phù hợp tại DRIVIO. Lọc theo hãng xe, số chỗ, khoảng giá. Đa dạng xe 4-7 chỗ, xe điện, xe hạng sang với giá ưu đãi.',
+  keywords: 'danh sách xe cho thuê, tìm xe tự lái, thuê xe 4 chỗ, thuê xe 7 chỗ, lọc xe cho thuê, so sánh giá thuê xe',
+  ogTitle: 'Khám Phá Xe Cho Thuê Tự Lái | DRIVIO',
+  ogDescription: 'Hàng trăm xe tự lái đa dạng dòng xe chờ bạn khám phá tại DRIVIO.',
+  ogImage: '/images/og/vehicle-list.jpg',
+  twitterCard: 'summary_large_image',
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: 'https://drivio.vn/vehicle-list' }
+  ]
+})
+
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute } from '#app'
 import SearchBar from '~/components/Vehicle/SearchBar.vue'

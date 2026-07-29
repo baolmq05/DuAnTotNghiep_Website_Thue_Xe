@@ -232,11 +232,20 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 
+useSeoMeta({
+  title: 'Liên Hệ & Hỗ Trợ Khách Hàng | DRIVIO',
+  description: 'Liên hệ DRIVIO — Hotline 1900 8888 hỗ trợ 24/7. Giải đáp thắc mắc thuê xe, tiếp nhận khiếu nại, tư vấn đặt xe nhanh chóng và chuyên nghiệp.',
+  keywords: 'liên hệ drivio, hỗ trợ thuê xe, hotline drivio, tư vấn thuê xe, khiếu nại drivio',
+  ogTitle: 'Liên Hệ DRIVIO — Hỗ Trợ 24/7',
+  ogDescription: 'Hotline 1900 8888 — hỗ trợ đặt xe, giải đáp thắc mắc, tiếp nhận phản hồi.',
+  ogImage: '/images/og/contact.jpg',
+  twitterCard: 'summary_large_image',
+})
+
 useHead({
-    title: 'Liên hệ & Hỗ trợ - DRIVIO',
-    meta: [
-        { name: 'description', content: 'Liên hệ với đội ngũ chăm sóc khách hàng của DRIVIO. Hotline 1900 8888 hỗ trợ 24/7 giải đáp thắc mắc, tiếp nhận khiếu nại và phản hồi.' }
-    ]
+  link: [
+    { rel: 'canonical', href: 'https://drivio.vn/contact' }
+  ]
 })
 
 // FAQ Active Index

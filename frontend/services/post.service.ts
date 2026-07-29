@@ -7,6 +7,7 @@ export interface Post {
   excerpt: string;
   content: string;
   thumbnail: string | null;
+  seo_keywords: string | null;
   user_id: number;
   post_category_id: number;
   status: number;
@@ -26,6 +27,7 @@ export interface Post {
   };
   related_posts?: Array<{
     id: number;
+    slug: string;
     title: string;
     excerpt: string;
     thumbnail: string | null;

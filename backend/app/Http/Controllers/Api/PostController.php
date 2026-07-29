@@ -63,7 +63,10 @@ class PostController extends Controller
     {
         $post = Post::with(['category', 'user' => function ($q) {
             $q->select('id', 'name', 'avatar');
-        }])->find($id);
+        }])
+        ->where('id', $id)
+        ->orWhere('slug', $id)
+        ->first();
 
         if (!$post || $post->status !== PostStatus::Active) {
             return response()->json([
@@ -79,7 +82,7 @@ class PostController extends Controller
             ->orderBy('published_at', 'desc')
             ->orderBy('created_at', 'desc')
             ->take(3)
-            ->get(['id', 'title', 'excerpt', 'thumbnail', 'published_at']);
+            ->get(['id', 'slug', 'title', 'excerpt', 'thumbnail', 'published_at']);
 
         $post->setAttribute('related_posts', $relatedPosts);
 

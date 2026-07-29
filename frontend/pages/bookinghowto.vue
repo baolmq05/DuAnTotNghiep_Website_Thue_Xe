@@ -248,13 +248,19 @@
 import { ref } from 'vue'
 import BookingBanner from '~/components/Banner/BookingBanner.vue'
 
+useSeoMeta({
+  title: 'Hướng Dẫn Đặt Xe Tự Lái Online | DRIVIO',
+  description: 'Hướng dẫn 4 bước đặt thuê xe tự lái tại DRIVIO: chọn xe, đặt lịch, thanh toán, nhận xe. Quy trình minh bạch, đơn giản, nhanh chóng.',
+  keywords: 'hướng dẫn thuê xe, cách đặt xe tự lái, quy trình thuê xe online, thuê xe drivio, đặt xe nhanh',
+  ogTitle: 'Hướng Dẫn Đặt Xe | DRIVIO',
+  ogDescription: '4 bước đơn giản để thuê xe tự lái tại DRIVIO.',
+  ogImage: '/images/og/booking-guide.jpg',
+  twitterCard: 'summary_large_image',
+})
+
 useHead({
-  title: 'Hướng Dẫn Đặt Xe | DRIVIO',
-  meta: [
-    {
-      name: 'description',
-      content: 'Hướng dẫn quy trình 4 bước đặt xe tự lái nhanh chóng, minh bạch và đơn giản trên hệ thống DRIVIO.'
-    }
+  link: [
+    { rel: 'canonical', href: 'https://drivio.vn/bookinghowto' }
   ]
 })
 

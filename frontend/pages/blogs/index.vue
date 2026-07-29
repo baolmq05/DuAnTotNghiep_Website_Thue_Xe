@@ -29,7 +29,7 @@
                         </p>
                     </div>
                     <div v-else-if="posts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6 auto-rows-[260px]">
-                        <NuxtLink v-for="post in posts" :key="post.id" :to="`/blogs/${post.id}`"
+                        <NuxtLink v-for="post in posts" :key="post.id" :to="`/blogs/${post.slug}`"
                             class="text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md">
                             <img :src="getThumbnailUrl(post.thumbnail)"
                                 :alt="post.title"
@@ -147,7 +147,7 @@
                         <hr class="mt-3 mb-5 h-[0.5px] bg-gray-500">
                         <div class="flex flex-col gap-4">
                             <div v-for="pop in popularPosts" :key="pop.id" class="flex gap-3 h-20">
-                                <NuxtLink :to="`/blogs/${pop.id}`" class="w-[30%] border rounded-md relative overflow-hidden flex-shrink-0">
+                                <NuxtLink :to="`/blogs/${pop.slug}`" class="w-[30%] border rounded-md relative overflow-hidden flex-shrink-0">
                                     <img :src="getThumbnailUrl(pop.thumbnail)"
                                         class="w-full h-full object-cover" />
                                     <div class="absolute inset-0 bg-gradient-to-r from-[#1e4e57] to-[#286874] opacity-25">
@@ -160,7 +160,7 @@
                                         </span>
                                     </h5>
                                     <h3 class="font-bold text-sm leading-snug line-clamp-2">
-                                        <NuxtLink :to="`/blogs/${pop.id}`" class="hover:text-teal-600 transition">
+                                        <NuxtLink :to="`/blogs/${pop.slug}`" class="hover:text-teal-600 transition">
                                             {{ pop.title }}
                                         </NuxtLink>
                                     </h3>
@@ -182,14 +182,19 @@ import { BASE_URL } from '~/enviroment/enviroment'
 import BlogBanner from '~/components/Banner/BlogBanner.vue'
 
 useSeoMeta({
-    title: 'Blog Thuê Xe Ô Tô Tự Lái | Kinh Nghiệm, Mẹo & Đánh Giá Xe — Drivio',
-    description:
-        'Khám phá bài viết về kinh nghiệm thuê xe ô tô tự lái, mẹo chọn xe phù hợp, đánh giá các mẫu xe phổ biến và hướng dẫn đặt xe nhanh chóng tại Drivio.',
-    ogTitle: 'Blog Thuê Xe Ô Tô Tự Lái | Drivio',
-    ogDescription:
-        'Mẹo chọn xe, kinh nghiệm đi đường dài, đánh giá xe và khuyến mãi thuê xe tự lái — tất cả tại Blog Drivio.',
+    title: 'Blog Thuê Xe Tự Lái | Kinh Nghiệm & Mẹo Hay — DRIVIO',
+    description: 'Khám phá blog DRIVIO — kinh nghiệm thuê xe tự lái, mẹo chọn xe phù hợp, đánh giá dòng xe phổ biến, tin tức khuyến mãi và hướng dẫn đặt xe online.',
+    keywords: 'blog thuê xe, kinh nghiệm thuê xe tự lái, mẹo chọn xe, đánh giá xe, tin tức thuê xe, khuyến mãi thuê xe',
+    ogTitle: 'Blog Thuê Xe Tự Lái | DRIVIO',
+    ogDescription: 'Mẹo chọn xe, kinh nghiệm đi đường dài, đánh giá xe và khuyến mãi thuê xe — tất cả tại Blog DRIVIO.',
     ogImage: '/images/about/aboutHero.jpg',
     twitterCard: 'summary_large_image',
+})
+
+useHead({
+  link: [
+    { rel: 'canonical', href: 'https://drivio.vn/blogs' }
+  ]
 })
 
 const posts = ref<Post[]>([])

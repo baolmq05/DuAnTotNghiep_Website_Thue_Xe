@@ -17,6 +17,7 @@ class Post extends Model
         'excerpt',
         'content',
         'thumbnail',
+        'seo_keywords',
         'user_id',
         'post_category_id',
         'status',
@@ -27,6 +28,15 @@ class Post extends Model
     protected $casts = [
         'status' => PostStatus::class,
     ];
+
+    protected static function booted()
+    {
+        static::creating(function ($post) {
+            if (empty($post->published_at)) {
+                $post->published_at = now();
+            }
+        });
+    }
 
     public function category()
     {

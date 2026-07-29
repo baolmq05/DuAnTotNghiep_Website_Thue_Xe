@@ -67,7 +67,7 @@
               </h3>
               <ul class="space-y-5">
                 <li v-for="post in relatedPosts" :key="post.id">
-                  <NuxtLink :to="`/blogs/${post.id}`" class="flex items-center gap-4 group">
+                  <NuxtLink :to="`/blogs/${post.slug}`" class="flex items-center gap-4 group">
                     <img :src="getThumbnailUrl(post.thumbnail)" :alt="post.title"
                       class="w-20 h-20 object-cover rounded-xl shadow-sm group-hover:opacity-80 transition flex-shrink-0" />
                     <div>
@@ -90,7 +90,7 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { postService, type Post } from '~/services/post.service'
 import { BASE_URL } from '~/enviroment/enviroment'
@@ -102,6 +102,54 @@ definePageMeta({
 const route = useRoute()
 const loading = ref(true)
 const blogPost = ref<Post | null>(null)
+
+const seoTitle = computed(() => {
+  if (!blogPost.value) return 'Đang tải bài viết... | Blog DRIVIO';
+  return `${blogPost.value.title} | Blog DRIVIO`;
+})
+
+const seoDescription = computed(() => {
+  if (!blogPost.value) return 'Đọc chi tiết bài viết trên Blog DRIVIO.';
+  return blogPost.value.excerpt || 'Đọc chi tiết bài viết trên Blog DRIVIO.';
+})
+
+const seoKeywords = computed(() => {
+  if (!blogPost.value) return 'blog thuê xe, drivio blog';
+  return blogPost.value.seo_keywords || `${blogPost.value.slug}, blog thuê xe, kinh nghiệm thuê xe, drivio blog`;
+})
+
+const seoImage = computed(() => {
+  if (!blogPost.value) return 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=800&q=80';
+  return getThumbnailUrl(blogPost.value.thumbnail);
+})
+
+useSeoMeta({
+  title: seoTitle,
+  description: seoDescription,
+  keywords: seoKeywords,
+  ogTitle: seoTitle,
+  ogDescription: seoDescription,
+  ogImage: seoImage,
+  ogType: 'article',
+  twitterCard: 'summary_large_image',
+})
+
+const canonicalUrl = computed(() => {
+  if (blogPost.value && blogPost.value.slug) {
+    return `https://drivio.vn/blogs/${blogPost.value.slug}`;
+  }
+  return `https://drivio.vn/blogs/${route.params.id}`;
+})
+
+useHead({
+  link: [
+    {
+      rel: 'canonical',
+      href: canonicalUrl
+    }
+  ]
+})
+
 const relatedPosts = ref<any[]>([])
 
 const processedContent = ref('')
@@ -168,15 +216,6 @@ const fetchPostDetail = async (id: string | number) => {
       blogPost.value = res.data
       relatedPosts.value = res.data.related_posts || []
       processContentAndGenerateToc(res.data.content)
-
-      // Cập nhật SEO Meta dynamically
-      useSeoMeta({
-        title: `${res.data.title} | Blog Drivio`,
-        description: res.data.excerpt || 'Đọc chi tiết bài viết trên Blog Drivio.',
-        ogTitle: `${res.data.title} | Blog Drivio`,
-        ogDescription: res.data.excerpt || 'Đọc chi tiết bài viết trên Blog Drivio.',
-        ogImage: getThumbnailUrl(res.data.thumbnail)
-      })
     } else {
       blogPost.value = null
     }

@@ -45,7 +45,7 @@
 
 			<!-- Dynamic Blog Grid -->
 			<div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 auto-rows-[250px]">
-				<NuxtLink v-for="(post, index) in posts" :key="post.id" :to="'/blogs/' + post.id" :class="[
+				<NuxtLink v-for="(post, index) in posts" :key="post.id" :to="'/blogs/' + post.slug" :class="[
 					getCardClass(index),
 					'text-white p-6 rounded-2xl flex flex-col justify-end relative overflow-hidden group shadow-md hover:shadow-xl transition-all duration-300 cursor-pointer'
 				]">
