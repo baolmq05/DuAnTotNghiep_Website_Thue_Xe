@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Trips;
 
-use App\Filament\Resources\Trips\Pages\EditTrip;
 use App\Filament\Resources\Trips\Pages\ListTrips;
 use App\Filament\Resources\Trips\Schemas\TripForm;
 use App\Filament\Resources\Trips\Tables\TripsTable;
@@ -23,6 +22,11 @@ class TripResource extends Resource
     protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Vận hành';
 
     public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
     {
         return false;
     }
@@ -58,7 +62,6 @@ class TripResource extends Resource
     {
         return [
             'index' => ListTrips::route('/'),
-            'edit' => EditTrip::route('/{record}/edit'),
         ];
     }
 }

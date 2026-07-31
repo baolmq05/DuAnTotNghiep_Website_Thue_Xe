@@ -27,7 +27,29 @@ class TransactionsTable
                     ->sortable(),
                 TextColumn::make('prepay')
                     ->label('Đặt cọc trước')
-                    ->suffix('%')
+                    ->formatStateUsing(function ($state, $record) {
+                        $trip = $record->trip;
+                        if (!$trip) {
+                            if (!$record->amount) {
+                                return '0%';
+                            }
+                            $percentage = ($state / $record->amount) * 100;
+                            return round($percentage) . '%';
+                        }
+
+                        $netCost = $trip->cost - ($trip->discount_amount ?? 0);
+                        if ($netCost <= 0) {
+                            return '0%';
+                        }
+
+                        $percentage = ($state / $netCost) * 100;
+                        $rounded = round($percentage);
+                        if ($rounded > 100) {
+                            return '100%';
+                        }
+
+                        return $rounded . '%';
+                    })
                     ->sortable(),
                 TextColumn::make('trip.id')
                     ->label('Mã chuyến đi (ID)')

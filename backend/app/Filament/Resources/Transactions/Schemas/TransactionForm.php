@@ -29,7 +29,7 @@ class TransactionForm
                 TextInput::make('prepay')
                     ->label('Đặt cọc trước')
                     ->numeric()
-                    ->suffix('%')
+                    ->suffix('VNĐ')
                     ->required(),
                 Select::make('trip_id')
                     ->label('Mã chuyến đi')

@@ -126,9 +126,9 @@ class TripsTable
                             ->when($data['end_at'], fn($q) => $q->whereDate('end_at', '<=', $data['end_at']));
                     }),
             ])
-            ->recordActions([
-                EditAction::make(),
-            ])
+            // ->recordActions([
+            //     EditAction::make(),
+            // ])
             ->toolbarActions([
                 //
             ]);
