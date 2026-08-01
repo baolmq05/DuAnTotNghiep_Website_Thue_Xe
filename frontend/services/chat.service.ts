@@ -27,7 +27,7 @@ export class ChatService extends BaseService {
         });
     }
 
-    public async storeMessage(payload: { conversation_id: string | number; text: string; type: string }) {
+    public async storeMessage(payload: FormData | { conversation_id: string | number; text?: string; type: string }) {
         return this.request<any>("messages", {
             method: "POST",
             body: payload,

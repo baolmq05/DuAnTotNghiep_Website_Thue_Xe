@@ -157,10 +157,45 @@ class ChatController extends Controller
                 ], 404);
             }
 
+            $request->validate([
+                'conversation_id' => 'required|exists:chat_conversations,id',
+                'type' => 'required|in:text,image',
+                'text' => 'required_if:type,text|nullable|string',
+                'image' => 'required_if:type,image|nullable|image|max:10240', // Tối đa 10MB
+            ]);
+
+            $messageText = $request->input('text');
+
+            if ($request->input('type') === 'image' && $request->hasFile('image')) {
+                $file = $request->file('image');
+                $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
+                $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
+
+                // Tải trực tiếp lên API của Cloudinary
+                $response = \Illuminate\Support\Facades\Http::attach(
+                    'file',
+                    file_get_contents($file->getRealPath()),
+                    $file->getClientOriginalName()
+                )->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
+                    'upload_preset' => $uploadPreset,
+                    'folder' => 'chats',
+                ]);
+
+                if ($response->successful()) {
+                    $messageText = $response->json('secure_url');
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Không thể upload ảnh lên Cloudinary.',
+                        'error' => $response->json()
+                    ], 500);
+                }
+            }
+
             $message = ChatMessage::create([
                 'conversation_id' => $request->conversation_id,
                 'sender_id' => $user->id,
-                'text' => $request->text,
+                'text' => $messageText,
                 'type' => $request->type,
                 'is_read' => false,
             ]);
@@ -171,6 +206,12 @@ class ChatController extends Controller
                 'success' => true,
                 'message' => $message
             ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Dữ liệu tin nhắn không hợp lệ',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,

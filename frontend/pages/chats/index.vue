@@ -142,8 +142,29 @@
             <!-- User / me (right side) -->
             <div v-if="msg.role === 'user'" class="flex gap-3 justify-end msg-anim">
               <div class="max-w-lg">
-                <div class="bg-brand-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
-                  <p class="text-sm leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                <div :class="[
+                  msg.type === 'image'
+                    ? 'rounded-2xl overflow-hidden shadow-xs'
+                    : 'bg-brand-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-xs'
+                ]">
+                  <div v-if="msg.type === 'image'" class="relative group max-w-[250px]">
+                    <img 
+                      :src="msg.text" 
+                      alt="Hình ảnh" 
+                      :class="[
+                        'max-w-[250px] max-h-[300px] w-auto h-auto object-cover rounded-lg shadow-xs cursor-pointer transition-all duration-300',
+                        msg.isUploading ? 'blur-[2px] brightness-75 scale-95' : 'hover:opacity-90'
+                      ]" 
+                      @click="!msg.isUploading && openImage(msg.text)" 
+                    />
+                    <div v-if="msg.isUploading" class="absolute inset-0 flex items-center justify-center bg-black/35 rounded-lg">
+                      <div class="flex flex-col items-center gap-1.5">
+                        <div class="w-6 h-6 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                        <span class="text-[10px] text-white font-medium drop-shadow-md">Đang gửi...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <p v-else class="text-sm leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 text-right mr-1">{{ msg.time }}</p>
               </div>
@@ -177,9 +198,32 @@
               </div>
 
               <div class="max-w-lg">
-                <div class="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-sm">
-                  <p v-if="activeConvId === 'bot'" class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
-                  <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                <div :class="[
+                  msg.type === 'image'
+                    ? 'rounded-2xl overflow-hidden shadow-xs'
+                    : 'bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs'
+                ]">
+                  <div v-if="msg.type === 'image'" class="relative group max-w-[250px]">
+                    <img 
+                      :src="msg.text" 
+                      alt="Hình ảnh" 
+                      :class="[
+                        'max-w-[250px] max-h-[300px] w-auto h-auto object-cover rounded-lg shadow-xs cursor-pointer transition-all duration-300',
+                        msg.isUploading ? 'blur-[2px] brightness-75 scale-95' : 'hover:opacity-90'
+                      ]" 
+                      @click="!msg.isUploading && openImage(msg.text)" 
+                    />
+                    <div v-if="msg.isUploading" class="absolute inset-0 flex items-center justify-center bg-black/35 rounded-lg">
+                      <div class="flex flex-col items-center gap-1.5">
+                        <div class="w-6 h-6 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                        <span class="text-[10px] text-white font-medium drop-shadow-md">Đang tải...</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div v-else>
+                    <p v-if="activeConvId === 'bot'" class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
+                    <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                  </div>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 ml-1">
                   {{ activeConvId === 'bot' ? 'Chatbot Drivio' : activeHost?.other_user?.name }} • {{ msg.time }}
@@ -244,8 +288,10 @@
                 :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.other_user?.name ?? 'chủ xe'}...`"
                 class="w-full resize-none text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-200 focus:border-brand-primary focus:outline-none rounded-2xl px-4 py-3 pr-12 transition-all leading-relaxed shadow-sm"
                 style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
-              <button class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors">
-                <Icon name="lucide:paperclip" class="w-5 h-5" />
+              <!-- Input chọn file ẩn -->
+              <input type="file" ref="imageInputRef" accept="image/*" class="hidden" @change="uploadImage" />
+              <button @click="triggerImageSelect" class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors" title="Gửi hình ảnh">
+                <Icon name="lucide:image" class="w-5 h-5" />
               </button>
             </div>
             <button @click="sendMessage" :disabled="isTyping || !inputText.trim()"
@@ -260,6 +306,15 @@
 
       </main>
     </div>
+    <!-- Image Lightbox Modal -->
+    <transition enter-active-class="transition ease-out duration-300" enter-from-class="opacity-0 scale-95" enter-to-class="opacity-100 scale-100" leave-active-class="transition ease-in duration-200" leave-from-class="opacity-100 scale-100" leave-to-class="opacity-0 scale-95">
+      <div v-if="showLightbox" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md" @click.self="showLightbox = false">
+        <button @click="showLightbox = false" class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors duration-200 focus:outline-none" title="Đóng">
+          <Icon name="lucide:x" class="w-8 h-8" />
+        </button>
+        <img :src="lightboxImageUrl" alt="Xem ảnh đầy đủ" class="max-w-[90vw] max-h-[85vh] object-contain rounded-lg shadow-2xl select-none" />
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -288,6 +343,8 @@ const showSuggestions = ref(true)
 const chatContainer = ref(null)
 const inputRef = ref(null)
 const showChatOnMobile = ref(false)
+const showLightbox = ref(false)
+const lightboxImageUrl = ref('')
 
 const conversations = ref([])
 const messages = ref([])
@@ -327,12 +384,16 @@ function subscribeToAllConversations() {
         const timeFormatted = new Date(e.message.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 
         if (activeConvId.value === conv.id) {
-          messages.value.push({
-            role: e.message.sender_id === userInfo.value?.id ? 'user' : 'other',
-            text: e.message.text,
-            time: timeFormatted
-          })
-          scrollToBottom()
+          // Chỉ hiển thị tin nhắn từ người khác (người gửi đã tự push tin nhắn của mình locally)
+          if (e.message.sender_id !== userInfo.value?.id) {
+            messages.value.push({
+              role: 'other',
+              text: e.message.text,
+              type: e.message.type || 'text',
+              time: timeFormatted
+            })
+            scrollToBottom()
+          }
 
           chatService.markAsRead(conv.id).catch(err => console.error(err))
         } else {
@@ -411,6 +472,7 @@ async function fetchHostMessages(id) {
       messages.value = res.messages.map(m => ({
         role: m.sender_id === userInfo.value?.id ? 'user' : 'other',
         text: m.text,
+        type: m.type || 'text',
         time: m.created_at ? new Date(m.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : getTime()
       }))
     } else {
@@ -476,6 +538,14 @@ async function sendMessage() {
       activeHost.value.last_message.text = text
       activeHost.value.last_message.time = time
     }
+
+    // Tự động push tin nhắn vừa gửi vào local để hiển thị ngay lập tức
+    messages.value.push({
+      role: 'user',
+      text: text,
+      type: 'text',
+      time: time
+    })
 
     inputText.value = ''
     if (inputRef.value) inputRef.value.style.height = 'auto'
@@ -549,6 +619,87 @@ function autoResize(e) {
   const el = e.target
   el.style.height = 'auto'
   el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+}
+
+const imageInputRef = ref(null)
+
+function triggerImageSelect() {
+  if (imageInputRef.value) {
+    imageInputRef.value.click()
+  }
+}
+
+async function uploadImage(event) {
+  const file = event.target.files[0]
+  if (!file) return
+
+  // Kiểm tra kích thước file (tối đa 10MB)
+  if (file.size > 10 * 1024 * 1024) {
+    alert("Dung lượng hình ảnh tải lên tối đa là 10MB.")
+    return
+  }
+
+  const time = getTime()
+  const localBlobUrl = URL.createObjectURL(file)
+  const tempId = 'temp-' + Date.now()
+
+  try {
+    // Optimistic UI - Hiển thị ảnh mờ kèm hiệu ứng tải lên ngay lập tức
+    messages.value.push({
+      id: tempId,
+      role: 'user',
+      text: localBlobUrl,
+      type: 'image',
+      isUploading: true,
+      time: time
+    })
+    await scrollToBottom()
+
+    // Tạo FormData gửi lên Backend
+    const formData = new FormData()
+    formData.append('conversation_id', chat_id.value)
+    formData.append('type', 'image')
+    formData.append('image', file)
+
+    const res = await chatService.storeMessage(formData)
+
+    if (res && res.success) {
+      // Tìm tin nhắn tạm và cập nhật URL ảnh Cloudinary thực tế cùng tắt loading
+      const tempMsg = messages.value.find(m => m.id === tempId)
+      if (tempMsg) {
+        tempMsg.text = res.message.text
+        tempMsg.isUploading = false
+      }
+
+      // Cập nhật tin nhắn cuối trên sidebar
+      if (activeHost.value && activeHost.value.last_message) {
+        activeHost.value.last_message.text = '[Hình ảnh]'
+        activeHost.value.last_message.time = getTime()
+      }
+    } else {
+      // Xóa tin nhắn tạm thời nếu lỗi
+      messages.value = messages.value.filter(m => m.id !== tempId)
+      alert("Tải ảnh lên thất bại.")
+    }
+  } catch (error) {
+    console.error("Lỗi gửi ảnh:", error)
+    // Xóa tin nhắn tạm thời nếu lỗi
+    messages.value = messages.value.filter(m => m.id !== tempId)
+    alert("Không thể gửi ảnh.")
+  } finally {
+    if (imageInputRef.value) {
+      imageInputRef.value.value = ''
+    }
+    // Giải phóng bộ nhớ Blob URL sau khi upload xong
+    setTimeout(() => {
+      URL.revokeObjectURL(localBlobUrl)
+    }, 10000)
+  }
+}
+
+function openImage(url) {
+  lightboxImageUrl.value = url
+  showLightbox.value = true
 }
 
 // ---------------- LIFECYCLE ----------------
