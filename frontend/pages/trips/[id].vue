@@ -1083,6 +1083,56 @@
       confirm-text="Đồng ý trả xe" cancel-text="Hủy" type="warning" @confirm="executeReturnRequest"
       @close="showReturnConfirm = false" />
 
+    <!-- Beautiful Tailwind Reject Dialog Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showRejectModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+          <div @click="showRejectModal = false" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative w-full max-w-md bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up space-y-4"
+            @click.stop>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Icon name="lucide:x-circle" class="w-5 h-5 text-rose-500" />
+                {{ rejectType === 'trip' ? 'Từ chối cho thuê' : 'Từ chối gia hạn' }}
+              </h3>
+              <button @click="showRejectModal = false"
+                class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Body Description & Input -->
+            <div class="space-y-3 text-xs">
+              <p class="text-slate-500 font-medium leading-relaxed">
+                Vui lòng nhập lý do từ chối {{ rejectType === 'trip' ? 'yêu cầu thuê xe này' : 'yêu cầu gia hạn chuyến đi này' }}:
+              </p>
+
+              <textarea v-model="rejectReason" rows="3"
+                placeholder="Nhập lý do chi tiết (ví dụ: Xe đang bảo dưỡng, bận lịch đột xuất...)"
+                class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-700 outline-none transition focus:border-rose-500 focus:bg-white focus:ring-4 focus:ring-rose-500/10 placeholder:text-slate-400"></textarea>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="flex gap-3 pt-2">
+              <button @click="showRejectModal = false" :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
+                Hủy
+              </button>
+              <button @click="executeRejectAction" :disabled="processingAction"
+                class="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <span v-else>Xác nhận từ chối</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -1113,6 +1163,10 @@ const loading = ref(true)
 const error = ref<string | null>(null)
 const uploading = ref(false)
 const showReturnConfirm = ref(false)
+
+const showRejectModal = ref(false)
+const rejectReason = ref('')
+const rejectType = ref<'trip' | 'extension'>('trip')
 
 const isOwner = computed(() => {
   if (!user.value || !trip.value || !trip.value.car) return false
@@ -1147,21 +1201,47 @@ const handleConfirmTrip = async () => {
   }
 }
 
-const openRejectTripDialog = async () => {
-  const reason = prompt('Nhập lý do từ chối cho thuê:', 'Chủ xe bận lịch đột xuất')
-  if (reason === null) return // Hủy prompt
+const openRejectTripDialog = () => {
+  rejectType.value = 'trip'
+  rejectReason.value = 'Chủ xe bận lịch đột xuất'
+  showRejectModal.value = true
+}
+
+const openRejectExtensionDialog = () => {
+  rejectType.value = 'extension'
+  rejectReason.value = 'Không bận lịch trống xe'
+  showRejectModal.value = true
+}
+
+const executeRejectAction = async () => {
+  if (!rejectReason.value || !rejectReason.value.trim()) {
+    showToast('Vui lòng nhập lý do từ chối.', 'error')
+    return
+  }
 
   processingAction.value = true
   try {
-    const res = await carService.rejectTrip(trip.value.id, reason)
-    if (res && res.success) {
-      showToast('Đã từ chối yêu cầu thuê xe.', 'success')
-      await fetchTripDetails()
+    if (rejectType.value === 'trip') {
+      const res = await carService.rejectTrip(trip.value.id, rejectReason.value.trim())
+      if (res && res.success) {
+        showToast('Đã từ chối yêu cầu thuê xe.', 'success')
+        showRejectModal.value = false
+        await fetchTripDetails()
+      } else {
+        showToast(res.message || 'Từ chối thất bại.', 'error')
+      }
     } else {
-      showToast(res.message || 'Từ chối thất bại.', 'error')
+      const res = await carService.rejectExtension(trip.value.id, rejectReason.value.trim())
+      if (res && res.success) {
+        showToast('Đã từ chối yêu cầu gia hạn.', 'success')
+        showRejectModal.value = false
+        await fetchTripDetails()
+      } else {
+        showToast(res.message || 'Từ chối gia hạn thất bại.', 'error')
+      }
     }
   } catch (err: any) {
-    console.error('Lỗi khi từ chối chuyến đi:', err)
+    console.error('Lỗi khi từ chối:', err)
     showToast(err.response?._data?.message || 'Có lỗi xảy ra khi từ chối.', 'error')
   } finally {
     processingAction.value = false
@@ -1181,27 +1261,6 @@ const handleApproveExtension = async () => {
   } catch (err: any) {
     console.error('Lỗi khi phê duyệt gia hạn:', err)
     showToast(err.response?._data?.message || 'Có lỗi xảy ra khi phê duyệt gia hạn.', 'error')
-  } finally {
-    processingAction.value = false
-  }
-}
-
-const openRejectExtensionDialog = async () => {
-  const reason = prompt('Nhập lý do từ chối gia hạn:', 'Không bận lịch trống xe')
-  if (reason === null) return
-
-  processingAction.value = true
-  try {
-    const res = await carService.rejectExtension(trip.value.id, reason)
-    if (res && res.success) {
-      showToast('Đã từ chối yêu cầu gia hạn.', 'success')
-      await fetchTripDetails()
-    } else {
-      showToast(res.message || 'Từ chối gia hạn thất bại.', 'error')
-    }
-  } catch (err: any) {
-    console.error('Lỗi khi từ chối gia hạn:', err)
-    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi từ chối gia hạn.', 'error')
   } finally {
     processingAction.value = false
   }
