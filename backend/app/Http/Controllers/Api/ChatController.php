@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\ChatConversation;
 use App\Models\ChatMessage;
-use App\Models\Trip;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
+use Exception;
+use App\Events\MessageSent;
 
 class ChatController extends Controller
 {
@@ -87,7 +90,7 @@ class ChatController extends Controller
                 'success' => true,
                 'conversations' => $conversations
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lấy danh sách tin nhắn thất bại',
@@ -105,7 +108,7 @@ class ChatController extends Controller
                 'success' => true,
                 'messages' => $messages
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lấy tin nhắn thất bại',
@@ -137,7 +140,7 @@ class ChatController extends Controller
                 'success' => true,
                 'conversation' => $conversation
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gửi tin nhắn thất bại',
@@ -171,8 +174,8 @@ class ChatController extends Controller
                 $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
                 $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
 
-                // Tải trực tiếp lên API của Cloudinary
-                $response = \Illuminate\Support\Facades\Http::attach(
+                // Upload Image To Cloudinary
+                $response = Http::attach(
                     'file',
                     file_get_contents($file->getRealPath()),
                     $file->getClientOriginalName()
@@ -200,19 +203,20 @@ class ChatController extends Controller
                 'is_read' => false,
             ]);
 
-            broadcast(new \App\Events\MessageSent($message))->toOthers();
+            // BroadCast
+            broadcast(new MessageSent($message))->toOthers();
 
             return response()->json([
                 'success' => true,
                 'message' => $message
             ], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Dữ liệu tin nhắn không hợp lệ',
                 'errors' => $e->errors()
             ], 422);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Gửi tin nhắn thất bại',
@@ -232,7 +236,7 @@ class ChatController extends Controller
                 ], 404);
             }
 
-            // Đánh dấu đã đọc cho tất cả tin nhắn trong hội thoại này của người kia gửi
+            // MarkAsRead
             ChatMessage::where('conversation_id', $id)
                 ->where('sender_id', '!=', $user->id)
                 ->where('is_read', false)
@@ -242,7 +246,7 @@ class ChatController extends Controller
                 'success' => true,
                 'message' => 'Đã đánh dấu các tin nhắn là đã đọc'
             ], 200);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Cập nhật trạng thái đã đọc thất bại',

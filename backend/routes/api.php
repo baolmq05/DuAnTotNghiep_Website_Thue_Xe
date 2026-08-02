@@ -22,6 +22,7 @@ use App\Http\Controllers\Api\ZaloPayController;
 use App\Http\Controllers\Api\DashboardController;
 use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SeePayController;
+use App\Http\Controllers\Api\ExtensionTripController;
 
 Route::get('cars', [CarController::class, 'index']);
 Route::get('cars/{id}', [CarController::class, 'show']);
@@ -95,13 +96,13 @@ Route::group(['middleware' => 'api'], function () {
     Route::put('trips/{id}/reject', [TripController::class, 'reject']);
     Route::post('trips/{id}/cancel', [TripController::class, 'cancelTrip']);
     Route::post('trips/{id}/owner-cancel', [TripController::class, 'cancelTripByOwner']);
-    Route::post('trips/{id}/extension-request', [TripController::class, 'requestExtension']);
-    Route::put('trips/{id}/extension-approve', [TripController::class, 'approveExtension']);
-    Route::put('trips/{id}/extension-reject', [TripController::class, 'rejectExtension']);
+    Route::post('trips/{id}/extension-request', [ExtensionTripController::class, 'requestExtension']);
+    Route::put('trips/{id}/extension-approve', [ExtensionTripController::class, 'approveExtension']);
+    Route::put('trips/{id}/extension-reject', [ExtensionTripController::class, 'rejectExtension']);
     Route::post('trips/{id}/return-request', [TripController::class, 'requestReturn']);
     Route::post('trips/{id}/complete', [TripController::class, 'completeTrip']);
     Route::post('trips/{id}/reviews', [TripController::class, 'storeReview']);
-    Route::post('trips/{id}/extension-pay', [TripController::class, 'payExtension']);
+    Route::post('trips/{id}/extension-pay', [ExtensionTripController::class, 'payExtension']);
     Route::get('my-trips', [MyTripController::class, 'index']);
 
     Route::post('promotions/check', [PromotionController::class, 'check']);

@@ -9,6 +9,7 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
+use App\Models\ChatMessage;
 
 class MessageSent implements ShouldBroadcastNow
 {
@@ -18,7 +19,7 @@ class MessageSent implements ShouldBroadcastNow
     /**
      * Create a new event instance.
      */
-    public function __construct(\App\Models\ChatMessage $message)
+    public function __construct(ChatMessage $message)
     {
         $this->message = $message;
     }
