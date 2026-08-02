@@ -23,11 +23,32 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col gap-6">
                     <div class="w-full">
-                        <FilterBar @filterChange="handleFilterChange" />
+                        <FilterBar :key="filterBarKey" @filterChange="handleFilterChange" />
                     </div>
 
                     <div class="w-full">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                        <!-- Loading Skeletons -->
+                        <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                            <div v-for="n in 8" :key="n" class="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white animate-pulse">
+                                <div class="h-48 bg-slate-200 w-full"></div>
+                                <div class="p-4 space-y-3">
+                                    <div class="h-4 bg-slate-200 rounded w-2/3"></div>
+                                    <div class="h-3 bg-slate-200 rounded w-1/2"></div>
+                                    <div class="flex gap-2">
+                                        <div class="h-3 bg-slate-200 rounded w-1/4"></div>
+                                        <div class="h-3 bg-slate-200 rounded w-1/4"></div>
+                                        <div class="h-3 bg-slate-200 rounded w-1/4"></div>
+                                    </div>
+                                    <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
+                                        <div class="h-5 bg-slate-200 rounded w-1/3"></div>
+                                        <div class="h-8 bg-slate-200 rounded-lg w-1/4"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Car List Grid -->
+                        <div v-else-if="carList.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             <div v-for="car in paginatedCarList" :key="car.id" class="block h-full cursor-pointer"
                                 @click="goToDetail(car.id)">
                                 <vehicleCard :name="car.name" :image="car.image" :price="car.price"
@@ -39,6 +60,22 @@
                                     :ownerAvatar="car.ownerAvatar"
                                     @toggle-favorite="handleToggleFavorite(car.id)" />
                             </div>
+                        </div>
+
+                        <!-- Empty State -->
+                        <div v-else class="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-3xl border border-slate-100 shadow-sm text-center max-w-xl mx-auto my-4 transition-all duration-300">
+                            <div class="p-4 bg-rose-50 rounded-full text-rose-500 mb-4 animate-bounce">
+                                <Icon name="lucide:search-x" class="w-12 h-12" />
+                            </div>
+                            <h3 class="text-xl font-extrabold text-slate-800 mb-2">Không tìm thấy xe phù hợp</h3>
+                            <p class="text-sm text-slate-500 mb-6 leading-relaxed font-medium">
+                                Rất tiếc, chúng tôi không tìm thấy xe nào khớp với bộ lọc hoặc địa điểm tìm kiếm của bạn. Hãy thử thiết lập lại bộ lọc để bắt đầu lại.
+                            </p>
+                            <button @click="handleClearAll"
+                                class="px-6 py-2.5 bg-[#1e4e57] text-white hover:bg-[#286874] font-bold text-sm rounded-xl shadow-md shadow-[#286874]/15 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer">
+                                <Icon name="lucide:rotate-ccw" class="w-4 h-4" />
+                                Thiết lập lại bộ lọc
+                            </button>
                         </div>
                     </div>
 
@@ -82,10 +119,23 @@ const { openLogin } = useAuthModal()
 const activeFilters = ref<any>({})
 const visibleCount = ref(8)
 const favoriteCarIds = ref<number[]>([])
+const filterBarKey = ref(0)
+const isLoading = ref(true)
 
 const handleFilterChange = (filters: any) => {
     activeFilters.value = filters
     visibleCount.value = 8 // Reset lại danh sách khi thay đổi bộ lọc
+}
+
+const handleClearAll = () => {
+    // Clear URL parameters
+    router.push({ path: '/vehicle-list', query: {} })
+    // Re-mount FilterBar to reset its internal state
+    filterBarKey.value++
+    // Reset active filters
+    activeFilters.value = {}
+    // Reset visible count
+    visibleCount.value = 8
 }
 
 import { carService } from '~/services/car.service'
@@ -169,6 +219,7 @@ const normalizeFuel = (fuel: string) => {
 
 onMounted(async () => {
     try {
+        isLoading.value = true
         const response = await carService.getCars()
         if (response.success && response.data) {
             rawApiCars.value = response.data
@@ -178,6 +229,8 @@ onMounted(async () => {
         }
     } catch (error) {
         console.error("Lỗi khi lấy danh sách xe từ API:", error)
+    } finally {
+        isLoading.value = false
     }
 })
 
