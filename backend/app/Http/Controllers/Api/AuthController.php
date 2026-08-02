@@ -7,6 +7,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ResetPasswordOtp;
+use Exception;
 
 class AuthController extends Controller
 {
@@ -110,7 +119,7 @@ class AuthController extends Controller
                 ]
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Đã có lỗi xảy ra trong quá trình đăng ký.',
@@ -151,7 +160,7 @@ class AuthController extends Controller
         ]);
 
         if ($validator->fails()) {
-            \Illuminate\Support\Facades\Log::info('Validation failed in updateProfile: ', [
+            Log::info('Validation failed in updateProfile: ', [
                 'request' => $request->all(),
                 'errors' => $validator->errors()->toArray()
             ]);
@@ -164,7 +173,7 @@ class AuthController extends Controller
 
         $data = $request->only('name', 'phone', 'gender', 'DOB', 'avatar', 'bank_name', 'bank_account_number');
         if (!empty($data['DOB'])) {
-            $data['DOB'] = \Carbon\Carbon::parse($data['DOB'])->format('Y-m-d');
+            $data['DOB'] = Carbon::parse($data['DOB'])->format('Y-m-d');
         }
 
         $user->update($data);
@@ -248,7 +257,7 @@ class AuthController extends Controller
         }
 
         // Kiểm tra mật khẩu hiện tại
-        if (!\Illuminate\Support\Facades\Hash::check($request->input('current_password'), $user->password)) {
+        if (!Hash::check($request->input('current_password'), $user->password)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Mật khẩu hiện tại không chính xác.'
@@ -287,7 +296,7 @@ class AuthController extends Controller
                 'required',
                 'string',
                 'max:255',
-                \Illuminate\Validation\Rule::unique('driving_licenses', 'driving_license_number')->ignore($user->driving_license_id)
+                Rule::unique('driving_licenses', 'driving_license_number')->ignore($user->driving_license_id)
             ],
             'full_name' => 'required|string|max:255',
             'DOB' => 'required|date',
@@ -328,12 +337,12 @@ class AuthController extends Controller
         }
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $drivingLicenseData = [
                 'driving_license_number' => $request->input('driving_license_number'),
                 'full_name' => $request->input('full_name'),
-                'DOB' => \Carbon\Carbon::parse($request->input('DOB'))->format('Y-m-d'),
+                'DOB' => Carbon::parse($request->input('DOB'))->format('Y-m-d'),
                 'status' => 0, // Chờ duyệt
             ];
 
@@ -343,14 +352,14 @@ class AuthController extends Controller
                 $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
 
                 // Bắn trực tiếp lên API Cloudinary
-                $response = \Illuminate\Support\Facades\Http::attach(
+                $response = Http::attach(
                     'file',
                     file_get_contents($file->getRealPath()),
                     $file->getClientOriginalName()
                 )->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
-                    'upload_preset' => $uploadPreset,
-                    'folder' => 'licenses',
-                ]);
+                            'upload_preset' => $uploadPreset,
+                            'folder' => 'licenses',
+                        ]);
 
                 if ($response->successful()) {
                     $drivingLicenseData['image'] = $response->json('secure_url');
@@ -378,7 +387,7 @@ class AuthController extends Controller
                 ]);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             // Load the updated relationship
             $user->load('drivingLicense');
@@ -389,8 +398,8 @@ class AuthController extends Controller
                 'user' => $user
             ]);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi gửi duyệt bằng lái.',
@@ -440,18 +449,18 @@ class AuthController extends Controller
         $otp = mt_rand(100000, 999999);
 
         // Save OTP to password_reset_tokens table
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->updateOrInsert(
+        DB::table('password_reset_tokens')->updateOrInsert(
             ['email' => $email],
             [
-                'token' => \Illuminate\Support\Facades\Hash::make($otp),
+                'token' => Hash::make($otp),
                 'created_at' => now()
             ]
         );
 
         // Send OTP email
         try {
-            \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\ResetPasswordOtp($otp));
-        } catch (\Exception $e) {
+            Mail::to($email)->send(new ResetPasswordOtp($otp));
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không thể gửi email OTP. Vui lòng thử lại sau.',
@@ -499,7 +508,7 @@ class AuthController extends Controller
         $otp = $request->input('token');
 
         // Check if OTP exists in database
-        $record = \Illuminate\Support\Facades\DB::table('password_reset_tokens')
+        $record = DB::table('password_reset_tokens')
             ->where('email', $email)
             ->first();
 
@@ -511,8 +520,8 @@ class AuthController extends Controller
         }
 
         // Check expiration (15 minutes)
-        if (now()->diffInMinutes(\Carbon\Carbon::parse($record->created_at), true) > 15) {
-            \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $email)->delete();
+        if (now()->diffInMinutes(Carbon::parse($record->created_at), true) > 15) {
+            DB::table('password_reset_tokens')->where('email', $email)->delete();
             return response()->json([
                 'success' => false,
                 'message' => 'Mã OTP đã hết hạn.'
@@ -520,7 +529,7 @@ class AuthController extends Controller
         }
 
         // Verify OTP hash
-        if (!\Illuminate\Support\Facades\Hash::check($otp, $record->token)) {
+        if (!Hash::check($otp, $record->token)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Mã OTP không chính xác.'
@@ -534,7 +543,7 @@ class AuthController extends Controller
         ]);
 
         // Delete token entry
-        \Illuminate\Support\Facades\DB::table('password_reset_tokens')->where('email', $email)->delete();
+        DB::table('password_reset_tokens')->where('email', $email)->delete();
 
         return response()->json([
             'success' => true,

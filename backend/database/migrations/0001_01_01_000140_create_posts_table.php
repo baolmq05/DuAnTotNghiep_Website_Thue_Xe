@@ -18,11 +18,13 @@ return new class extends Migration
             $table->text('excerpt')->comment('Mô tả ngắn bài viết');
             $table->longText('content')->comment('Nội dung bài viết');
             $table->string('thumbnail')->nullable()->comment('Ảnh đại diện bài viết');
+            $table->text('seo_keywords')->nullable()->comment('Từ khóa SEO bài viết');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('post_category_id')->constrained()->onDelete('cascade');
             $table->tinyInteger('status')->default(1)->comment('Trạng thái bài viết');
             $table->string('type')->default('post')->comment('Loại bài viết');
             $table->timestamp('published_at')->nullable()->comment('Thời gian xuất bản');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

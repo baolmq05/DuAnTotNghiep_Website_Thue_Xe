@@ -7,8 +7,19 @@ use App\Http\Controllers\Controller;
 use App\Models\Trip;
 use App\Models\Car;
 use App\Models\PendingBalance;
+use App\Models\Notification;
+use App\Models\TripImage;
+use App\Models\TripExtension;
+use App\Models\Review;
+use App\Models\Promotion;
+use App\Models\PromotionUsage;
+use App\Models\Wallet;
+use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Exception;
 
 class TripController extends Controller
 {
@@ -100,8 +111,8 @@ class TripController extends Controller
         }
 
         // Tính toán các thông số thuê xe
-        $start = \Carbon\Carbon::parse($request->start_at);
-        $end = \Carbon\Carbon::parse($request->end_at);
+        $start = Carbon::parse($request->start_at);
+        $end = Carbon::parse($request->end_at);
         $diffMinutes = $start->diffInMinutes($end);
         $days = max(1, ceil($diffMinutes / 1440));
 
@@ -119,7 +130,7 @@ class TripController extends Controller
         $promotion = null;
 
         if ($request->filled('promo_code')) {
-            $promotion = \App\Models\Promotion::where('code', $request->promo_code)->first();
+            $promotion = Promotion::where('code', $request->promo_code)->first();
 
             if (!$promotion || $promotion->status != 1) {
                 return response()->json([
@@ -138,7 +149,7 @@ class TripController extends Controller
 
             // Check usage_limit
             if ($promotion->usage_limit !== null) {
-                $totalUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)->count();
+                $totalUsages = PromotionUsage::where('promotion_id', $promotion->id)->count();
                 if ($totalUsages >= $promotion->usage_limit) {
                     return response()->json([
                         'success' => false,
@@ -149,7 +160,7 @@ class TripController extends Controller
 
             // Check per_user_limit
             if ($promotion->per_user_limit !== null) {
-                $userUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)
+                $userUsages = PromotionUsage::where('promotion_id', $promotion->id)
                     ->where('user_id', $user->id)
                     ->count();
                 if ($userUsages >= $promotion->per_user_limit) {
@@ -173,7 +184,7 @@ class TripController extends Controller
         $calculatedDiscountAmount = $carDiscountTotal + $promoDiscount;
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             // Tạo chuyến đi với trạng thái Pending (Chờ duyệt)
             $trip = Trip::create([
@@ -190,7 +201,7 @@ class TripController extends Controller
             ]);
 
             if ($promotion) {
-                \App\Models\PromotionUsage::create([
+                PromotionUsage::create([
                     'user_id' => $user->id,
                     'promotion_id' => $promotion->id,
                     'discount_amount' => $promoDiscount,
@@ -199,7 +210,7 @@ class TripController extends Controller
                 ]);
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -207,8 +218,8 @@ class TripController extends Controller
                 'data' => $trip
             ], 201);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi thực hiện thuê xe: ' . $e->getMessage()
@@ -297,7 +308,7 @@ class TripController extends Controller
         $trip->update(['status' => TripStatus::WaitingPayment->value]);
 
         // Tạo thông báo cho khách thuê
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $trip->user_id,
             'message' => "Yêu cầu thuê xe '{$trip->car->name}' của bạn đã được chủ xe xác nhận. Vui lòng tiến hành thanh toán.",
             'is_read' => '0',
@@ -353,7 +364,7 @@ class TripController extends Controller
         $trip->update(['status' => TripStatus::OwnerCancel->value]);
 
         // Tạo thông báo cho khách thuê
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $trip->user_id,
             'message' => "Yêu cầu thuê xe '{$trip->car->name}' của bạn đã bị từ chối. Lý do: {$reason}.",
             'is_read' => '0',
@@ -474,12 +485,12 @@ class TripController extends Controller
         }
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $imageUrls = $request->input('images');
             foreach ($imageUrls as $index => $url) {
                 // Lưu vào bảng trip_images
-                \App\Models\TripImage::create([
+                TripImage::create([
                     'trip_id' => $trip->id,
                     'image_url' => $url,
                     'type' => 0, // Trước chuyến đi
@@ -548,18 +559,18 @@ class TripController extends Controller
         // Nhận vào end_date từ lịch hoặc extended_days
         $extendedEndAt = null;
         if ($request->filled('end_date')) {
-            $extendedEndAt = \Carbon\Carbon::parse($request->input('end_date'));
+            $extendedEndAt = Carbon::parse($request->input('end_date'));
         } elseif ($request->filled('extended_days')) {
             $extendedDays = (int)$request->input('extended_days');
             if ($extendedDays <= 0) {
                 return response()->json(['success' => false, 'message' => 'Số ngày gia hạn không hợp lệ'], 422);
             }
-            $extendedEndAt = \Carbon\Carbon::parse($trip->end_at)->addDays($extendedDays);
+            $extendedEndAt = Carbon::parse($trip->end_at)->addDays($extendedDays);
         } else {
             return response()->json(['success' => false, 'message' => 'Vui lòng cung cấp thời gian gia hạn mới (end_date)'], 422);
         }
 
-        if ($extendedEndAt->lte(\Carbon\Carbon::parse($trip->end_at))) {
+        if ($extendedEndAt->lte(Carbon::parse($trip->end_at))) {
             return response()->json([
                 'success' => false,
                 'message' => 'Thời gian gia hạn mới phải sau thời gian kết thúc hiện tại.'
@@ -593,13 +604,13 @@ class TripController extends Controller
             $extensionAmount = (float)$request->input('extension_amount');
         } else {
             // Tính số ngày làm tròn lên
-            $diffMinutes = \Carbon\Carbon::parse($trip->end_at)->diffInMinutes($extendedEndAt);
+            $diffMinutes = Carbon::parse($trip->end_at)->diffInMinutes($extendedEndAt);
             $diffDays = max(1, ceil($diffMinutes / 1440));
             $extensionAmount = $diffDays * ($trip->car->unit_price ?? 0);
         }
 
         // Tạo hoặc cập nhật bản ghi trong bảng trip_extensions với status = 1 (Đã gửi yêu cầu gia hạn)
-        $extension = \App\Models\TripExtension::create([
+        $extension = TripExtension::create([
             'trip_id' => $trip->id,
             'extension_amount' => $extensionAmount,
             'status' => 1,
@@ -610,7 +621,7 @@ class TripController extends Controller
         // Yêu cầu gia hạn được lưu thông tin trong bảng trip_extensions (không sửa status của trip)
 
         // Tạo thông báo cho chủ xe
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $trip->car->user_id,
             'message' => "Khách hàng {$user->name} đã gửi yêu cầu gia hạn cho chuyến đi #{$trip->id} đến " . $extendedEndAt->format('H:i d/m/Y') . " (Phí gia hạn: " . number_format($extensionAmount) . " VNĐ).",
             'is_read' => '0',
@@ -689,7 +700,7 @@ class TripController extends Controller
         $extension->update(['status' => 2]);
 
         // Tạo thông báo cho khách thuê
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $trip->user_id,
             'message' => "Yêu cầu gia hạn chuyến đi #{$trip->id} (xe {$trip->car->name}) đã được chủ xe chấp nhận. Vui lòng thanh toán phí gia hạn (" . number_format($extension->extension_amount) . " VNĐ) để hoàn tất.",
             'is_read' => '0',
@@ -740,7 +751,7 @@ class TripController extends Controller
         }
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $amount = (float)$extension->extension_amount;
 
@@ -754,7 +765,7 @@ class TripController extends Controller
 
             // Ghi nhận giao dịch thanh toán gia hạn
             if ($amount > 0) {
-                $transaction = \App\Models\Transaction::create([
+                $transaction = Transaction::create([
                     'user_id' => $user->id,
                     'trip_id' => $trip->id,
                     'amount' => $amount,
@@ -770,7 +781,7 @@ class TripController extends Controller
                     'receiver_id' => $trip->car->user_id,
                     'amount' => $amount,
                     'status' => '1',
-                    'expired_at' => \Carbon\Carbon::parse($extension->end_date)->addDays(3),
+                    'expired_at' => Carbon::parse($extension->end_date)->addDays(3),
                     'released_at' => null
                 ]);
             }
@@ -784,16 +795,16 @@ class TripController extends Controller
                 'cost' => $trip->cost + $amount,
             ]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             // Tạo thông báo cho chủ xe và khách thuê
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $trip->car->user_id,
                 'message' => "Khách hàng {$user->name} đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id}. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                 'is_read' => '0',
             ]);
 
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $user->id,
                 'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id}. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                 'is_read' => '0',
@@ -804,8 +815,8 @@ class TripController extends Controller
                 'message' => 'Thanh toán phí gia hạn thành công! Chuyến đi đã được cập nhật thời gian mới.',
                 'data' => $trip->load(['car', 'images', 'extensions', 'latestExtension'])
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi thanh toán phí gia hạn: ' . $e->getMessage()
@@ -858,7 +869,7 @@ class TripController extends Controller
 
         // Tạo thông báo
         $notifyUserId = ($trip->car->user_id === $user->id) ? $trip->user_id : $trip->car->user_id;
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $notifyUserId,
             'message' => "Yêu cầu gia hạn cho chuyến đi #{$trip->id} (xe {$trip->car->name}) đã bị từ chối/hủy. Lý do: {$reason}.",
             'is_read' => '0',
@@ -916,7 +927,7 @@ class TripController extends Controller
 
         $trip->update(['status' => TripStatus::WaitingReturn->value]);
 
-        \App\Models\Notification::create([
+        Notification::create([
             'user_id' => $trip->car->user_id,
             'message' => "Khách hàng {$user->name} đã yêu cầu trả xe sớm cho chuyến đi #{$trip->id} (xe {$trip->car->name}). Vui lòng xác nhận hoàn thành chuyến xe.",
             'is_read' => '0',
@@ -983,11 +994,11 @@ class TripController extends Controller
         }
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             $imageUrls = $request->input('images');
             foreach ($imageUrls as $url) {
-                \App\Models\TripImage::create([
+                TripImage::create([
                     'trip_id' => $trip->id,
                     'image_url' => $url,
                     'type' => 1,
@@ -1000,21 +1011,21 @@ class TripController extends Controller
             // Giải ngân tiền từ pending_balances sang ví chủ xe
             $trip->releasePendingBalances();
 
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $trip->user_id,
                 'message' => "Chuyến đi #{$trip->id} (xe {$trip->car->name}) của bạn đã được chủ xe xác nhận hoàn thành.",
                 'is_read' => '0',
             ]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
                 'message' => 'Hoàn thành chuyến đi thành công!',
                 'data' => $trip->load(['car', 'images'])
             ]);
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi hoàn thành chuyến đi.',
@@ -1093,7 +1104,7 @@ class TripController extends Controller
         }
 
         // Kiểm tra xem đã đánh giá chưa (tránh trùng lặp)
-        $exists = \App\Models\Review::where('trip_id', $trip->id)
+        $exists = Review::where('trip_id', $trip->id)
             ->where('reviewer_id', $user->id)
             ->where('review_type', $reviewType)
             ->exists();
@@ -1106,7 +1117,7 @@ class TripController extends Controller
         }
 
         try {
-            $review = \App\Models\Review::create([
+            $review = Review::create([
                 'trip_id' => $trip->id,
                 'reviewer_id' => $user->id,
                 'target_id' => $targetId,
@@ -1117,7 +1128,7 @@ class TripController extends Controller
             ]);
 
             // Tạo thông báo cho người được đánh giá
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $targetId,
                 'message' => "Bạn đã nhận được đánh giá {$request->input('rating')} sao cho chuyến đi #{$trip->id}.",
                 'is_read' => '0',
@@ -1128,7 +1139,7 @@ class TripController extends Controller
                 'message' => 'Gửi đánh giá thành công!',
                 'data' => $review->load('reviewer')
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi gửi đánh giá.',
@@ -1173,7 +1184,7 @@ class TripController extends Controller
         // 1. Tổng tiền thực tế của chuyến đi (giá trị chuyến đi)
         $tripValue = $trip->cost - $trip->discount_amount;
         $bookingTime = $trip->created_at->timezone('Asia/Ho_Chi_Minh');
-        $startTime = \Carbon\Carbon::parse($trip->start_at, 'Asia/Ho_Chi_Minh');
+        $startTime = Carbon::parse($trip->start_at, 'Asia/Ho_Chi_Minh');
         $now = now()->timezone('Asia/Ho_Chi_Minh');
 
         // 2. Xác định phần trăm phí hủy chuyến
@@ -1200,13 +1211,13 @@ class TripController extends Controller
         $compensationFee = min($totalPaid, $cancellationFee);
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             // Hoàn tiền cho Khách thuê
             if ($refundAmount > 0) {
                 $renter = $trip->user;
                 if (!$renter->wallet_id) {
-                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $wallet = Wallet::create(['amount' => 0]);
                     $renter->wallet_id = $wallet->id;
                     $renter->save();
                 } else {
@@ -1219,7 +1230,7 @@ class TripController extends Controller
             if ($compensationFee > 0) {
                 $owner = $trip->car->owner;
                 if (!$owner->wallet_id) {
-                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $wallet = Wallet::create(['amount' => 0]);
                     $owner->wallet_id = $wallet->id;
                     $owner->save();
                 } else {
@@ -1235,17 +1246,17 @@ class TripController extends Controller
 
             // Cập nhật trạng thái chuyến đi thành UserCancel (5)
             $trip->update([
-                'status' => \App\Enum\TripStatus::UserCancel->value
+                'status' => TripStatus::UserCancel->value
             ]);
 
             // Tạo thông báo cho chủ xe biết chuyến đi đã bị hủy
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $trip->car->user_id,
                 'message' => "Khách hàng đã hủy chuyến đi #{$trip->id}. Phí đền bù nhận được: " . number_format($compensationFee, 0, ',', '.') . " đ.",
                 'is_read' => '0',
             ]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -1260,8 +1271,8 @@ class TripController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi hủy chuyến đi.',
@@ -1309,13 +1320,13 @@ class TripController extends Controller
         $refundAmount = $totalPaid;
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
 
             // Hoàn tiền cho Khách thuê
             if ($refundAmount > 0) {
                 $renter = $trip->user;
                 if (!$renter->wallet_id) {
-                    $wallet = \App\Models\Wallet::create(['amount' => 0]);
+                    $wallet = Wallet::create(['amount' => 0]);
                     $renter->wallet_id = $wallet->id;
                     $renter->save();
                 } else {
@@ -1331,17 +1342,17 @@ class TripController extends Controller
 
             // Cập nhật trạng thái chuyến đi thành OwnerCancel (6)
             $trip->update([
-                'status' => \App\Enum\TripStatus::OwnerCancel->value
+                'status' => TripStatus::OwnerCancel->value
             ]);
 
             // Tạo thông báo cho khách thuê biết chủ xe đã hủy chuyến
-            \App\Models\Notification::create([
+            Notification::create([
                 'user_id' => $trip->user_id,
                 'message' => "Chủ xe đã hủy chuyến đi #{$trip->id}. Số tiền " . number_format($refundAmount, 0, ',', '.') . " đ đã được hoàn lại vào ví của bạn.",
                 'is_read' => '0',
             ]);
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             return response()->json([
                 'success' => true,
@@ -1353,8 +1364,8 @@ class TripController extends Controller
                 ]
             ]);
 
-        } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+        } catch (Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Đã xảy ra lỗi khi hủy chuyến đi.',

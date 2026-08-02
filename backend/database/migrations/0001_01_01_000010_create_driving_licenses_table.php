@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('image')->comment('Ảnh bằng lái xe');
             $table->string('driving_license_number')->unique()->comment('Số bằng lái xe');
             $table->date('DOB')->comment('Ngày sinh');
+            $table->tinyInteger('status')->default(0)->comment('Trạng thái bằng lái: 0 - chờ duyệt, 1 - đã duyệt, 2 - bị từ chối');
             $table->timestamps();
         });
     }

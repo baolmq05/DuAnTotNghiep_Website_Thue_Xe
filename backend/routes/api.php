@@ -13,7 +13,6 @@ use App\Http\Controllers\Api\FavoriteController;
 use App\Http\Controllers\Api\PromotionController;
 use App\Http\Controllers\Api\GoogleAuthController;
 use App\Http\Controllers\Api\NotificationController;
-use App\Http\Controllers\Api\FacebookAuthController;
 use App\Http\Controllers\Api\WalletController;
 use App\Http\Controllers\Api\CarCalendarController;
 use App\Http\Controllers\Api\MyTripController;
@@ -53,7 +52,6 @@ Route::group([
     Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
     Route::post('google', [GoogleAuthController::class, 'loginWithGoogle']);
-    Route::post('facebook', [FacebookAuthController::class, 'loginWithFacebook']);
 
     Route::get('addresses', [AddressController::class, 'index']);
     Route::post('addresses', [AddressController::class, 'store']);

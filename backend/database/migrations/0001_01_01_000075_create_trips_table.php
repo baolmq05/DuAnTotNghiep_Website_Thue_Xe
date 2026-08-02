@@ -22,6 +22,8 @@ return new class extends Migration
             $table->dateTime('end_at')->comment('thời gian kết thúc chuyến đi');
             $table->unsignedBigInteger('car_id')->comment('mã xe');
             $table->unsignedBigInteger('user_id')->comment('mã người dùng thuê xe');
+            $table->string('delivery_address')->nullable()->comment('Địa chỉ giao nhận xe');
+            $table->string('delivery_location')->nullable()->comment('Tọa độ giao nhận xe (lat,lng)');
             $table->foreign('car_id')->references('id')->on('cars')->onDelete('cascade');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

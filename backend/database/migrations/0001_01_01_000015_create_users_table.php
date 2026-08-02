@@ -27,6 +27,8 @@ return new class extends Migration
             $table->unsignedBigInteger('role_id')->comment('Vai trò của người dùng');
             $table->unsignedBigInteger('wallet_id')->nullable()->comment('ID của ví');
             $table->unsignedBigInteger('driving_license_id')->nullable()->comment('ID của bằng lái xe');
+            $table->string('bank_name')->nullable()->comment('Tên ngân hàng');
+            $table->string('bank_account_number')->nullable()->comment('Số tài khoản ngân hàng');
             $table->foreign('role_id')->references('id')->on('roles');
             $table->foreign('wallet_id')->references('id')->on('wallets');
             $table->foreign('driving_license_id')->references('id')->on('driving_licenses')->onDelete('set null');

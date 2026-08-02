@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('status')->default('pending'); // pending, processing, completed, failed, canceled
             $table->string('transaction_id')->nullable(); // Mã giao dịch từ MoMo
             $table->string('description')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

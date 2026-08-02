@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('chat_messages', function (Blueprint $table) {
             $table->id();
-            $table->string('text');
+            $table->text('text');
             $table->string('type')->default('text');
             $table->boolean('is_read')->default(0);
             // Conversation ID

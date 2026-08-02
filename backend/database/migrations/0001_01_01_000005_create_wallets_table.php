@@ -15,6 +15,7 @@ return new class extends Migration
             $table->engine = 'InnoDB';
             $table->id();
             $table->decimal('amount', 10)->default(0)->comment('Số dư trong ví');
+            $table->decimal('hold_balance', 10)->default(0)->comment('Số tiền tạm giữ phạt nguội (2% chuyến đi)');
             $table->timestamps();
         });
     }
