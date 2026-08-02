@@ -5,62 +5,12 @@
 
         <!-- Content -->
         <div class="max-w-7xl mx-auto px-4 lg:px-8 py-16">
-            <div class="grid lg:grid-cols-12 gap-8">
+            <div class="grid grid-cols-12 gap-8">
                 <!-- Sidebar -->
-        <aside class="lg:col-span-3">
-          <div class="sticky top-24 bg-white rounded-3xl border border-gray-100 p-6 shadow-sm">
-            <h3 class="font-semibold text-gray-900 mb-5">Nội dung</h3>
-            <ul class="space-y-2">
-              <li>
-                <NuxtLink 
-                  to="/policy" 
-                  class="flex items-center text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-4 py-2.5 rounded-xl transition-all duration-200"
-                  exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3 rounded-l-none rounded-r-xl"
-                >
-                  Chính sách và quy định
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink 
-                  to="/policy/term" 
-                  class="flex items-center text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-4 py-2.5 rounded-xl transition-all duration-200"
-                  exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3 rounded-l-none rounded-r-xl"
-                >
-                  Nguyên tắc chung
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink 
-                  to="/policy/personalinfo" 
-                  class="flex items-center text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-4 py-2.5 rounded-xl transition-all duration-200"
-                  exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3 rounded-l-none rounded-r-xl"
-                >
-                  Chính sách BVDLCN
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink 
-                  to="/policy/candidateprivacy" 
-                  class="flex items-center text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-4 py-2.5 rounded-xl transition-all duration-200"
-                  exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3 rounded-l-none rounded-r-xl"
-                >
-                  DLCN của ứng viên
-                </NuxtLink>
-              </li>
-              <li>
-                <NuxtLink 
-                  to="/policy/resolveconflic" 
-                  class="flex items-center text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-4 py-2.5 rounded-xl transition-all duration-200"
-                  exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3 rounded-l-none rounded-r-xl"
-                >
-                  Giải quyết khiếu nại
-                </NuxtLink>
-              </li>
-            </ul>
-          </div>
-        </aside>
+                <PolicySidebar />
+
                 <!-- Main Content -->
-                <div class="tutorial-content col-span-9">
+                <div class="tutorial-content col-span-12 lg:col-span-9">
                     <div class="category-option mb-5">
                         <h1 class="font-bold text-2xl">Nguyên tắc chung</h1>
                     </div>

@@ -49,6 +49,12 @@ class Trip extends Model
             if (in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
                 \App\Models\PromotionUsage::where('trip_id', $trip->id)->delete();
             }
+
+            if (in_array((int)$trip->status, [TripStatus::Complete->value, TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+                if ($trip->conversation) {
+                    $trip->conversation->update(['status' => 0]);
+                }
+            }
         });
     }
 
@@ -90,6 +96,11 @@ class Trip extends Model
     public function pendingBalances(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PendingBalance::class);
+    }
+
+    public function conversation(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ChatConversation::class, 'trip_id');
     }
 
     public function releasePendingBalances()

@@ -1,8 +1,5 @@
 <template>
-  <header :class="[
-    'absolute top-0 left-0 right-0 z-50 transition-all duration-300',
-    isScrolled ? 'bg-slate-950/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'
-  ]">
+  <header class="absolute top-0 left-0 right-0 z-50 bg-[#286874] py-6 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between">
         <!-- Left: Logo -->
@@ -159,12 +156,10 @@ const bottomNavItems = computed(() => [
   { text: 'Trang chủ', icon: 'home', to: '/' },
   { text: 'Về Drivio', icon: 'info', to: '/about' },
   { text: 'Bài viết', icon: 'blog', to: '/blogs' },
-  { text: 'Tài khoản', icon: 'account' },
-  { text: 'Chính Sách', icon: 'policy', to: '/policy' },
+  { text: 'Tài khoản', icon: 'account', to: '/profile' },
   isOwner.value
     ? { text: 'Quản lý xe', icon: 'host', to: '/my-cars/dashboard' }
     : { text: 'Chủ xe', icon: 'host', to: '/car-register' },
-
 ])
 // mở modal
 const showNotificationModal = ref(false);
@@ -197,12 +192,7 @@ const handleBottomNavClick = (item: any, idx: number) => {
   }
 }
 
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20
-}
-
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
   if (isLoggedIn.value) {
     fetchNotifications()
   }
@@ -212,10 +202,6 @@ watch(isLoggedIn, (newVal) => {
   if (newVal) {
     fetchNotifications()
   }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 

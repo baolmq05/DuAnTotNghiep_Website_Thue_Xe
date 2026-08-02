@@ -1,8 +1,5 @@
 <template>
-  <header :class="[
-    'absolute top-0 left-0 right-0 z-50 transition-all duration-300',
-    isScrolled ? 'bg-slate-950/80 backdrop-blur-md border-b border-white/5 py-4' : 'bg-transparent py-6'
-  ]">
+  <header class="absolute top-0 left-0 right-0 z-50 bg-transparent py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between">
 
@@ -114,12 +111,6 @@
             d="M21 5c-1.11-.35-2.33-.5-3.5-.5c-1.95 0-4.05.4-5.5 1.5c-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5c.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5c1.35-.85 3.8-1.5 5.5-1.5c1.65 0 3.35.3 4.75 1.05c.1.05.15.05.25.05c.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5c-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5c1.2 0 2.4.15 3.5.5z" />
         </svg>
 
-        <!-- Policy Icon -->
-        <svg v-else-if="item.icon === 'policy'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
-          viewBox="0 0 24 24">
-          <path fill="currentColor"
-            d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z" />
-        </svg>
 
         <!-- Đăng ký chủ xe / Quản lý xe -->
         <svg v-else-if="item.icon === 'host'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
@@ -185,12 +176,10 @@ const bottomNavItems = computed(() => [
   { text: 'Trang chủ', icon: 'home', to: '/' },
   { text: 'Về Drivio', icon: 'info', to: '/about' },
   { text: 'Bài viết', icon: 'blog', to: '/blogs' },
-  { text: 'Tài khoản', icon: 'account' },
-  { text: 'Chính Sách', icon: 'policy', to: '/policy' },
+  { text: 'Tài khoản', icon: 'account', to: '/profile' },
   isOwner.value
     ? { text: 'Quản lý xe', icon: 'host', to: '/my-cars/dashboard' }
     : { text: 'Chủ xe', icon: 'host', to: '/car-register' },
-
 ])
 
 const isItemActive = (item: any) => {
@@ -267,12 +256,7 @@ const handleBottomNavClick = (item: any) => {
   }
 }
 
-const handleScroll = () => {
-  isScrolled.value = window.scrollY > 20
-}
-
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
   if (isLoggedIn.value) {
     fetchNotifications()
     fetchUnreadChatsCount()
@@ -293,7 +277,6 @@ watch(isLoggedIn, (newVal) => {
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
   if ($echo) {
     activeChannels.value.forEach(channel => $echo.leave(channel))
   }

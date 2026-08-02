@@ -388,6 +388,17 @@
                 }}
               </p>
             </div>
+
+            <!-- Chat Button with Nuxt Icon (Chỉ hiển thị khi chuyến đi ĐÃ ĐƯỢC XÁC NHẬN trở lên: status !== 0 - Pending, !== 5,6 - Cancelled) -->
+            <NuxtLink
+              v-if="trip.status !== 0 && trip.status !== 5 && trip.status !== 6"
+              :to="'/chats?trip_id=' + trip.id + '&partner_id=' + (isOwner ? trip.user?.id : trip.car?.owner?.id)"
+              class="mt-3 flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-2xl text-xs font-bold text-[#1e4e57] bg-[#1e4e57]/10 hover:bg-[#1e4e57] hover:text-white transition-all duration-200 shadow-xs border border-[#1e4e57]/20 group/chatbtn"
+              title="Tạo cuộc trò chuyện"
+            >
+              <Icon name="lucide:message-square-more" class="w-4 h-4 text-[#1e4e57] group-hover/chatbtn:text-white transition-colors" />
+              <span>Nhắn tin với {{ isOwner ? 'khách thuê' : 'chủ xe' }}</span>
+            </NuxtLink>
           </div>
 
         </div>

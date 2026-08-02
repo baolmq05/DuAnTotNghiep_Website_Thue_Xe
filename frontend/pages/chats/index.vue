@@ -35,11 +35,30 @@
           </div>
 
           <!-- ======================================================= -->
-          <!-- Chủ xe -->
+          <!-- ======================================================= -->
+          <!-- Trò chuyện chuyến xe -->
           <div class="px-3 pt-3 pb-3">
-            <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5 px-1">Chủ xe</p>
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2 px-1">Chuyến xe</p>
+            <div class="grid grid-cols-2 gap-1 bg-gray-100 p-1 rounded-xl border border-gray-200/80 mb-3">
+              <button
+                @click="chatFilterTab = 'active'"
+                :class="['w-full py-1.5 text-center text-xs font-bold rounded-lg transition-all cursor-pointer', chatFilterTab === 'active' ? 'bg-white text-brand-primary shadow-xs' : 'text-gray-500 hover:text-gray-800']"
+              >
+                Đang chạy
+              </button>
+              <button
+                @click="chatFilterTab = 'archived'"
+                :class="['w-full py-1.5 text-center text-xs font-bold rounded-lg transition-all cursor-pointer', chatFilterTab === 'archived' ? 'bg-white text-brand-primary shadow-xs' : 'text-gray-500 hover:text-gray-800']"
+              >
+                Đã xong
+              </button>
+            </div>
+
             <div class="space-y-0.5">
-              <button v-for="conversation in conversations" :key="conversation.id" @click="selectConv(conversation.id)"
+              <div v-if="filteredConversations.length === 0" class="py-6 text-center text-xs text-gray-400">
+                {{ chatFilterTab === 'active' ? 'Không có cuộc trò chuyện nào đang hoạt động' : 'Không có cuộc trò chuyện đã hoàn thành' }}
+              </div>
+              <button v-for="conversation in filteredConversations" :key="conversation.id" @click="selectConv(conversation.id)"
                 :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === conversation.id ? 'active' : '']">
                 <!-- Avatar -->
                 <div class="relative flex-shrink-0">
@@ -83,7 +102,7 @@
       ]">
 
         <!-- Chat header -->
-        <div class="bg-white border-b border-gray-200 px-4 md:px-6 py-3 flex items-center gap-3 flex-shrink-0">
+        <div class="bg-white border-b border-gray-200 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 flex items-center gap-2.5 sm:gap-3 flex-shrink-0 w-full">
           <!-- Back button (Mobile only) -->
           <button @click="exitChat"
             class="md:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors -ml-1 mr-1"
@@ -281,23 +300,28 @@
         </div>
 
         <!-- Input area -->
-        <div class="bg-gray-50 px-4 md:px-6 pb-6 pt-2 flex-shrink-0">
-          <div class="flex items-center gap-3 max-w-4xl mx-auto">
-            <div class="flex-1 relative">
-              <textarea ref="inputRef" v-model="inputText" rows="1"
-                :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.other_user?.name ?? 'chủ xe'}...`"
-                class="w-full resize-none text-sm text-gray-800 placeholder-gray-400 bg-white border border-gray-200 focus:border-brand-primary focus:outline-none rounded-2xl px-4 py-3 pr-12 transition-all leading-relaxed shadow-sm"
-                style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
+        <div class="bg-gray-50 px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 pt-2 flex-shrink-0 w-full">
+          <div class="max-w-4xl mx-auto">
+            <div class="flex items-center gap-1.5 sm:gap-2 bg-white border border-gray-200 focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/10 rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 shadow-xs transition-all">
               <!-- Input chọn file ẩn -->
               <input type="file" ref="imageInputRef" accept="image/*" class="hidden" @change="uploadImage" />
-              <button @click="triggerImageSelect" class="absolute right-3 bottom-3 text-gray-400 hover:text-brand-primary transition-colors" title="Gửi hình ảnh">
+              <!-- Nút hình ảnh bên trái -->
+              <button @click="triggerImageSelect" class="w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-brand-primary hover:bg-gray-100 transition-colors shrink-0" title="Gửi hình ảnh">
                 <Icon name="lucide:image" class="w-5 h-5" />
               </button>
+
+              <!-- Textarea ở giữa -->
+              <textarea ref="inputRef" v-model="inputText" rows="1"
+                :placeholder="activeConvId === 'bot' ? 'Nhập tin nhắn cho Chatbot...' : `Nhắn tin cho ${activeHost?.other_user?.name ?? 'chủ xe'}...`"
+                class="flex-1 resize-none text-sm text-gray-800 placeholder-gray-400 bg-transparent border-0 focus:outline-none focus:ring-0 py-1.5 px-1 leading-relaxed"
+                style="max-height: 120px" @keydown="handleKey" @input="autoResize" />
+
+              <!-- Nút gửi bên phải -->
+              <button @click="sendMessage" :disabled="isTyping || !inputText.trim()"
+                class="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-all disabled:opacity-30 disabled:hover:bg-brand-primary shadow-xs shrink-0">
+                <Icon name="lucide:arrow-up" class="w-5 h-5 stroke-[2.5]" />
+              </button>
             </div>
-            <button @click="sendMessage" :disabled="isTyping || !inputText.trim()"
-              class="flex-shrink-0 w-11 h-11 rounded-full bg-brand-primary hover:bg-brand-dark text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm">
-              <Icon name="lucide:send" class="w-5 h-5" />
-            </button>
           </div>
           <p v-if="activeConvId === 'bot'" class="text-center text-xs text-gray-400 mt-2">Drivio AI có thể mắc lỗi. Vui
             lòng
@@ -363,10 +387,19 @@ const suggestions = [
 ]
 const activeChannels = ref([])
 
+const chatFilterTab = ref('active')
+
 // ---------------- COMPUTED ----------------
 const activeHost = computed(() =>
   conversations.value.find(h => h.id === activeConvId.value) ?? null
 )
+
+const filteredConversations = computed(() => {
+  if (chatFilterTab.value === 'active') {
+    return conversations.value.filter(c => c.status === 1 || c.status === '1')
+  }
+  return conversations.value.filter(c => c.status === 0 || c.status === '0')
+})
 
 // ---------------- REALTIME & SOCKETS ----------------
 function subscribeToAllConversations() {
@@ -714,10 +747,32 @@ function openImage(url) {
   showLightbox.value = true
 }
 
+const route = useRoute()
+
 // ---------------- LIFECYCLE ----------------
 onMounted(async () => {
   await fetchBotMessages()
   await getConversations()
+
+  const targetTripId = route.query.trip_id
+  const targetPartnerId = route.query.partner_id || route.query.user_id
+
+  if (targetTripId) {
+    const targetConv = conversations.value.find(c => c.trip_id == targetTripId)
+    if (targetConv) {
+      selectConv(targetConv.id)
+    } else if (targetPartnerId) {
+      const targetConvByPartner = conversations.value.find(c => c.other_user?.id == targetPartnerId)
+      if (targetConvByPartner) {
+        selectConv(targetConvByPartner.id)
+      }
+    }
+  } else if (targetPartnerId) {
+    const targetConv = conversations.value.find(c => c.other_user?.id == targetPartnerId)
+    if (targetConv) {
+      selectConv(targetConv.id)
+    }
+  }
 })
 
 onUnmounted(() => {

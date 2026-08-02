@@ -92,6 +92,10 @@ class CreateTripAction
                 ]);
             }
 
+            // Tự động tạo cuộc trò chuyện cho chuyến đi
+            $trip->load('car');
+            \App\Models\ChatConversation::createForTrip($trip);
+
             DB::commit();
 
             return $trip;

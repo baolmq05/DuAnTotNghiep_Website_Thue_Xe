@@ -58,6 +58,8 @@ class TripController extends Controller
         return response()->json([
             'success' => true,
             'data' => [
+                'booked' => $myTrips,
+                'owner' => $ownerTrips,
                 'my_trips' => $myTrips,
                 'owner_trips' => $ownerTrips,
             ]
@@ -127,7 +129,8 @@ class TripController extends Controller
             'latestExtension',
             'transactions',
             'pendingBalances',
-            'images'
+            'images',
+            'conversation'
         ])->find($id);
 
         if (!$trip) {
@@ -142,6 +145,12 @@ class TripController extends Controller
                 'success' => false,
                 'message' => 'Bạn không có quyền xem thông tin chuyến đi này.'
             ], 403);
+        }
+
+        // Tự động đảm bảo cuộc trò chuyện được tạo cho chuyến đi
+        if (!$trip->conversation) {
+            \App\Models\ChatConversation::createForTrip($trip);
+            $trip->load('conversation');
         }
 
         return response()->json([
