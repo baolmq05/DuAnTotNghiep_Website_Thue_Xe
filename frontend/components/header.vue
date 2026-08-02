@@ -50,6 +50,8 @@
                 class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in"
                 aria-label="Tin nhắn">
                 <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-6 h-6" />
+                <span v-if="unreadChatsCount > 0"
+                  class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
               </NuxtLink>
             </div>
 
@@ -93,36 +95,42 @@
           : 'text-slate-600 hover:text-brand-primary'
       ]">
         <!-- Home Icon -->
-        <svg v-if="item.icon === 'home'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-if="item.icon === 'home'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3L2 12h3v8z" />
         </svg>
 
         <!-- About Icon -->
-        <svg v-else-if="item.icon === 'info'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'info'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1m1-8h-2V7h2z" />
         </svg>
 
         <!-- Blog Icon -->
-        <svg v-else-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'blog'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M21 5c-1.11-.35-2.33-.5-3.5-.5c-1.95 0-4.05.4-5.5 1.5c-1.45-1.1-3.55-1.5-5.5-1.5S2.45 4.9 1 6v14.65c0 .25.25.5.5.5c.1 0 .15-.05.25-.05C3.1 20.45 5.05 20 6.5 20c1.95 0 4.05.4 5.5 1.5c1.35-.85 3.8-1.5 5.5-1.5c1.65 0 3.35.3 4.75 1.05c.1.05.15.05.25.05c.25 0 .5-.25.5-.5V6c-.6-.45-1.25-.75-2-1m0 13.5c-1.1-.35-2.3-.5-3.5-.5c-1.7 0-4.15.65-5.5 1.5V8c1.35-.85 3.8-1.5 5.5-1.5c1.2 0 2.4.15 3.5.5z" />
         </svg>
 
         <!-- Policy Icon -->
-        <svg v-else-if="item.icon === 'policy'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'policy'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10H7v-2h10v2zm0-4H7V7h10v2z" />
         </svg>
 
         <!-- Đăng ký chủ xe / Quản lý xe -->
-        <svg v-else-if="item.icon === 'host'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'host'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5H15V3H9v2H6.5c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16m11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5s1.5.67 1.5 1.5s-.67 1.5-1.5 1.5M5 11l1.5-4.5h11L19 11z" />
         </svg>
 
         <!-- Tài khoản -->
-        <svg v-else-if="item.icon === 'account'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24">
+        <svg v-else-if="item.icon === 'account'" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 sm:w-6 sm:h-6"
+          viewBox="0 0 24 24">
           <path fill="currentColor"
             d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10s10-4.48 10-10S17.52 2 12 2m0 4c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6m0 14c-2.03 0-4.43-.82-6.14-2.88a9.95 9.95 0 0 1 12.28 0C16.43 19.18 14.03 20 12 20" />
         </svg>
@@ -143,6 +151,12 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ChatService } from '~/services/chat.service'
+
+const chatService = new ChatService()
+const unreadChatsCount = useState<number>('globalUnreadChatsCount', () => 0)
+const activeChannels = ref<string[]>([])
+const { $echo } = useNuxtApp() as any
 
 const { openLogin, openRegister } = useAuthModal()
 const { user, isLoggedIn } = useAuth()
@@ -193,9 +207,43 @@ const isItemActive = (item: any) => {
 // mở modal
 const showNotificationModal = ref(false);
 
+const fetchUnreadChatsCount = async () => {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await chatService.getConversations()
+    if (res && res.conversations) {
+      unreadChatsCount.value = res.conversations.reduce((sum: number, c: any) => sum + (c.unread_count || 0), 0)
+
+      // Đăng ký Pusher Echo
+      if ($echo) {
+        // Hủy đăng ký các kênh cũ 
+        activeChannels.value.forEach(channel => $echo.leave(channel))
+        activeChannels.value = []
+
+        res.conversations.forEach((conv: any) => {
+          const channelName = `chat.${conv.id}`
+          activeChannels.value.push(channelName)
+          $echo.private(channelName)
+            .listen('.message.sent', (e: any) => {
+              if (e.message.sender_id !== user.value?.id) {
+                unreadChatsCount.value++
+              }
+            })
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching unread chats count:', error)
+  }
+}
+
 watch(() => route.path, (newPath) => {
   if (newPath === '/notifications') {
     showNotificationModal.value = false;
+  }
+
+  if (isLoggedIn.value) {
+    fetchUnreadChatsCount()
   }
 });
 
@@ -227,17 +275,28 @@ onMounted(() => {
   window.addEventListener('scroll', handleScroll)
   if (isLoggedIn.value) {
     fetchNotifications()
+    fetchUnreadChatsCount()
   }
 })
 
 watch(isLoggedIn, (newVal) => {
   if (newVal) {
     fetchNotifications()
+    fetchUnreadChatsCount()
+  } else {
+    unreadChatsCount.value = 0
+    if ($echo) {
+      activeChannels.value.forEach(channel => $echo.leave(channel))
+    }
+    activeChannels.value = []
   }
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  if ($echo) {
+    activeChannels.value.forEach(channel => $echo.leave(channel))
+  }
 })
 </script>
 

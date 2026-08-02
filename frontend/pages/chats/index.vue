@@ -336,6 +336,10 @@ const chatService = new ChatService()
 const activeConvId = ref('bot')
 const chat_id = ref(null)
 const userInfo = useCookie('USER_INFO')
+
+// Share state unread count và activeChatId sang Header component
+const unreadChatsCount = useState('globalUnreadChatsCount', () => 0)
+const activeChatId = useState('activeChatId', () => null)
 const inputText = ref('')
 const isTyping = ref(false)
 const isLoading = ref(false)
@@ -397,7 +401,10 @@ function subscribeToAllConversations() {
 
           chatService.markAsRead(conv.id).catch(err => console.error(err))
         } else {
-          conv.unread_count = (conv.unread_count || 0) + 1
+          if (e.message.sender_id !== userInfo.value?.id) {
+            conv.unread_count = (conv.unread_count || 0) + 1
+            unreadChatsCount.value++
+          }
         }
 
         if (!conv.last_message) {
@@ -573,13 +580,17 @@ async function selectConv(id) {
   activeConvId.value = id
   chat_id.value = id === 'bot' ? null : id
   showChatOnMobile.value = true
+  activeChatId.value = id === 'bot' ? null : id
 
   if (id === 'bot') {
     await fetchBotMessages()
   } else {
     const host = conversations.value.find(h => h.id === id)
     if (host) {
-      host.unread_count = 0
+      if (host.unread_count > 0) {
+        unreadChatsCount.value = Math.max(0, unreadChatsCount.value - host.unread_count)
+        host.unread_count = 0
+      }
       console.log('Fetching host messages:', await fetchHostMessages(id))
 
       try {
@@ -596,6 +607,7 @@ function exitChat() {
   showChatOnMobile.value = false
   activeConvId.value = null
   chat_id.value = null
+  activeChatId.value = null
 }
 
 // ---------------- UI HELPERS ----------------
@@ -709,6 +721,7 @@ onMounted(async () => {
 })
 
 onUnmounted(() => {
+  activeChatId.value = null
   activeChannels.value.forEach(channelName => {
     if ($echo) {
       $echo.leave(channelName)

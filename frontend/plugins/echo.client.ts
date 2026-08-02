@@ -8,19 +8,20 @@ export default defineNuxtPlugin((nuxtApp) => {
     (window as any).Pusher = Pusher;
 
     const echo = new Echo({
-        broadcaster: 'reverb',
-        key: 'bp54cuveeawxyvoq2yk9', // Thay bằng REVERB_APP_KEY của bạn trong .env
-        wsHost: 'localhost',
-        wsPort: 8080,
-        wssPort: 8080,
-        forceTLS: false,
-        enabledTransports: ['ws', 'wss'],
+        broadcaster: 'pusher',
+        key: 'd12b4780e213182ca9ff',
+        cluster: 'ap1',
+        forceTLS: true,
+        // wsHost: 'localhost',
+        // wsPort: 8080,
+        // wssPort: 8080,
+        // enabledTransports: ['ws', 'wss'],
         // Sử dụng custom authorizer để lấy token mới nhất mỗi khi kết nối kênh Private
         authorizer: (channel: any, options: any) => {
             return {
                 authorize: (socketId: string, callback: Function) => {
                     const token = useCookie<string | null>("USER_TOKEN").value;
-                    
+
                     $fetch('http://localhost:8000/api/broadcasting/auth', {
                         method: 'POST',
                         headers: {
@@ -32,13 +33,13 @@ export default defineNuxtPlugin((nuxtApp) => {
                             channel_name: channel.name
                         }
                     })
-                    .then(res => {
-                        callback(false, res);
-                    })
-                    .catch(err => {
-                        console.error('[Echo Auth Error]', err);
-                        callback(true, err);
-                    });
+                        .then(res => {
+                            callback(false, res);
+                        })
+                        .catch(err => {
+                            console.error('[Echo Auth Error]', err);
+                            callback(true, err);
+                        });
                 }
             };
         }
