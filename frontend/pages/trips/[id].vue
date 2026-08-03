@@ -637,28 +637,56 @@
               </div>
             </div>
 
-            <!-- Review section for renter -->
-            <div class="mt-1 pt-3 border-t border-emerald-250/30">
-              <div v-if="renterReview"
-                class="bg-white border border-emerald-100 rounded-xl p-3 text-slate-700 space-y-1.5 shadow-sm">
-                <div class="flex items-center gap-1.5">
-                  <span class="font-bold text-xs text-slate-800">Đánh giá của bạn về chủ xe:</span>
-                  <div class="flex items-center gap-0.5">
+            <!-- Review section for both renter and owner -->
+            <div class="mt-1 pt-3 border-t border-emerald-250/30 space-y-3">
+              <!-- 1. Đánh giá của chính mình (nếu đã đánh giá) -->
+              <div v-if="myReview"
+                class="bg-white border border-emerald-100 rounded-2xl p-3.5 text-slate-700 space-y-1.5 shadow-sm">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <Icon name="lucide:check-circle-2" class="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span class="font-bold text-xs text-slate-800">
+                      {{ isOwner ? 'Bạn đã đánh giá khách thuê:' : 'Bạn đã đánh giá chủ xe & chuyến đi:' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-0.5 shrink-0">
                     <Icon v-for="star in 5" :key="star" name="heroicons:star-solid" class="w-3.5 h-3.5"
-                      :class="star <= renterReview.rating ? 'text-amber-400' : 'text-slate-200'" />
+                      :class="star <= myReview.rating ? 'text-amber-400' : 'text-slate-200'" />
                   </div>
                 </div>
-                <p class="text-slate-600 italic text-[11px] font-medium" v-if="renterReview.comment">
-                  "{{ renterReview.comment }}"
+                <p class="text-slate-600 italic text-[11px] font-medium pl-5" v-if="myReview.comment">
+                  "{{ myReview.comment }}"
                 </p>
-                <p class="text-slate-400 text-[10px]" v-else>Không có bình luận.</p>
+                <p class="text-slate-400 text-[10px] pl-5" v-else>Không có bình luận.</p>
               </div>
 
-              <button v-else-if="!isOwner" @click="openReviewModal"
-                class="py-2 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5 w-fit">
+              <!-- 2. Nút gửi đánh giá (nếu chưa đánh giá) -->
+              <button v-else @click="openReviewModal"
+                class="py-2.5 px-4 rounded-xl text-xs font-bold text-white transition-all bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] cursor-pointer shadow-md shadow-emerald-600/10 flex items-center gap-1.5 w-fit">
                 <Icon name="lucide:star" class="w-4 h-4" />
-                Đánh giá chủ xe & chuyến đi
+                <span>{{ isOwner ? 'Đánh giá khách thuê' : 'Đánh giá chủ xe & chuyến đi' }}</span>
               </button>
+
+              <!-- 3. Đánh giá từ đối phương (nếu đối phương đã đánh giá) -->
+              <div v-if="partnerReview"
+                class="bg-slate-50 border border-slate-200/60 rounded-2xl p-3.5 text-slate-700 space-y-1.5 shadow-xs">
+                <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-1.5">
+                    <Icon name="lucide:message-square-quote" class="w-4 h-4 text-[#1e4e57] shrink-0" />
+                    <span class="font-bold text-xs text-slate-800">
+                      {{ isOwner ? 'Đánh giá từ khách thuê:' : 'Đánh giá từ chủ xe:' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-0.5 shrink-0">
+                    <Icon v-for="star in 5" :key="star" name="heroicons:star-solid" class="w-3.5 h-3.5"
+                      :class="star <= partnerReview.rating ? 'text-amber-400' : 'text-slate-200'" />
+                  </div>
+                </div>
+                <p class="text-slate-600 italic text-[11px] font-medium pl-5" v-if="partnerReview.comment">
+                  "{{ partnerReview.comment }}"
+                </p>
+                <p class="text-slate-400 text-[10px] pl-5" v-else>Không có bình luận.</p>
+              </div>
             </div>
           </div>
 
@@ -955,7 +983,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
               <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <Icon name="lucide:star" class="w-5 h-5 text-amber-500 fill-amber-500" />
-                Đánh giá chủ xe & Chuyến đi
+                {{ isOwner ? 'Đánh giá khách thuê' : 'Đánh giá chủ xe & Chuyến đi' }}
               </h3>
               <button @click="showReviewModal = false"
                 class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition">
@@ -965,8 +993,9 @@
 
             <!-- Content -->
             <div class="space-y-4 text-xs">
-              <p class="text-slate-500 font-medium">Chia sẻ trải nghiệm chuyến đi của bạn để giúp cải thiện dịch vụ của
-                chúng tôi.</p>
+              <p class="text-slate-500 font-medium">
+                {{ isOwner ? 'Chia sẻ đánh giá của bạn về thái độ và ý thức của khách thuê.' : 'Chia sẻ trải nghiệm chuyến đi của bạn để giúp cải thiện dịch vụ của chúng tôi.' }}
+              </p>
 
               <!-- Star selection -->
               <div class="space-y-2 flex flex-col items-center py-2">
@@ -987,7 +1016,7 @@
               <div class="space-y-1.5">
                 <label class="block font-bold text-slate-700">Ý kiến đóng góp (tùy chọn):</label>
                 <textarea v-model="reviewComment" rows="4"
-                  placeholder="Chia sẻ thêm thông tin về tình trạng xe, độ nhiệt tình của chủ xe..."
+                  :placeholder="isOwner ? 'Nhập ý kiến đánh giá về ý thức giữ gìn xe, thái độ của khách thuê...' : 'Chia sẻ thêm thông tin về tình trạng xe, độ nhiệt tình của chủ xe...'"
                   class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"></textarea>
               </div>
 
@@ -1181,7 +1210,7 @@ const rejectType = ref<'trip' | 'extension'>('trip')
 
 const isOwner = computed(() => {
   if (!user.value || !trip.value || !trip.value.car) return false
-  return user.value.id === trip.value.car.user_id
+  return Number(user.value.id) === Number(trip.value.car.user_id)
 })
 
 const handleBack = () => {
@@ -1709,7 +1738,20 @@ const handleStartTrip = async () => {
 
 const renterReview = computed(() => {
   if (!trip.value || !trip.value.reviews) return null;
-  return trip.value.reviews.find((r: any) => r.review_type === 1);
+  return trip.value.reviews.find((r: any) => Number(r.review_type) === 1);
+})
+
+const ownerReview = computed(() => {
+  if (!trip.value || !trip.value.reviews) return null;
+  return trip.value.reviews.find((r: any) => Number(r.review_type) === 0);
+})
+
+const myReview = computed(() => {
+  return isOwner.value ? ownerReview.value : renterReview.value;
+})
+
+const partnerReview = computed(() => {
+  return isOwner.value ? renterReview.value : ownerReview.value;
 })
 
 const showReviewModal = ref(false)

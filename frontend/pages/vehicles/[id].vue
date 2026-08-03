@@ -272,7 +272,7 @@
               <span class="w-1.5 h-5 bg-brand-primary rounded-full"></span>
               Đánh giá từ khách hàng
             </h2>
-            <div class="space-y-4">
+            <div v-if="formattedReviews.length > 0" class="space-y-4">
               <div v-for="review in formattedReviews" :key="review.name"
                 class="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div class="flex items-center gap-3 mb-2.5">
@@ -321,6 +321,10 @@
                   {{ review.text }}
                 </p>
               </div>
+            </div>
+            <div v-else class="py-8 text-center bg-slate-50/50 rounded-xl border border-slate-100/60">
+              <Icon name="lucide:message-square" class="w-8 h-8 text-slate-300 mx-auto mb-2" />
+              <p class="text-xs sm:text-sm font-semibold text-slate-400">Chưa có đánh giá nào cho xe này</p>
             </div>
           </div>
         </div>
@@ -1650,22 +1654,7 @@ const totalPrice = computed(() => {
 
 const formattedReviews = computed(() => {
   if (!car.value?.reviews || car.value.reviews.length === 0) {
-    return [
-      {
-        name: "Nguyễn Văn Hoài Thương",
-        date: "15/06/2025",
-        color: "#286874",
-        text: "Xe sạch đẹp, chủ xe nhiệt tình. Chuyến đi rất tuyệt vời, sẽ thuê lại lần sau!",
-        rating: 5,
-      },
-      {
-        name: "Nguyễn Minh Nghĩa",
-        date: "11/06/2025",
-        color: "#A77E52",
-        text: "Xe mới, êm, tiết kiệm xăng. Thủ tục nhanh gọn, không rắc rối. Highly recommended!",
-        rating: 5,
-      },
-    ];
+    return [];
   }
   const colors = ["#286874", "#A77E52", "#1e4e57", "#286874"];
   return car.value.reviews.map((r: any, idx: number) => ({

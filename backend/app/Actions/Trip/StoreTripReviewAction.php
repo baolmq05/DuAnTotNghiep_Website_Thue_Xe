@@ -29,12 +29,12 @@ class StoreTripReviewAction
 
         // Xác định review_type và target_id
         if ($trip->user_id === $user->id) {
-            // Renter đánh giá Owner
-            $reviewType = 0;
+            // Renter đánh giá Owner (Đánh giá người cho thuê = 1)
+            $reviewType = 1;
             $targetId = $trip->car->user_id;
         } else {
-            // Owner đánh giá Renter
-            $reviewType = 1;
+            // Owner đánh giá Renter (Đánh giá người thuê = 0)
+            $reviewType = 0;
             $targetId = $trip->user_id;
         }
 
@@ -53,6 +53,7 @@ class StoreTripReviewAction
                 'trip_id' => $trip->id,
                 'reviewer_id' => $user->id,
                 'target_id' => $targetId,
+                'car_id' => $trip->car_id,
                 'rating' => $data['rating'],
                 'comment' => $data['comment'] ?? null,
                 'review_type' => $reviewType,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const {showToast} = useToast()
+const { showToast } = useToast()
 const route = useRoute();
 const { logout: authLogout, user } = useAuth();
 
@@ -77,7 +77,7 @@ const isActive = (path: string) => {
 
 const logout = async () => {
   await authLogout();
-  showToast("Đăng xuất thành công!",'success');
+  showToast("Đăng xuất thành công!", 'success');
   if (props.mobile) {
     emit("close");
   }
@@ -98,63 +98,37 @@ const asideClass = computed(() => {
     ];
   }
 
-  return "w-full h-full bg-white border-r border-gray-200 sticky top-[140px]";
+  return "w-full h-full bg-white sticky top-[140px]";
 });
 </script>
 
 <template>
   <aside :class="asideClass">
     <div class="px-2 py-1">
-      <div
-        v-if="mobile"
-        class="mb-6 flex items-right justify-end"
-      >
-        <button
-          type="button"
-          class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-          @click="emit('close')"
-        >
-          <Icon
-            name="ic:outline-close"
-            size="24"
-          />
+      <div v-if="mobile" class="mb-6 flex items-right justify-end">
+        <button type="button" class="rounded-lg p-2 text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+          @click="emit('close')">
+          <Icon name="ic:outline-close" size="24" />
         </button>
       </div>
 
       <!-- Title -->
-      <h2
-        class="font-bold leading-none mb-10"
-        :class="mobile ? 'text-[28px]' : 'text-[40px]'"
-      >
+      <h2 class="font-bold leading-none mb-10" :class="mobile ? 'text-[28px]' : 'text-[40px]'">
         Xin chào bạn!
       </h2>
 
       <!-- Main Menu -->
       <ul class="space-y-1">
-        <li
-          v-for="item in filteredMainMenus"
-          :key="item.href"
-        >
-          <NuxtLink
-            :to="item.href"
-            @click="onNavigate"
-            class="group flex items-center gap-4 py-3 px-4 text-sm sm:text-lg transition-all duration-200"
-            :class="
-              isActive(item.href)
-                ? 'border-l-4 border-[#5FCF86] font-medium text-black'
+        <li v-for="item in filteredMainMenus" :key="item.href">
+          <NuxtLink :to="item.href" @click="onNavigate"
+            class="group flex items-center gap-4 py-3 px-4 text-sm sm:text-lg transition-all duration-200" :class="isActive(item.href)
+                ? 'border-l-4 border-[#286874] font-medium text-black'
                 : 'text-[#666] hover:bg-gray-50'
-            "
-          >
-            <Icon
-              :name="item.icon"
-              size="24"
-              class="shrink-0"
-              :class="
-                isActive(item.href)
-                  ? 'text-black'
-                  : 'text-gray-500 group-hover:text-black'
-              "
-            />
+              ">
+            <Icon :name="item.icon" size="24" class="shrink-0" :class="isActive(item.href)
+                ? 'text-black'
+                : 'text-gray-500 group-hover:text-black'
+              " />
 
             <span>
               {{ item.title }}
@@ -168,20 +142,10 @@ const asideClass = computed(() => {
 
       <!-- Settings -->
       <ul class="space-y-1">
-        <li
-          v-for="item in settingMenus"
-          :key="item.href"
-        >
-          <NuxtLink
-            :to="item.href"
-            @click="onNavigate"
-            class="group flex items-center gap-4 py-2 px-4 text-sm sm:text-lg text-[#666] hover:bg-gray-50 transition-all duration-200"
-          >
-            <Icon
-              :name="item.icon"
-              size="24"
-              class="text-gray-500 group-hover:text-black"
-            />
+        <li v-for="item in settingMenus" :key="item.href">
+          <NuxtLink :to="item.href" @click="onNavigate"
+            class="group flex items-center gap-4 py-2 px-4 text-sm sm:text-lg text-[#666] hover:bg-gray-50 transition-all duration-200">
+            <Icon :name="item.icon" size="24" class="text-gray-500 group-hover:text-black" />
 
             <span>
               {{ item.title }}
@@ -196,12 +160,8 @@ const asideClass = computed(() => {
       <!-- Logout -->
       <button
         class="flex items-center gap-4 px-4 py-2 text-sm sm:text-lg text-[#FF5A5F] hover:bg-red-50 rounded-lg transition-all"
-        @click="logout"
-      >
-        <Icon
-          name="ic:outline-logout"
-          size="24"
-        />
+        @click="logout">
+        <Icon name="ic:outline-logout" size="24" />
 
         <span>Đăng xuất</span>
       </button>
