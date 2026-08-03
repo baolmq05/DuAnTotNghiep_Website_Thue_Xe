@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Wallet;
+use App\Models\User;
 
 class WalletSeeder extends Seeder
 {
@@ -13,11 +14,12 @@ class WalletSeeder extends Seeder
      */
     public function run(): void
     {
-        Wallet::create([
-            'amount' => 1000000,
-        ]);
-        Wallet::create([
-            'amount' => 500000,
-        ]);
+        $users = User::all();
+        foreach ($users as $user) {
+            Wallet::firstOrCreate(
+                ['user_id' => $user->id],
+                ['amount' => 5000000, 'hold_balance' => 0]
+            );
+        }
     }
 }

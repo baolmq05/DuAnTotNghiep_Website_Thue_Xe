@@ -65,7 +65,6 @@ class UserSeeder extends Seeder
             'national_number' => '111111111',
             'status' => '1',
             'role_id' => 3,
-            'wallet_id' => 1,
             'driving_license_id' => 1,
         ]);
         User::create([
@@ -80,7 +79,6 @@ class UserSeeder extends Seeder
             'national_number' => '222222222',
             'status' => '1',
             'role_id' => 3,
-            'wallet_id' => 2,
             'driving_license_id' => 2,
         ]);
     }

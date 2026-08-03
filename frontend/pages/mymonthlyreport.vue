@@ -9,10 +9,10 @@
                 <div class="flex items-center justify-center gap-2 text-sm text-cyan-50/90 mt-4 font-medium">
                     <span>Từ ngày</span>
                     <span
-                        class="bg-white/10 border border-white/20 px-3 py-1 rounded font-mono text-white">01/06/2026</span>
+                        class="bg-white/10 border border-white/20 px-3 py-1 rounded font-mono text-white">{{ fromDate }}</span>
                     <span class="ml-2">Đến ngày</span>
                     <span
-                        class="bg-white/10 border border-white/20 px-3 py-1 rounded font-mono text-white">30/06/2026</span>
+                        class="bg-white/10 border border-white/20 px-3 py-1 rounded font-mono text-white">{{ toDate }}</span>
                 </div>
             </div>
         </section>
@@ -331,14 +331,15 @@ import { authService } from '~/services/auth.service'
 import { useRouter } from 'vue-router'
 import { TripStatus } from '~/config/trip-status'
 
+// 1. Khai báo các biến lưu trữ dữ liệu (reactive state)
 const { user } = useAuth()
-
 const router = useRouter()
 
 const transactions = ref<any[]>([])
 const userName = ref('')
 const userCode = ref('')
 const balance = ref(0)
+const isLoading = ref(true)
 
 const summary = ref({
     completed_trips_change: 0,
@@ -351,8 +352,28 @@ const summary = ref({
     owner_income: 0
 })
 
+// 2. Tự động tính Từ ngày (ngày 01) và Đến ngày (ngày cuối cùng) của tháng hiện tại
+const fromDate = computed(() => {
+    const now = new Date()
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1)
+    const day = String(firstDay.getDate()).padStart(2, '0')
+    const month = String(firstDay.getMonth() + 1).padStart(2, '0')
+    const year = firstDay.getFullYear()
+    return `${day}/${month}/${year}`
+})
+
+const toDate = computed(() => {
+    const now = new Date()
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+    const day = String(lastDay.getDate()).padStart(2, '0')
+    const month = String(lastDay.getMonth() + 1).padStart(2, '0')
+    const year = lastDay.getFullYear()
+    return `${day}/${month}/${year}`
+})
+
+// 3. Phân loại danh sách giao dịch (Computed Properties)
 const completedTrips = computed(() => {
-    return transactions.value.filter(t => t.trip && t.trip.status !== TripStatus.UserCancel && t.trip.status !== TripStatus.OwnerCancel)
+    return transactions.value.filter(t => t.trip && Number(t.trip.status) === TripStatus.Complete)
 })
 
 const depositWithdrawals = computed(() => {
@@ -360,38 +381,42 @@ const depositWithdrawals = computed(() => {
 })
 
 const cancelledTrips = computed(() => {
-    return transactions.value.filter(t => t.trip && (t.trip.status === TripStatus.UserCancel || t.trip.status === TripStatus.OwnerCancel))
+    return transactions.value.filter(t => t.trip && (Number(t.trip.status) === TripStatus.UserCancel || Number(t.trip.status) === TripStatus.OwnerCancel))
 })
 
-const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+// 3. Hàm trợ giúp định dạng tiền tệ VND
+const formatCurrency = (amount: number = 0) => {
+    return new Intl.NumberFormat('vi-VN').format(amount) + 'đ'
 }
 
-const intval = (value: number) => {
-    return Math.floor(value)
-}
-
-const loadData = async () => {
+// 4. Hàm bất đồng bộ (async) gọi API lấy dữ liệu từ Service
+const fetchReportData = async () => {
+    isLoading.value = true
     try {
+        // Bước 4.1: Gọi API lấy thông tin Ví & Sao kê giao dịch
         const walletRes = await walletService.getWalletDetails()
         if (walletRes.success && walletRes.data) {
-            transactions.value = walletRes.data.transactions
-            balance.value = walletRes.data.balance
-            summary.value = walletRes.data.summary
+            transactions.value = walletRes.data.transactions || []
+            balance.value = walletRes.data.balance || 0
+            summary.value = walletRes.data.summary || summary.value
         }
 
+        // Bước 4.2: Gọi API lấy thông tin người dùng
         const profileRes = await authService.getProfileApi()
         if (profileRes) {
             userName.value = profileRes.name || 'Khách hàng'
             userCode.value = profileRes.national_number || 'DRV' + (profileRes.id || '001')
         }
     } catch (error) {
-        console.error('Error loading report details:', error)
+        console.error('Lỗi khi tải dữ liệu sao kê báo cáo tháng:', error)
+    } finally {
+        isLoading.value = false
     }
 }
 
+// 5. Tự động gọi API khi component được Mounted vào DOM
 onMounted(() => {
-    loadData()
+    fetchReportData()
 })
 
 const goBack = () => {

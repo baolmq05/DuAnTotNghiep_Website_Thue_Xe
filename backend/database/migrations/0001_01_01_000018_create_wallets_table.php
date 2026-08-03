@@ -14,8 +14,9 @@ return new class extends Migration
         Schema::create('wallets', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->decimal('amount', 10)->default(0)->comment('Số dư trong ví');
-            $table->decimal('hold_balance', 10)->default(0)->comment('Số tiền tạm giữ phạt nguội (2% chuyến đi)');
+            $table->foreignId('user_id')->unique()->constrained('users')->onDelete('cascade');
+            $table->decimal('amount', 12, 2)->default(0)->comment('Số dư trong ví');
+            $table->decimal('hold_balance', 12, 2)->default(0)->comment('Số tiền tạm giữ phạt nguội (2% chuyến đi)');
             $table->timestamps();
         });
     }

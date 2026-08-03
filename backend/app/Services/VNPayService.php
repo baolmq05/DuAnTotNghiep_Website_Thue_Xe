@@ -261,13 +261,10 @@ class VNPayService
                     }
 
                     // 1. Credit the user's wallet
-                    if (!$user->wallet_id) {
-                        $wallet = Wallet::create(['amount' => 0]);
-                        $user->wallet_id = $wallet->id;
-                        $user->save();
-                    } else {
-                        $wallet = $user->wallet;
-                    }
+                    $wallet = Wallet::firstOrCreate(
+                        ['user_id' => $user->id],
+                        ['amount' => 0, 'hold_balance' => 0]
+                    );
                     $wallet->increment('amount', $amount);
 
                     // 2. Log transaction

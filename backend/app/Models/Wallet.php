@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Wallet extends Model
 {
-    protected $fillable = ['amount', 'hold_balance'];
+    protected $fillable = ['user_id', 'amount', 'hold_balance'];
 
-    public function user(): HasOne
+    public function user(): BelongsTo
     {
-        return $this->hasOne(User::class, 'wallet_id');
+        return $this->belongsTo(User::class);
     }
 }

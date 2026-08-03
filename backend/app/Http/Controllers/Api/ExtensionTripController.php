@@ -255,7 +255,7 @@ class ExtensionTripController extends Controller
             $amount = (float)$extension->extension_amount;
 
             // Kiểm tra ví user và thực hiện thanh toán nếu có
-            if ($user->wallet_id && $amount > 0) {
+            if ($amount > 0) {
                 $wallet = $user->wallet;
                 if ($wallet && $wallet->amount >= $amount) {
                     $wallet->decrement('amount', $amount);

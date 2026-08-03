@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
@@ -36,13 +37,18 @@ class User extends Authenticatable implements JWTSubject
             if (empty($user->role_id)) {
                 $user->role_id = 1; // Mặc định là Admin khi không truyền (ví dụ: chạy lệnh make:filament-user)
             }
-            if (empty($user->wallet_id)) {
-                $wallet = Wallet::create(['amount' => 0]);
-                $user->wallet_id = $wallet->id;
-            }
         });
 
         static::created(function ($user) {
+            try {
+                Wallet::firstOrCreate(
+                    ['user_id' => $user->id],
+                    ['amount' => 0, 'hold_balance' => 0]
+                );
+            } catch (Exception $e) {
+                Log::error('Lỗi khởi tạo ví cho user ' . $user->id . ': ' . $e->getMessage());
+            }
+
             try {
                 $conversationStore = resolve(ConversationStore::class);
                 $conversationStore->storeConversation($user->id, 'Trợ lý AI');
@@ -91,9 +97,9 @@ class User extends Authenticatable implements JWTSubject
         return $this->belongsTo(Role::class);
     }
 
-    public function wallet(): BelongsTo
+    public function wallet(): HasOne
     {
-        return $this->belongsTo(Wallet::class);
+        return $this->hasOne(Wallet::class);
     }
 
     public function drivingLicense(): BelongsTo

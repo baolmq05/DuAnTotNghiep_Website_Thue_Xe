@@ -33,18 +33,21 @@ class WalletController extends Controller
             }
 
             // Đảm bảo user có ví
-            if (!$user->wallet_id) {
-                $wallet = Wallet::create(['amount' => 0]);
-                $user->wallet_id = $wallet->id;
-                $user->save();
-            } else {
-                $wallet = $user->wallet;
-            }
+            $wallet = Wallet::firstOrCreate(
+                ['user_id' => $user->id],
+                ['amount' => 0, 'hold_balance' => 0]
+            );
 
-            // Lấy danh sách giao dịch của user
-            $transactionsQuery = Transaction::where('user_id', $user->id)
-                ->with(['trip.car.owner', 'trip.user'])
-                ->orderBy('created_at', 'desc');
+            // Lấy danh sách giao dịch của user (gồm giao dịch cá nhân và các chuyến xe thuộc về Chủ xe)
+            $carIds = Car::where('user_id', $user->id)->pluck('id');
+            $tripIds = Trip::whereIn('car_id', $carIds)->pluck('id');
+
+            $transactionsQuery = Transaction::where(function ($query) use ($user, $tripIds) {
+                $query->where('user_id', $user->id)
+                      ->orWhereIn('trip_id', $tripIds);
+            })
+            ->with(['trip.car.owner', 'trip.user'])
+            ->orderBy('created_at', 'desc');
 
             $transactions = $transactionsQuery->get();
 
@@ -56,11 +59,10 @@ class WalletController extends Controller
             foreach ($transactions as $txn) {
                 if ($txn->trip_id) {
                     $trip = $txn->trip;
-                    // status: 0 - chưa bắt đầu, 1 - đang diễn ra, 2 - đã hoàn thành, 3 - đã hủy bởi người dùng, 4 - đã hủy bởi chủ xe
-                    if ($trip && ($trip->status == 3 || $trip->status == 4)) {
-                        $cancelledTripsChange += $txn->amount;
-                    } else {
+                    if ($trip && (int)$trip->status === TripStatus::Complete->value) {
                         $completedTripsChange += $txn->amount;
+                    } elseif ($trip && in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+                        $cancelledTripsChange += $txn->amount;
                     }
                 } else {
                     $depositWithdrawalChange += $txn->amount;
@@ -178,13 +180,10 @@ class WalletController extends Controller
             }
 
             // Đảm bảo user có ví
-            if (!$user->wallet_id) {
-                $wallet = Wallet::create(['amount' => 0]);
-                $user->wallet_id = $wallet->id;
-                $user->save();
-            } else {
-                $wallet = $user->wallet;
-            }
+            $wallet = Wallet::firstOrCreate(
+                ['user_id' => $user->id],
+                ['amount' => 0, 'hold_balance' => 0]
+            );
 
             // Validate số tiền rút
             $validator = Validator::make($request->all(), [

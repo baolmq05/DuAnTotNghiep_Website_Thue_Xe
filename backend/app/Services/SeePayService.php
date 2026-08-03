@@ -121,13 +121,10 @@ class SeePayService
                     // 1. Credit the Car Owner's wallet
                     $owner = User::find($ownerId);
                     if ($owner) {
-                        if (!$owner->wallet_id) {
-                            $wallet = Wallet::create(['amount' => 0]);
-                            $owner->wallet_id = $wallet->id;
-                            $owner->save();
-                        } else {
-                            $wallet = $owner->wallet;
-                        }
+                        $wallet = Wallet::firstOrCreate(
+                            ['user_id' => $owner->id],
+                            ['amount' => 0, 'hold_balance' => 0]
+                        );
                         $wallet->increment('amount', $amount);
                     }
 
@@ -181,13 +178,10 @@ class SeePayService
                     }
 
                     // 1. Credit the user's wallet
-                    if (!$user->wallet_id) {
-                        $wallet = Wallet::create(['amount' => 0]);
-                        $user->wallet_id = $wallet->id;
-                        $user->save();
-                    } else {
-                        $wallet = $user->wallet;
-                    }
+                    $wallet = Wallet::firstOrCreate(
+                        ['user_id' => $user->id],
+                        ['amount' => 0, 'hold_balance' => 0]
+                    );
                     $wallet->increment('amount', $amount);
 
                     // 2. Log transaction
@@ -249,13 +243,10 @@ class SeePayService
                     $ownerId = $trip->car->user_id ?? 0;
                     $owner = User::find($ownerId);
                     if ($owner) {
-                        if (!$owner->wallet_id) {
-                            $wallet = Wallet::create(['amount' => 0]);
-                            $owner->wallet_id = $wallet->id;
-                            $owner->save();
-                        } else {
-                            $wallet = $owner->wallet;
-                        }
+                        $wallet = Wallet::firstOrCreate(
+                            ['user_id' => $owner->id],
+                            ['amount' => 0, 'hold_balance' => 0]
+                        );
                         $wallet->increment('amount', $amount);
                     }
 

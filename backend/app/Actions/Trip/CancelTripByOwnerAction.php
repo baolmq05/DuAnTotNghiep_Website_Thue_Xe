@@ -41,13 +41,10 @@ class CancelTripByOwnerAction
 
             if ($refundAmount > 0) {
                 $renter = $trip->user;
-                if (!$renter->wallet_id) {
-                    $wallet = Wallet::create(['amount' => 0]);
-                    $renter->wallet_id = $wallet->id;
-                    $renter->save();
-                } else {
-                    $wallet = $renter->wallet;
-                }
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => $renter->id],
+                    ['amount' => 0, 'hold_balance' => 0]
+                );
                 $wallet->increment('amount', $refundAmount);
             }
 

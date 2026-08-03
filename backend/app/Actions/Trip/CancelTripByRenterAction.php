@@ -60,26 +60,20 @@ class CancelTripByRenterAction
             // Hoàn tiền cho Khách thuê
             if ($refundAmount > 0) {
                 $renter = $trip->user;
-                if (!$renter->wallet_id) {
-                    $wallet = Wallet::create(['amount' => 0]);
-                    $renter->wallet_id = $wallet->id;
-                    $renter->save();
-                } else {
-                    $wallet = $renter->wallet;
-                }
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => $renter->id],
+                    ['amount' => 0, 'hold_balance' => 0]
+                );
                 $wallet->increment('amount', $refundAmount);
             }
 
             // Đền bù tiền phạt cho Chủ xe
             if ($compensationFee > 0) {
                 $owner = $trip->car->owner;
-                if (!$owner->wallet_id) {
-                    $wallet = Wallet::create(['amount' => 0]);
-                    $owner->wallet_id = $wallet->id;
-                    $owner->save();
-                } else {
-                    $wallet = $owner->wallet;
-                }
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => $owner->id],
+                    ['amount' => 0, 'hold_balance' => 0]
+                );
                 $wallet->increment('amount', $compensationFee);
             }
 

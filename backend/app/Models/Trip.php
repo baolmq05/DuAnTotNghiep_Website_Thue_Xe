@@ -113,13 +113,10 @@ class Trip extends Model
         foreach ($pendingBalances as $pending) {
             $receiver = $pending->receiver;
             if ($receiver) {
-                if (!$receiver->wallet_id) {
-                    $wallet = Wallet::create(['amount' => 0, 'hold_balance' => 0]);
-                    $receiver->wallet_id = $wallet->id;
-                    $receiver->save();
-                } else {
-                    $wallet = $receiver->wallet;
-                }
+                $wallet = Wallet::firstOrCreate(
+                    ['user_id' => $receiver->id],
+                    ['amount' => 0, 'hold_balance' => 0]
+                );
 
                 $totalAmount = $pending->amount;
                 $holdAmount = round($totalAmount * 0.02, 2);
