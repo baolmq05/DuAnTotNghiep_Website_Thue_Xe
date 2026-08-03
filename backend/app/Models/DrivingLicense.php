@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class DrivingLicense extends Model
 {
@@ -35,7 +36,7 @@ class DrivingLicense extends Model
         });
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function user(): HasOne
     {
         return $this->hasOne(User::class, 'driving_license_id');
     }

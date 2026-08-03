@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Favorite extends Model
 {
@@ -10,7 +11,7 @@ class Favorite extends Model
 
     protected $fillable = ['user_id'];
 
-    public function items()
+    public function items(): HasMany
     {
         return $this->hasMany(FavoriteItem::class, 'favorite_id');
     }

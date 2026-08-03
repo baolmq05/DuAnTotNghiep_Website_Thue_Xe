@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Refund extends Model
@@ -16,12 +18,12 @@ class Refund extends Model
         'transaction_id',
         'description',
     ];
-    public function wallet()
+    public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
-    public function user()
+    public function user(): HasOneThrough
     {
         return $this->hasOneThrough(
             User::class,
@@ -39,14 +41,14 @@ class Refund extends Model
             // Check if status is changed to failed or canceled
             if ($refund->isDirty('status') && in_array($refund->status, ['failed', 'canceled'])) {
                 $oldStatus = $refund->getOriginal('status');
-                
+
                 // Only refund if previous status was pending or processing (held amount)
                 if (in_array($oldStatus, ['pending', 'processing'])) {
                     $wallet = $refund->wallet;
                     if ($wallet) {
                         // 1. Return money to wallet
                         $wallet->increment('amount', $refund->amount);
-                        
+
                         // 2. Find the user of this wallet
                         $user = $refund->user;
                         if ($user) {

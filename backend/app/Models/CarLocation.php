@@ -6,6 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class CarLocation extends Model
 {
-    //
     protected $fillable = ['location', 'address'];
 }

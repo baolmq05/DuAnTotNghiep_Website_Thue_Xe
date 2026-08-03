@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class PendingBalance extends Model
 {
@@ -23,22 +24,22 @@ class PendingBalance extends Model
         'released_at' => 'datetime',
     ];
 
-    public function transaction()
+    public function transaction(): BelongsTo
     {
         return $this->belongsTo(Transaction::class);
     }
 
-    public function trip()
+    public function trip(): BelongsTo
     {
         return $this->belongsTo(Trip::class);
     }
 
-    public function payer()
+    public function payer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'payer_id');
     }
 
-    public function receiver()
+    public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'receiver_id');
     }

@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Enum\PostStatus;
 use App\Models\PostCategory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
@@ -38,12 +39,12 @@ class Post extends Model
         });
     }
 
-    public function category()
+    public function category(): BelongsTo
     {
         return $this->belongsTo(PostCategory::class, 'post_category_id');
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }

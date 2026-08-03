@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TripExtension extends Model
 {
@@ -14,7 +15,7 @@ class TripExtension extends Model
         'end_date',
     ];
 
-    public function trip(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function trip(): BelongsTo
     {
         return $this->belongsTo(Trip::class);
     }

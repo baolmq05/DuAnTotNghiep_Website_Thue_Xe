@@ -7,11 +7,16 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-
 use Laravel\Ai\Concerns\HasConversations;
+use Laravel\Ai\Contracts\ConversationStore;
+use Illuminate\Support\Facades\Log;
+use App\Models\Review;
+use Exception;
 
 #[Fillable(['name', 'email', 'password', 'bank_name', 'bank_account_number'])]
 #[Hidden(['password', 'remember_token'])]
@@ -39,10 +44,10 @@ class User extends Authenticatable implements JWTSubject
 
         static::created(function ($user) {
             try {
-                $conversationStore = resolve(\Laravel\Ai\Contracts\ConversationStore::class);
+                $conversationStore = resolve(ConversationStore::class);
                 $conversationStore->storeConversation($user->id, 'Trợ lý AI');
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Lỗi tạo hội thoại AI mặc định cho user ' . $user->id . ': ' . $e->getMessage());
+            } catch (Exception $e) {
+                Log::error('Lỗi tạo hội thoại AI mặc định cho user ' . $user->id . ': ' . $e->getMessage());
             }
         });
     }
@@ -59,7 +64,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function getRatingAttribute()
     {
-        $rating = \App\Models\Review::where('target_id', $this->id)->avg('rating');
+        $rating = Review::where('target_id', $this->id)->avg('rating');
         return $rating ? round(floatval($rating), 1) : 5.0;
     }
 
@@ -81,27 +86,27 @@ class User extends Authenticatable implements JWTSubject
         'bank_account_number'
     ];
 
-    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    public function wallet(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
     }
 
-    public function drivingLicense(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function drivingLicense(): BelongsTo
     {
         return $this->belongsTo(DrivingLicense::class, 'driving_license_id');
     }
 
-    public function addresses(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
     }
 
-    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class);
     }
@@ -121,7 +126,7 @@ class User extends Authenticatable implements JWTSubject
         return [];
     }
 
-    public function cars(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function cars(): HasMany
     {
         return $this->hasMany(Car::class, 'user_id');
     }
