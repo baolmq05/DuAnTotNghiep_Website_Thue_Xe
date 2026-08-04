@@ -11,22 +11,22 @@ use Illuminate\Http\Request;
 class PostController extends Controller
 {
     /**
-     * API Lấy danh sách bài viết
+     * Get list of posts with search and category filters.
      * GET /api/posts
      */
     public function index(Request $request)
     {
         $query = Post::query();
 
-        // Chỉ lấy các bài viết có trạng thái Active (1)
+        // Only retrieve active posts
         $query->where('status', PostStatus::Active);
 
-        // Lọc theo category
+        // Filter by category if category_id is provided
         if ($request->filled('category_id')) {
             $query->where('post_category_id', $request->category_id);
         }
 
-        // Tìm kiếm theo tiêu đề, mô tả ngắn, hoặc nội dung
+        // Search by title, excerpt, or content
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -36,15 +36,15 @@ class PostController extends Controller
             });
         }
 
-        // Eager load category và user (author)
+        // Eager load category and user (author) relations
         $query->with(['category', 'user' => function ($q) {
             $q->select('id', 'name', 'avatar');
         }]);
 
-        // Sắp xếp bài viết mới nhất lên đầu
+        // Order posts by published_at and created_at descending (latest first)
         $query->orderBy('published_at', 'desc')->orderBy('created_at', 'desc');
 
-        // Phân trang
+        // Paginate results
         $limit = $request->input('limit', 6);
         $posts = $query->paginate($limit);
 
@@ -56,26 +56,27 @@ class PostController extends Controller
     }
 
     /**
-     * API Xem chi tiết bài viết
-     * GET /api/posts/{id}
+     * Get details of a single post by slug.
+     * GET /api/posts/{slug}
      */
-    public function show($id)
+    public function show(string $slug)
     {
+        // Find active post by slug with relations
         $post = Post::with(['category', 'user' => function ($q) {
             $q->select('id', 'name', 'avatar');
         }])
-        ->where('id', $id)
-        ->orWhere('slug', $id)
+        ->where('slug', $slug)
+        ->where('status', PostStatus::Active)
         ->first();
 
-        if (!$post || $post->status !== PostStatus::Active) {
+        if (!$post) {
             return response()->json([
                 'success' => false,
                 'message' => 'Không tìm thấy bài viết hoặc bài viết chưa được công khai'
             ], 404);
         }
 
-        // Lấy 3 bài viết liên quan (cùng danh mục, loại trừ bài viết hiện tại, sắp xếp mới nhất)
+        // Retrieve 3 related posts from the same category (excluding current post)
         $relatedPosts = Post::where('status', PostStatus::Active)
             ->where('post_category_id', $post->post_category_id)
             ->where('id', '!=', $post->id)
@@ -84,6 +85,7 @@ class PostController extends Controller
             ->take(3)
             ->get(['id', 'slug', 'title', 'excerpt', 'thumbnail', 'published_at']);
 
+        // Attach related posts to the post object
         $post->setAttribute('related_posts', $relatedPosts);
 
         return response()->json([
@@ -94,12 +96,12 @@ class PostController extends Controller
     }
 
     /**
-     * API Lấy danh sách danh mục hoạt động
+     * Get list of active post categories.
      * GET /api/post-categories
      */
     public function categories()
     {
-        // status = 1 là hoạt động cho post_categories
+        // status = 1 indicates active categories
         $categories = PostCategory::where('status', 1)->get();
 
         return response()->json([

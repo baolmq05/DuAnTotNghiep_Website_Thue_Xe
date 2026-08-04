@@ -13,12 +13,6 @@ class CarCalendarController extends Controller
     public function index(Request $request)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để xem lịch trình xe.'
-            ], 401);
-        }
 
         //  KIỂM TRA XEM NGƯỜI DÙNG CÓ ĐANG LỌC NGÀY HAY KHÔNG
         $isFilteringDate = $request->filled('fromDate') && $request->filled('toDate');

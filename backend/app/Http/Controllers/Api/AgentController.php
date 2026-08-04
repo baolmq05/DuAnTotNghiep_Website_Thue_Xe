@@ -8,22 +8,19 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use App\Ai\Agents\DrivioAgent;
 use Laravel\Ai\Enums\Lab;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
 class AgentController extends Controller
 {
+    /**
+     * Get or create AI conversation for current user.
+     * GET /api/auth/chatbot
+     */
     public function index()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
             $res = AgentConversation::with('messages')
                 ->where('user_id', $user->id)
@@ -40,38 +37,28 @@ class AgentController extends Controller
                     Log::error('Lỗi tự động tạo hội thoại AI: ' . $e->getMessage());
                 }
             }
+
+            return response()->json([
+                'res' => $res
+            ]);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không hợp lệ hoặc token đã hết hạn',
+                'message' => 'Có lỗi xảy ra.',
                 'error' => $e->getMessage()
-            ], 401);
+            ], 500);
         }
-
-        return response()->json([
-            'res' => $res
-        ]);
     }
 
+    /**
+     * Send a message to AI chatbot.
+     * POST /api/auth/chatbot
+     */
     public function store(Request $request)
     {
-        try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
-            $conversationId = $request->input('conversationId');
-            $message = $request->input('message');
-        } catch (Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Yêu cầu không hợp lệ hoặc token đã hết hạn',
-                'error' => $e->getMessage()
-            ], 401);
-        }
+        $user = auth('api')->user();
+        $conversationId = $request->input('conversationId');
+        $message = $request->input('message');
 
         $agent = new DrivioAgent();
         if ($conversationId) {

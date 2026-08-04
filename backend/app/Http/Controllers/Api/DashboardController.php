@@ -12,13 +12,6 @@ class DashboardController extends Controller
     {
         $user = auth('api')->user();
 
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để xem thống kê.'
-            ], 401);
-        }
-
         $carIds = Car::where('user_id', $user->id)->pluck('id');
         $totalTrips = Trip::whereIn('car_id', $carIds)->count();
 

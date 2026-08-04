@@ -24,12 +24,6 @@ class ExtensionTripController extends Controller
     public function requestExtension(RequestExtensionRequest $request, $id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $trip = Trip::with('car')->find($id);
         if (!$trip) {
@@ -140,12 +134,6 @@ class ExtensionTripController extends Controller
     public function approveExtension($id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $trip = Trip::with('car')->find($id);
         if (!$trip) {
@@ -219,12 +207,6 @@ class ExtensionTripController extends Controller
     public function payExtension(Request $request, $id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $trip = Trip::with('car')->find($id);
         if (!$trip) {
@@ -330,12 +312,6 @@ class ExtensionTripController extends Controller
     public function rejectExtension(Request $request, $id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $trip = Trip::with('car')->find($id);
         if (!$trip) {

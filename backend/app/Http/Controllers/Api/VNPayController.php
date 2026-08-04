@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\VNPayService;
 use App\Models\Trip;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Requests\VNPay\CreatePaymentRequest;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class VNPayController extends Controller
 {
@@ -22,108 +23,36 @@ class VNPayController extends Controller
      * Create Payment URL
      * POST /api/vnpay/create-payment
      */
-    public function createPayment(Request $request)
+    public function createPayment(CreatePaymentRequest $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng.'
-                ], 404);
-            }
-
-            $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
-                'amount' => 'required|numeric|min:5000',
-                'trip_id' => 'required_if:payment_type,rental,penalty,extension|integer'
-            ]);
+            $user = auth('api')->user();
 
             $paymentType = $request->input('payment_type');
             $amount = floatval($request->input('amount'));
-            $timestamp = time();
+            $tripId = $request->input('trip_id');
 
-            switch ($paymentType) {
-                case 'rental':
-                    $tripId = $request->input('trip_id');
-                    $trip = Trip::with('car')->find($tripId);
-                    if (!$trip) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy thông tin chuyến đi.'
-                        ], 404);
-                    }
-
-                    $ownerId = $trip->car->user_id ?? 0;
-                    $txnRef = "rental_{$tripId}_{$ownerId}_{$timestamp}";
-                    $orderInfo = "Thanh toan thue xe chuyen di #{$tripId}";
-                    break;
-
-                case 'deposit':
-                    $txnRef = "deposit_{$user->id}_{$timestamp}";
-                    $orderInfo = "Nap tien vao vi tai khoan #{$user->id}";
-                    break;
-
-                case 'penalty':
-                    $tripId = $request->input('trip_id');
-                    $txnRef = "penalty_{$tripId}_{$user->id}_{$timestamp}";
-                    $orderInfo = "Thanh toan tien phat vi pham hop dong chuyen di #{$tripId}";
-                    break;
-
-                case 'extension':
-                    $tripId = $request->input('trip_id');
-                    $trip = Trip::with('car')->find($tripId);
-                    if (!$trip) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy thông tin chuyến đi.'
-                        ], 404);
-                    }
-                    $extension = $trip->extensions()->where('status', 2)->latest()->first();
-                    if (!$extension) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ thanh toán.'
-                        ], 404);
-                    }
-                    $ownerId = $trip->car->user_id ?? 0;
-                    $txnRef = "ext_{$tripId}_{$extension->id}_{$ownerId}_{$timestamp}";
-                    $orderInfo = "Thanh toan phi gia han chuyen di #{$tripId}";
-                    break;
-
-                default:
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Loại thanh toán không hợp lệ.'
-                    ], 400);
+            // Generate reference and metadata using helper
+            $metadata = $this->getPaymentMetadata($paymentType, $tripId, $user);
+            if (!$metadata) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy thông tin chuyến đi hoặc yêu cầu thanh toán không hợp lệ.'
+                ], 404);
             }
 
-            $paymentUrl = $this->vnpayService->createPaymentUrl($txnRef, $amount, $orderInfo);
+            $paymentUrl = $this->vnpayService->createPaymentUrl(
+                $metadata['txnRef'],
+                $amount,
+                $metadata['orderInfo']
+            );
 
             return response()->json([
                 'success' => true,
                 'payment_url' => $paymentUrl
             ]);
 
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            Log::warning("VNPay createPayment - Token Expired: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token has expired'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            Log::warning("VNPay createPayment - Token Invalid: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token is invalid'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            Log::warning("VNPay createPayment - JWT Error: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token is absent or invalid'
-            ], 401);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('VNPay createPayment error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -140,8 +69,6 @@ class VNPayController extends Controller
     {
         try {
             $inputData = $request->all();
-            
-            // Log incoming request data
             Log::info('VNPay IPN Received:', $inputData);
 
             // 1. Verify checksum signature
@@ -167,7 +94,7 @@ class VNPayController extends Controller
                 Log::warning("VNPay IPN indicated failure or pending state for txnRef: {$txnRef}. Code: {$responseCode}");
                 return response()->json([
                     'RspCode' => '00',
-                    'Message' => 'Confirm Success' // VNPay requires 00 Confirm Success to not retry if signature matches
+                    'Message' => 'Confirm Success'
                 ]);
             }
 
@@ -186,7 +113,7 @@ class VNPayController extends Controller
                 'Message' => 'Confirm Success'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('VNPay IPN exception: ' . $e->getMessage());
             return response()->json([
                 'RspCode' => '99',
@@ -221,7 +148,7 @@ class VNPayController extends Controller
             $paymentType = $meta['type'] ?? 'unknown';
 
             if ($responseCode === '00') {
-                // If IPN hasn't finished or wasn't called yet, trigger processing here as backup
+                // Trigger processing as backup if IPN is pending or failed
                 $result = $this->vnpayService->processPayment($txnRef, $amount, $vnpTransactionNo, $paymentType);
                 
                 // Allow successful returns even if duplicate transaction was already processed by IPN
@@ -251,12 +178,62 @@ class VNPayController extends Controller
                 'code' => $responseCode
             ], 400);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('VNPay Verify exception: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi hệ thống khi xác thực thanh toán: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Generate transaction reference and order information based on payment type (Helper).
+     */
+    private function getPaymentMetadata(string $paymentType, $tripId, $user): ?array
+    {
+        $timestamp = time();
+
+        switch ($paymentType) {
+            case 'rental':
+                $trip = Trip::with('car')->find($tripId);
+                if (!$trip) {
+                    return null;
+                }
+                $ownerId = $trip->car->user_id ?? 0;
+                return [
+                    'txnRef' => "rental_{$tripId}_{$ownerId}_{$timestamp}",
+                    'orderInfo' => "Thanh toan thue xe chuyen di #{$tripId}"
+                ];
+
+            case 'deposit':
+                return [
+                    'txnRef' => "deposit_{$user->id}_{$timestamp}",
+                    'orderInfo' => "Nap tien vao vi tai khoan #{$user->id}"
+                ];
+
+            case 'penalty':
+                return [
+                    'txnRef' => "penalty_{$tripId}_{$user->id}_{$timestamp}",
+                    'orderInfo' => "Thanh toan tien phat vi pham hop dong chuyen di #{$tripId}"
+                ];
+
+            case 'extension':
+                $trip = Trip::with('car')->find($tripId);
+                if (!$trip) {
+                    return null;
+                }
+                $extension = $trip->extensions()->where('status', 2)->latest()->first();
+                if (!$extension) {
+                    return null;
+                }
+                $ownerId = $trip->car->user_id ?? 0;
+                return [
+                    'txnRef' => "ext_{$tripId}_{$extension->id}_{$ownerId}_{$timestamp}",
+                    'orderInfo' => "Thanh toan phi gia han chuyen di #{$tripId}"
+                ];
+        }
+
+        return null;
     }
 }

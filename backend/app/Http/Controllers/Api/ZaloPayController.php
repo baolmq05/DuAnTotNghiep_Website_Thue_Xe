@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\ZaloPayService;
 use App\Models\Trip;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use App\Http\Requests\ZaloPay\CreatePaymentRequest;
 use Illuminate\Support\Facades\Log;
+use Exception;
 
 class ZaloPayController extends Controller
 {
@@ -19,135 +20,32 @@ class ZaloPayController extends Controller
     }
 
     /**
+     * Create payment URL for ZaloPay order
      * POST /api/auth/zalopay/create-payment
      */
-    public function createPayment(Request $request)
+    public function createPayment(CreatePaymentRequest $request)
     {
         try {
+            $user = auth('api')->user();
 
-            $user = JWTAuth::parseToken()->authenticate();
+            $paymentType = $request->input('payment_type');
+            $amount = floatval($request->input('amount'));
+            $tripId = $request->input('trip_id');
 
-            if (!$user) {
+            // Generate metadata using helper
+            $metadata = $this->getPaymentMetadata($paymentType, $tripId, $user);
+            if (!$metadata) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Không tìm thấy người dùng.'
+                    'message' => 'Không tìm thấy chuyến đi hoặc yêu cầu thanh toán không hợp lệ.'
                 ], 404);
             }
 
-            $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
-                'amount' => 'required|numeric|min:1000',
-                'trip_id' => 'required_if:payment_type,rental,penalty,extension'
-            ]);
-
-            $paymentType = $request->payment_type;
-            $amount = floatval($request->amount);
-
-            switch ($paymentType) {
-
-                case 'rental':
-
-                    $trip = Trip::with('car')->find($request->trip_id);
-
-                    if (!$trip) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy chuyến đi.'
-                        ], 404);
-                    }
-
-                    $ownerId = $trip->car->user_id;
-                    $appTransId =
-                        date('ymd') .
-                        "_rental_" .
-                        $trip->id .
-                        "_" .
-                        $ownerId .
-                        "_" .
-                        time();
-                    $description = "Thanh toán thuê xe #{$trip->id}";
-
-                    break;
-
-                case 'deposit':
-
-                    $appTransId =
-                        date('ymd') .
-                        "_deposit_" .
-                        $user->id .
-                        "_" .
-                        time();
-
-                    $description = "Nạp ví tài khoản #{$user->id}";
-
-                    break;
-
-                case 'penalty':
-                    $trip = Trip::with('car')->find($request->trip_id);
-
-                    if (!$trip) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy chuyến đi.'
-                        ], 404);
-                    }
-                    $appTransId =
-                        date('ymd') .
-                        "_penalty_" .
-                        $trip->id .
-                        "_" .
-                        $user->id .
-                        "_" .
-                        time();
-                    $description = "Thanh toán tiền phạt #{$request->trip_id}";
-
-                    break;
-
-                case 'extension':
-                    $trip = Trip::with('car')->find($request->trip_id);
-
-                    if (!$trip) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy chuyến đi.'
-                        ], 404);
-                    }
-                    $extension = $trip->extensions()->where('status', 2)->latest()->first();
-                    if (!$extension) {
-                        return response()->json([
-                            'success' => false,
-                            'message' => 'Không tìm thấy yêu cầu gia hạn đang chờ thanh toán.'
-                        ], 404);
-                    }
-                    $ownerId = $trip->car->user_id ?? 0;
-                    $appTransId =
-                        date('ymd') .
-                        "_ext_" .
-                        $trip->id .
-                        "_" .
-                        $extension->id .
-                        "_" .
-                        $ownerId .
-                        "_" .
-                        time();
-                    $description = "Thanh toán phí gia hạn chuyến đi #{$trip->id}";
-
-                    break;
-
-                default:
-
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Loại thanh toán không hợp lệ.'
-                    ], 400);
-
-            }
-
             $result = $this->zalopayService->createPaymentUrl(
-                $appTransId,
+                $metadata['appTransId'],
                 $amount,
                 $user->id,
-                $description
+                $metadata['description']
             );
 
             return response()->json([
@@ -156,70 +54,41 @@ class ZaloPayController extends Controller
                 'zalopay' => $result
             ]);
 
-        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
-            Log::warning("ZaloPay createPayment - Token Expired: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token has expired'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
-            Log::warning("ZaloPay createPayment - Token Invalid: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token is invalid'
-            ], 401);
-        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
-            Log::warning("ZaloPay createPayment - JWT Error: " . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Token is absent or invalid'
-            ], 401);
-        } catch (\Exception $e) {
-
-            Log::error("ZaloPay createPayment : " . $e->getMessage());
-
+        } catch (Exception $e) {
+            Log::error("ZaloPay createPayment: " . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
-
         }
-
     }
 
     /**
-     * Callback từ ZaloPay
+     * ZaloPay Webhook Callback
+     * POST /api/zalopay/callback
      */
-
     public function callback(Request $request)
     {
         try {
-
             $result = $this->zalopayService->verifyCallback($request);
-
             return response()->json($result);
-
-        } catch (\Exception $e) {
-
-            Log::error("ZaloPay Callback : " . $e->getMessage());
-
+        } catch (Exception $e) {
+            Log::error("ZaloPay Callback: " . $e->getMessage());
             return response()->json([
                 'return_code' => 0,
                 'return_message' => $e->getMessage()
             ]);
-
         }
-
     }
 
     /**
-     * Frontend Verify
+     * Frontend redirect verification page check
+     * GET /api/zalopay/verify
      */
-
     public function verify(Request $request)
     {
         try {
-            $appTransId = $request->app_trans_id;
+            $appTransId = $request->input('app_trans_id');
             if (!$appTransId) {
                 return response()->json([
                     'success' => false,
@@ -229,7 +98,7 @@ class ZaloPayController extends Controller
 
             $result = $this->zalopayService->queryTransaction($appTransId);
 
-            // ZaloPay return_code: 1 - Thành công, 2 - Thất bại, 3 - Đang xử lý
+            // ZaloPay return_code: 1 - Success, 2 - Failed, 3 - Processing
             $returnCode = $result['return_code'] ?? -1;
 
             if ($returnCode == 1) {
@@ -238,7 +107,7 @@ class ZaloPayController extends Controller
                 $meta = $this->zalopayService->parseAppTransId($appTransId);
                 $paymentType = $meta['type'] ?? 'unknown';
 
-                // Gọi processPayment dự phòng nếu callback bị chậm trễ
+                // Backup processing if callback delay occurs
                 $processRes = $this->zalopayService->processPayment(
                     $appTransId,
                     $amount,
@@ -276,7 +145,7 @@ class ZaloPayController extends Controller
                 ], 400);
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('ZaloPay Verify error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -286,6 +155,7 @@ class ZaloPayController extends Controller
     }
 
     /**
+     * Get list of supported banks from ZaloPay
      * GET /api/zalopay/banks
      */
     public function getBanks(Request $request)
@@ -306,7 +176,7 @@ class ZaloPayController extends Controller
                 'message' => $result['returnmessage'] ?? $result['return_message'] ?? 'Không thể lấy danh sách ngân hàng.'
             ], 400);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error("ZaloPay getBanks error: " . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -315,4 +185,58 @@ class ZaloPayController extends Controller
         }
     }
 
+    /**
+     * Generate ZaloPay app transaction ID and description metadata (Helper).
+     */
+    private function getPaymentMetadata(string $paymentType, $tripId, $user): ?array
+    {
+        $timestamp = time();
+        $datePrefix = date('ymd');
+
+        switch ($paymentType) {
+            case 'rental':
+                $trip = Trip::with('car')->find($tripId);
+                if (!$trip) {
+                    return null;
+                }
+                $ownerId = $trip->car->user_id ?? 0;
+                return [
+                    'appTransId'  => "{$datePrefix}_rental_{$trip->id}_{$ownerId}_{$timestamp}",
+                    'description' => "Thanh toán thuê xe #{$trip->id}"
+                ];
+
+            case 'deposit':
+                return [
+                    'appTransId'  => "{$datePrefix}_deposit_{$user->id}_{$timestamp}",
+                    'description' => "Nạp ví tài khoản #{$user->id}"
+                ];
+
+            case 'penalty':
+                $trip = Trip::with('car')->find($tripId);
+                if (!$trip) {
+                    return null;
+                }
+                return [
+                    'appTransId'  => "{$datePrefix}_penalty_{$trip->id}_{$user->id}_{$timestamp}",
+                    'description' => "Thanh toán tiền phạt #{$tripId}"
+                ];
+
+            case 'extension':
+                $trip = Trip::with('car')->find($tripId);
+                if (!$trip) {
+                    return null;
+                }
+                $extension = $trip->extensions()->where('status', 2)->latest()->first();
+                if (!$extension) {
+                    return null;
+                }
+                $ownerId = $trip->car->user_id ?? 0;
+                return [
+                    'appTransId'  => "{$datePrefix}_ext_{$trip->id}_{$extension->id}_{$ownerId}_{$timestamp}",
+                    'description' => "Thanh toán phí gia hạn chuyến đi #{$trip->id}"
+                ];
+        }
+
+        return null;
+    }
 }

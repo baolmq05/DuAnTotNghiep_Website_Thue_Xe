@@ -7,8 +7,10 @@ use App\Services\SeePayService;
 use App\Models\Trip;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
-use Tymon\JWTAuth\Facades\JWTAuth;
 use Illuminate\Support\Facades\Log;
+use App\Http\Requests\SeePay\GetPaymentInfoRequest;
+use App\Http\Requests\SeePay\CheckStatusRequest;
+use Exception;
 
 class SeePayController extends Controller
 {
@@ -68,7 +70,7 @@ class SeePayController extends Controller
                 'message' => $result['message']
             ], 400);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('SeePay Webhook Error: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -81,21 +83,10 @@ class SeePayController extends Controller
      * Get Payment configuration and generated description
      * GET /api/sepay/payment-info
      */
-    public function getPaymentInfo(Request $request)
+    public function getPaymentInfo(GetPaymentInfoRequest $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized'
-                ], 401);
-            }
-
-            $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
-                'trip_id' => 'required_if:payment_type,rental,penalty,extension|integer'
-            ]);
+            $user = auth('api')->user();
 
             $paymentType = $request->input('payment_type');
             $tripId = $request->input('trip_id');
@@ -126,7 +117,7 @@ class SeePayController extends Controller
                 'description' => $description
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -138,22 +129,10 @@ class SeePayController extends Controller
      * Check if payment has been received (Polling)
      * GET /api/sepay/check-status
      */
-    public function checkStatus(Request $request)
+    public function checkStatus(CheckStatusRequest $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Unauthorized'
-                ], 401);
-            }
-
-            $request->validate([
-                'payment_type' => 'required|string|in:rental,deposit,penalty,extension',
-                'id' => 'required|integer',
-                'amount' => 'required|numeric'
-            ]);
+            $user = auth('api')->user();
 
             $paymentType = $request->input('payment_type');
             $id = intval($request->input('id'));
@@ -205,7 +184,7 @@ class SeePayController extends Controller
                 'paid' => $isPaid
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

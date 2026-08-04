@@ -6,14 +6,21 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Review;
 use App\Models\User;
-use Illuminate\Support\Facades\DB; // Thêm Facade để query DB trực tiếp nếu cần
+use App\Models\Car;
+use App\Enum\TripStatus;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class ReviewController extends Controller
 {
+    /**
+     * Get profile details and reviews for a user (Owner or Renter).
+     * GET /api/profile/reviews/{targetId}
+     */
     public function getProfileReviews(Request $request, $targetId)
     {
         try {
-            $isOwner = $request->query('isOwner') === 'true' ? 1 : 0;
+            // Fetch user with preloaded cars and their relations
             $user = User::with([
                 'cars.images', 
                 'cars.carLocation', 
@@ -28,131 +35,204 @@ class ReviewController extends Controller
                 ], 404);
             }
 
-            // Bốc danh sách nhận xét profile công khai
-            $reviews = Review::with(['reviewer:id,name,avatar'])
-                ->where('target_id', $targetId)
-                ->where('review_type', $isOwner)
-                ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function ($review) {
-                    return [
-                        'id' => $review->id,
-                        'reviewer_id' => $review->reviewer_id,
-                        'reviewer_name' => $review->reviewer->name ?? 'Người dùng ẩn danh',
-                        'reviewer_avatar' => $review->reviewer->avatar ? url($review->reviewer->avatar) : null,
-                        'rating' => (float) $review->rating,
-                        'comment' => $review->comment,
-                        'created_at' => $review->created_at->format('d/m/Y'),
-                    ];
-                });
+            $isOwner = $request->query('isOwner') === 'true';
 
-            // Các biến tích lũy tổng cho profile chủ xe
-            $totalOwnerTrips = 0;
-            $totalRatingSum = 0;
-            $carCountWithRating = 0;
+            // 1. Get and format reviews list
+            $reviews = $this->getFormattedReviews($targetId, $isOwner);
 
-            // Xử lý map danh sách xe (Chỉ có ý nghĩa nếu là Chủ xe)
-            $carsData = $user->cars ? $user->cars->map(function ($car) use ($user, &$totalOwnerTrips, &$totalRatingSum, &$carCountWithRating) {
-                $carImages = [];
-                if ($car->images && $car->images->isNotEmpty()) {
-                    foreach ($car->images as $img) {
-                        $carImages[] = [
-                            'id' => $img->id,
-                            'car_id' => $img->car_id,
-                            'image_url' => $img->image_url ? url($img->image_url) : (isset($img->image) ? url($img->image) : ''),
-                            'is_thumbnail' => $img->is_thumbnail ?? 0
-                        ];
-                    }
-                } else if (!empty($car->image)) {
-                    $carImages[] = [
-                        'id' => 0,
-                        'car_id' => $car->id,
-                        'image_url' => url($car->image),
-                        'is_thumbnail' => 1
-                    ];
-                }
+            // 2. Get and format cars list (Only applicable for owner profiles)
+            $carsData = $isOwner ? $this->getFormattedCars($user->cars, $user) : [];
 
-                $singleImage = !empty($carImages) ? $carImages[0]['image_url'] : '';
-
-                // Đếm số chuyến đi của xe (Trạng thái 4 là Complete)
-                $completedTripsCount = $car->trips ? $car->trips->where('status', 4)->count() : 0;
-                $totalOwnerTrips += $completedTripsCount;
-
-                $carLoc = $car->carLocation;
-                $addressText = $carLoc ? ($carLoc->address ?? $carLoc->location ?? 'Chưa xác định') : 'Chưa xác định';
-                $locationText = $carLoc ? ($carLoc->location ?? '') : '';
-
-                $carReviews = $car->reviews ? $car->reviews->where('review_type', 1) : collect();
-                $finalCarRating = $carReviews->isNotEmpty() ? (float) round($carReviews->avg('rating'), 1) : 0.0;
-
-                $totalRatingSum += $finalCarRating;
-                $carCountWithRating++;
-
-                return [
-                    'id' => $car->id,
-                    'name' => $car->car_name ?? $car->name,
-                    'license_plate' => $car->license_plate ?? '',
-                    'fuel_consumption' => $car->fuel_consumption ?? 0,
-                    'unit_price' => $car->price_per_day ?? $car->unit_price ?? 0,
-                    'discount_value' => $car->discount_value ?? 0,
-                    'description' => $car->description ?? '',
-                    'rental_terms' => $car->rental_terms ?? '',
-                    'seat_count' => $car->seats ?? $car->seat_count ?? 4,
-                    'manufacture_year' => $car->manufacture_year ?? '',
-                    'fuel_type' => $car->fuel_type,
-                    'transmission' => $car->transmission,
-                    'status' => $car->status ?? 1,
-                    'user_id' => $car->user_id ?? 0,
-                    'reviews_avg_rating' => $finalCarRating,
-                    'trips_count' => $completedTripsCount,
-                    'image' => $singleImage,
-                    'images' => $carImages,
-                    'features' => [],
-                    'car_location' => [
-                        'id' => $carLoc->id ?? 0,
-                        'location' => $locationText,
-                        'address' => $addressText,
-                    ],
-                    'owner' => [
-                        'id' => $user->id,
-                        'name' => $user->name,
-                        'avatar' => $user->avatar ? url($user->avatar) : null,
-                    ],
-                ];
-            })->toArray() : [];
-
-            // 
-            if ($isOwner === 1) {
-                $averageProfileRating = $carCountWithRating > 0 ? round($totalRatingSum / $carCountWithRating, 1) : 0.0;
-                $finalTripsCount = $totalOwnerTrips;
-            } else {
-                $averageProfileRating = $reviews->isNotEmpty() ? round($reviews->avg('rating'), 1) : 0.0;
-                $finalTripsCount = DB::table('trips')
-                    ->where('user_id', $targetId)
-                    ->where('status', 4) // Hoàn thành
-                    ->count();
-            }
+            // 3. Compute profile statistics
+            $averageProfileRating = $this->calculateAverageRating($user, $reviews, $isOwner);
+            $tripsCount = $this->calculateTripsCount($targetId, $user, $isOwner);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'avatar' => $user->avatar ? url($user->avatar) : null,
-                    'joinDate' => $user->created_at ? $user->created_at->format('m/Y') : date('m/Y'),
-                    'rating' => (float) $averageProfileRating,
-                    'tripsCount' => $finalTripsCount,
-                    'trips_count' => $finalTripsCount,
-                    'cars' => $carsData,
-                    'reviews' => $reviews
+                    'id'          => $user->id,
+                    'name'        => $user->name,
+                    'avatar'      => $user->avatar ? url($user->avatar) : null,
+                    'joinDate'    => $user->created_at ? $user->created_at->format('m/Y') : date('m/Y'),
+                    'rating'      => (float) $averageProfileRating,
+                    'tripsCount'  => $tripsCount,
+                    'trips_count' => $tripsCount,
+                    'cars'        => $carsData,
+                    'reviews'     => $reviews
                 ]
             ], 200);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi hệ thống: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get and format the profile reviews list.
+     */
+    private function getFormattedReviews($targetId, bool $isOwner)
+    {
+        $reviewType = $isOwner ? 1 : 0;
+
+        return Review::with(['reviewer:id,name,avatar'])
+            ->where('target_id', $targetId)
+            ->where('review_type', $reviewType)
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($review) {
+                return [
+                    'id'              => $review->id,
+                    'reviewer_id'     => $review->reviewer_id,
+                    'reviewer_name'   => $review->reviewer->name ?? 'Người dùng ẩn danh',
+                    'reviewer_avatar' => $review->reviewer->avatar ? url($review->reviewer->avatar) : null,
+                    'rating'          => (float) $review->rating,
+                    'comment'         => $review->comment,
+                    'created_at'      => $review->created_at->format('d/m/Y'),
+                ];
+            });
+    }
+
+    /**
+     * Get and format the list of owner's cars.
+     */
+    private function getFormattedCars($cars, User $user): array
+    {
+        if (!$cars) {
+            return [];
+        }
+
+        return $cars->map(function ($car) use ($user) {
+            $imageData = $this->formatCarImages($car);
+            
+            // Count completed trips (Status 4 = Complete)
+            $completedTripsCount = $car->trips ? $car->trips->where('status', TripStatus::Complete->value)->count() : 0;
+
+            $carLoc = $car->carLocation;
+            $addressText = $carLoc ? ($carLoc->address ?? $carLoc->location ?? 'Chưa xác định') : 'Chưa xác định';
+            $locationText = $carLoc ? ($carLoc->location ?? '') : '';
+
+            // Calculate car's average rating (review_type = 1)
+            $carReviews = $car->reviews ? $car->reviews->where('review_type', 1) : collect();
+            $finalCarRating = $carReviews->isNotEmpty() ? (float) round($carReviews->avg('rating'), 1) : 0.0;
+
+            return [
+                'id'                 => $car->id,
+                'name'               => $car->car_name ?? $car->name,
+                'license_plate'      => $car->license_plate ?? '',
+                'fuel_consumption'   => $car->fuel_consumption ?? 0,
+                'unit_price'         => $car->price_per_day ?? $car->unit_price ?? 0,
+                'discount_value'     => $car->discount_value ?? 0,
+                'description'        => $car->description ?? '',
+                'rental_terms'       => $car->rental_terms ?? '',
+                'seat_count'         => $car->seats ?? $car->seat_count ?? 4,
+                'manufacture_year'   => $car->manufacture_year ?? '',
+                'fuel_type'          => $car->fuel_type,
+                'transmission'       => $car->transmission,
+                'status'             => $car->status ?? 1,
+                'user_id'            => $car->user_id ?? 0,
+                'reviews_avg_rating' => $finalCarRating,
+                'trips_count'        => $completedTripsCount,
+                'image'              => $imageData['singleImage'],
+                'images'             => $imageData['carImages'],
+                'features'           => [],
+                'car_location'       => [
+                    'id'       => $carLoc->id ?? 0,
+                    'location' => $locationText,
+                    'address'  => $addressText,
+                ],
+                'owner'              => [
+                    'id'     => $user->id,
+                    'name'   => $user->name,
+                    'avatar' => $user->avatar ? url($user->avatar) : null,
+                ],
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Format and generate car images urls list.
+     */
+    private function formatCarImages(Car $car): array
+    {
+        $carImages = [];
+
+        if ($car->images && $car->images->isNotEmpty()) {
+            foreach ($car->images as $img) {
+                $carImages[] = [
+                    'id'           => $img->id,
+                    'car_id'       => $img->car_id,
+                    'image_url'    => $img->image_url ? url($img->image_url) : (isset($img->image) ? url($img->image) : ''),
+                    'is_thumbnail' => $img->is_thumbnail ?? 0
+                ];
+            }
+        } elseif (!empty($car->image)) {
+            $carImages[] = [
+                'id'           => 0,
+                'car_id'       => $car->id,
+                'image_url'    => url($car->image),
+                'is_thumbnail' => 1
+            ];
+        }
+
+        $singleImage = !empty($carImages) ? $carImages[0]['image_url'] : '';
+
+        return [
+            'carImages'   => $carImages,
+            'singleImage' => $singleImage
+        ];
+    }
+
+    /**
+     * Calculate profile average rating (Helper).
+     */
+    private function calculateAverageRating(User $user, $reviews, bool $isOwner): float
+    {
+        if ($isOwner) {
+            $cars = $user->cars;
+            if (!$cars || $cars->isEmpty()) {
+                return 0.0;
+            }
+
+            $totalRatingSum = 0;
+            $carCount = 0;
+
+            foreach ($cars as $car) {
+                $carReviews = $car->reviews ? $car->reviews->where('review_type', 1) : collect();
+                $finalCarRating = $carReviews->isNotEmpty() ? (float) round($carReviews->avg('rating'), 1) : 0.0;
+                $totalRatingSum += $finalCarRating;
+                $carCount++;
+            }
+
+            return $carCount > 0 ? round($totalRatingSum / $carCount, 1) : 0.0;
+        }
+
+        return $reviews->isNotEmpty() ? (float) round($reviews->avg('rating'), 1) : 0.0;
+    }
+
+    /**
+     * Calculate total trips count (Helper).
+     */
+    private function calculateTripsCount($targetId, User $user, bool $isOwner): int
+    {
+        if ($isOwner) {
+            $cars = $user->cars;
+            if (!$cars) {
+                return 0;
+            }
+
+            $totalOwnerTrips = 0;
+            foreach ($cars as $car) {
+                $totalOwnerTrips += $car->trips ? $car->trips->where('status', TripStatus::Complete->value)->count() : 0;
+            }
+            return $totalOwnerTrips;
+        }
+
+        return DB::table('trips')
+            ->where('user_id', $targetId)
+            ->where('status', TripStatus::Complete->value) // Completed trips
+            ->count();
     }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->text('title')->comment('Tiêu đề bài viết');
-            $table->text('slug')->comment('Slug bài viết');
+            $table->string('slug')->unique()->comment('Slug bài viết');
             $table->text('excerpt')->comment('Mô tả ngắn bài viết');
             $table->longText('content')->comment('Nội dung bài viết');
             $table->string('thumbnail')->nullable()->comment('Ảnh đại diện bài viết');

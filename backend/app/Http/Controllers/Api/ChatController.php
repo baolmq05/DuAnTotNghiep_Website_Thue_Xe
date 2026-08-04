@@ -6,26 +6,21 @@ use App\Models\ChatConversation;
 use App\Models\ChatMessage;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Tymon\JWTAuth\Facades\JWTAuth;
-use Illuminate\Support\Facades\Http;
-use Illuminate\Validation\ValidationException;
 use Exception;
 use App\Events\MessageSent;
+use App\Services\CloudinaryService;
+use App\Http\Requests\Chat\StoreMessageRequest;
 
 class ChatController extends Controller
 {
+    /**
+     * Get all conversations for current user.
+     * GET /api/conversations
+     */
     public function index(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
-
+            $user = auth('api')->user();
             $userId = $user->id;
 
             // Fetch all conversations where the user is either the renter (trip user) or the owner of the car
@@ -99,6 +94,10 @@ class ChatController extends Controller
         }
     }
 
+    /**
+     * Get messages of a conversation.
+     * GET /api/messages/{id}
+     */
     public function getMessages(string $id)
     {
         try {
@@ -117,17 +116,13 @@ class ChatController extends Controller
         }
     }
 
+    /**
+     * Create or get a conversation for a trip.
+     * POST /api/conversations
+     */
     public function storeConversation(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
-
             $conversation = ChatConversation::where('trip_id', $request->trip_id)->first();
             if (!$conversation) {
                 $conversation = ChatConversation::create([
@@ -149,50 +144,18 @@ class ChatController extends Controller
         }
     }
 
-    public function storeMessage(Request $request)
+    /**
+     * Send a new message.
+     * POST /api/messages
+     */
+    public function storeMessage(StoreMessageRequest $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
-
-            $request->validate([
-                'conversation_id' => 'required|exists:chat_conversations,id',
-                'type' => 'required|in:text,image',
-                'text' => 'required_if:type,text|nullable|string',
-                'image' => 'required_if:type,image|nullable|image|max:10240', // Tối đa 10MB
-            ]);
-
+            $user = auth('api')->user();
             $messageText = $request->input('text');
 
             if ($request->input('type') === 'image' && $request->hasFile('image')) {
-                $file = $request->file('image');
-                $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
-                $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
-
-                // Upload Image To Cloudinary
-                $response = Http::attach(
-                    'file',
-                    file_get_contents($file->getRealPath()),
-                    $file->getClientOriginalName()
-                )->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
-                    'upload_preset' => $uploadPreset,
-                    'folder' => 'chats',
-                ]);
-
-                if ($response->successful()) {
-                    $messageText = $response->json('secure_url');
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Không thể upload ảnh lên Cloudinary.',
-                        'error' => $response->json()
-                    ], 500);
-                }
+                $messageText = CloudinaryService::upload($request->file('image'), 'chats');
             }
 
             $message = ChatMessage::create([
@@ -210,12 +173,6 @@ class ChatController extends Controller
                 'success' => true,
                 'message' => $message
             ], 200);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu tin nhắn không hợp lệ',
-                'errors' => $e->errors()
-            ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'success' => false,
@@ -225,16 +182,14 @@ class ChatController extends Controller
         }
     }
 
+    /**
+     * Mark messages in a conversation as read.
+     * PUT /api/conversations/{id}/read
+     */
     public function markAsRead(string $id)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
             // MarkAsRead
             ChatMessage::where('conversation_id', $id)

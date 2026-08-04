@@ -3,6 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\UpdateProfileRequest;
+use App\Http\Requests\Auth\ChangePasswordRequest;
+use App\Http\Requests\Auth\ForgotPasswordRequest;
+use App\Http\Requests\Auth\ResetPasswordRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -36,23 +41,6 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email',
-            'password' => 'required|string|max:16',
-        ], [
-            'email.required' => 'Email không được để trống.',
-            'email.email' => 'Email không đúng định dạng.',
-            'password.required' => 'Mật khẩu không được để trống.',
-            'password.max' => 'Mật khẩu tối đa là 16 ký tự.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $credentials = $request->only('email', 'password');
 
         if (!$token = auth('api')->attempt($credentials)) {
@@ -70,42 +58,18 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function register(Request $request)
+    public function register(RegisterRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6|max:16',
-            'confirm_password' => 'required|same:password',
-        ], [
-            'name.required' => 'Họ và tên không được để trống',
-            'email.required' => 'Email không được để trống',
-            'email.email' => 'Email không đúng định dạng',
-            'email.unique' => 'Email này đã được sử dụng',
-            'password.required' => 'Mật khẩu không được để trống',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự',
-            'password.max' => 'Mật khẩu tối đa là 16 ký tự',
-            'confirm_password.required' => 'Vui lòng xác nhận lại mật khẩu',
-            'confirm_password.same' => 'Mật khẩu xác nhận không đúng',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         try {
             $user = User::create([
                 'name' => $request->input('name'),
                 'email' => $request->input('email'),
                 'password' => bcrypt($request->input('password')),
-                'role_id' => 2, // Mặc định là Khách hàng (User)
-                'status' => 1,  // Hoạt động
+                'role_id' => 2, // Default (User)
+                'status' => 1,  // Default (Active)
             ]);
 
-            // Tự động đăng nhập sau khi đăng ký thành công
+            // Auto login after successful registration
             $token = auth('api')->login($user);
 
             return response()->json([
@@ -133,43 +97,9 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateProfile(Request $request)
+    public function updateProfile(UpdateProfileRequest $request)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'nullable|string|max:15|unique:users,phone,' . $user->id,
-            'gender' => 'nullable|integer|in:0,1,2',
-            'DOB' => 'nullable|date',
-            'avatar' => 'nullable|string|max:2048',
-            'bank_name' => 'nullable|string|max:255',
-            'bank_account_number' => 'nullable|string|max:255',
-        ], [
-            'name.required' => 'Họ và tên không được để trống.',
-            'phone.unique' => 'Số điện thoại này đã được sử dụng.',
-            'gender.in' => 'Giới tính không hợp lệ.',
-            'DOB.date' => 'Ngày sinh không đúng định dạng ngày tháng.',
-            'avatar.max' => 'Đường dẫn ảnh đại diện quá dài.',
-        ]);
-
-        if ($validator->fails()) {
-            Log::info('Validation failed in updateProfile: ', [
-                'request' => $request->all(),
-                'errors' => $validator->errors()->toArray()
-            ]);
-            return response()->json([
-                'success' => false,
-                'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         $data = $request->only('name', 'phone', 'gender', 'DOB', 'avatar', 'bank_name', 'bank_account_number');
         if (!empty($data['DOB'])) {
@@ -225,38 +155,11 @@ class AuthController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(Request $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
-        }
 
-        $validator = Validator::make($request->all(), [
-            'current_password' => 'required|string',
-            'new_password' => 'required|string|min:6|max:16|different:current_password',
-            'new_password_confirmation' => 'required|string|same:new_password',
-        ], [
-            'current_password.required' => 'Mật khẩu hiện tại không được để trống.',
-            'new_password.required' => 'Mật khẩu mới không được để trống.',
-            'new_password.min' => 'Mật khẩu mới phải có ít nhất 6 ký tự.',
-            'new_password.max' => 'Mật khẩu mới tối đa là 16 ký tự.',
-            'new_password.different' => 'Mật khẩu mới phải khác mật khẩu hiện tại.',
-            'new_password_confirmation.required' => 'Xác nhận mật khẩu mới không được để trống.',
-            'new_password_confirmation.same' => 'Mật khẩu xác nhận không khớp.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        // Kiểm tra mật khẩu hiện tại
+        // Check current pass
         if (!Hash::check($request->input('current_password'), $user->password)) {
             return response()->json([
                 'success' => false,
@@ -264,7 +167,7 @@ class AuthController extends Controller
             ], 400);
         }
 
-        // Cập nhật mật khẩu mới
+        // Update new password
         $user->update([
             'password' => bcrypt($request->input('new_password'))
         ]);
@@ -273,139 +176,6 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Đổi mật khẩu thành công.'
         ]);
-    }
-
-    /**
-     * Submit or update the driving license for verification.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function submitDrivingLicense(Request $request)
-    {
-        $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Unauthorized'
-            ], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'driving_license_number' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('driving_licenses', 'driving_license_number')->ignore($user->driving_license_id)
-            ],
-            'full_name' => 'required|string|max:255',
-            'DOB' => 'required|date',
-            'image' => [
-                $user->driving_license_id ? 'nullable' : 'required',
-                function ($attribute, $value, $fail) use ($request) {
-                    if ($request->hasFile('image')) {
-                        $file = $request->file('image');
-                        $extension = strtolower($file->getClientOriginalExtension());
-                        if (!in_array($extension, ['jpeg', 'png', 'jpg'])) {
-                            $fail('Định dạng ảnh phải là jpeg, png hoặc jpg.');
-                        }
-                        if ($file->getSize() > 5 * 1024 * 1024) {
-                            $fail('Kích thước ảnh tối đa là 5MB.');
-                        }
-                    } else {
-                        if (is_string($value) && !filter_var($value, FILTER_VALIDATE_URL)) {
-                            $fail('Đường dẫn ảnh bằng lái xe không hợp lệ.');
-                        }
-                    }
-                }
-            ],
-        ], [
-            'driving_license_number.required' => 'Số GPLX không được để trống.',
-            'driving_license_number.unique' => 'Số GPLX này đã tồn tại trên hệ thống.',
-            'full_name.required' => 'Họ và tên không được để trống.',
-            'DOB.required' => 'Ngày sinh không được để trống.',
-            'DOB.date' => 'Ngày sinh không đúng định dạng ngày tháng.',
-            'image.required' => 'Ảnh bằng lái xe không được để trống.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => $validator->errors()->first(),
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
-        try {
-            DB::beginTransaction();
-
-            $drivingLicenseData = [
-                'driving_license_number' => $request->input('driving_license_number'),
-                'full_name' => $request->input('full_name'),
-                'DOB' => Carbon::parse($request->input('DOB'))->format('Y-m-d'),
-                'status' => 0, // Chờ duyệt
-            ];
-
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
-                $uploadPreset = env('CLOUDINARY_UPLOAD_PRESET', 'Drivio');
-
-                // Bắn trực tiếp lên API Cloudinary
-                $response = Http::attach(
-                    'file',
-                    file_get_contents($file->getRealPath()),
-                    $file->getClientOriginalName()
-                )->post("https://api.cloudinary.com/v1_1/{$cloudName}/image/upload", [
-                            'upload_preset' => $uploadPreset,
-                            'folder' => 'licenses',
-                        ]);
-
-                if ($response->successful()) {
-                    $drivingLicenseData['image'] = $response->json('secure_url');
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Không thể upload ảnh lên Cloudinary.',
-                        'error' => $response->json()
-                    ], 500);
-                }
-            } elseif ($request->filled('image')) {
-                // Web gửi chuỗi URL qua thì lấy luôn chuỗi lưu vào DB
-                $drivingLicenseData['image'] = $request->input('image');
-            }
-
-            if ($user->driving_license_id) {
-                // Update existing
-                $drivingLicense = \App\Models\DrivingLicense::findOrFail($user->driving_license_id);
-                $drivingLicense->update($drivingLicenseData);
-            } else {
-                // Create new
-                $drivingLicense = \App\Models\DrivingLicense::create($drivingLicenseData);
-                $user->update([
-                    'driving_license_id' => $drivingLicense->id
-                ]);
-            }
-
-            DB::commit();
-
-            // Load the updated relationship
-            $user->load('drivingLicense');
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Gửi yêu cầu duyệt bằng lái xe thành công.',
-                'user' => $user
-            ]);
-
-        } catch (Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'success' => false,
-                'message' => 'Đã xảy ra lỗi khi gửi duyệt bằng lái.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
     }
 
     /**
@@ -428,23 +198,8 @@ class AuthController extends Controller
     /**
      * Send OTP for password reset.
      */
-    public function forgotPassword(Request $request)
+    public function forgotPassword(ForgotPasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
-        ], [
-            'email.required' => 'Email không được để trống.',
-            'email.email' => 'Email không đúng định dạng.',
-            'email.exists' => 'Email này không tồn tại trong hệ thống.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $email = $request->input('email');
         $otp = mt_rand(100000, 999999);
 
@@ -477,33 +232,8 @@ class AuthController extends Controller
     /**
      * Reset password using OTP.
      */
-    public function resetPassword(Request $request)
+    public function resetPassword(ResetPasswordRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|email|exists:users,email',
-            'token' => 'required|string|size:6',
-            'password' => 'required|string|min:6|max:16',
-            'confirm_password' => 'required|same:password',
-        ], [
-            'email.required' => 'Email không được để trống.',
-            'email.email' => 'Email không đúng định dạng.',
-            'email.exists' => 'Email này không tồn tại trong hệ thống.',
-            'token.required' => 'Mã OTP không được để trống.',
-            'token.size' => 'Mã OTP phải gồm 6 chữ số.',
-            'password.required' => 'Mật khẩu mới không được để trống.',
-            'password.min' => 'Mật khẩu phải có ít nhất 6 ký tự.',
-            'password.max' => 'Mật khẩu tối đa là 16 ký tự.',
-            'confirm_password.required' => 'Vui lòng xác nhận lại mật khẩu mới.',
-            'confirm_password.same' => 'Mật khẩu xác nhận không đúng.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $email = $request->input('email');
         $otp = $request->input('token');
 

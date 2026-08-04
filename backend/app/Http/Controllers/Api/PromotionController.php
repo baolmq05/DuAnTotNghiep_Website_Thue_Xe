@@ -1,54 +1,70 @@
-<?php 
+<?php
+
 namespace App\Http\Controllers\Api;
+
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
-use Illuminate\Http\Request;
+use App\Models\PromotionUsage;
+use App\Models\Car;
+use Carbon\Carbon;
+use App\Http\Requests\Promotion\StorePromotionRequest;
+use App\Http\Requests\Promotion\UpdatePromotionRequest;
+use App\Http\Requests\Promotion\CheckPromotionRequest;
+use Exception;
+
 class PromotionController extends Controller
 {
+    /**
+     * Get active promotion list.
+     */
     public function index()
     {
-        $promotions = Promotion::with('images')->where('end_date', '>=', now()->toDateString())->where('status', '1')->get();
+        $promotions = Promotion::with('images')
+            ->where('end_date', '>=', now()->toDateString())
+            ->where('status', '1')
+            ->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Danh sách khuyến mãi.',
             'data' => $promotions,
         ]);
     }
+
+    /**
+     * Get detail of a specific active promotion.
+     */
     public function show($id)
     {
         $promotion = Promotion::with('images')->find($id);
+
         if (!$promotion || $promotion->end_date < now()->toDateString() || $promotion->status != 1) {
             return response()->json([
                 'success' => false,
                 'message' => 'Khuyến mãi không tồn tại hoặc đã hết hạn.',
             ], 404);
         }
+
         return response()->json([
             'success' => true,
             'message' => 'Chi tiết khuyến mãi.',
             'data' => $promotion,
         ]);
     }
-    public function store(Request $request)
+
+    /**
+     * Store a new promotion.
+     */
+    public function store(StorePromotionRequest $request)
     {
         try {
-            $validatedData = $request->validate([
-                'code' => 'required|unique:promotions,code',
-                'name' => 'required|string|max:255',
-                'description' => 'required|string',
-                'discount_type' => 'required|in:0,1',
-                'discount_value' => 'required|numeric|min:0',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-            ]);
-            $promotion = Promotion::create($validatedData);
-    
+            $promotion = Promotion::create($request->validated());
+
             return response()->json([
                 'success' => true,
                 'data' => $promotion
             ]);
-    
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
@@ -56,41 +72,31 @@ class PromotionController extends Controller
             ], 500);
         }
     }
-    public function update(Request $request, $id)
+
+    /**
+     * Update an existing promotion.
+     */
+    public function update(UpdatePromotionRequest $request, $id)
     {
         try {
-    
             $promotion = Promotion::findOrFail($id);
-    
-            $validatedData = $request->validate([
-                'code' => 'required|unique:promotions,code,' . $id,
-                'name' => 'required|string|max:255',
-                'description' => 'required|string',
-                'discount_type' => 'required|in:0,1',
-                'discount_value' => 'required|numeric|min:0',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:start_date',
-                'usage_limit' => 'required|integer',
-                'per_user_limit' => 'required|integer',
-                'status' => 'required|in:0,1',
-                'user_id' => 'nullable',
-            ]);
-    
-            $promotion->update($validatedData);
-    
+            $promotion->update($request->validated());
+
             return response()->json([
                 'success' => true,
                 'data' => $promotion
             ]);
-    
-        } catch (\Exception $e) {
-    
+        } catch (Exception $e) {
             return response()->json([
                 'error' => $e->getMessage(),
                 'line' => $e->getLine(),
             ], 500);
         }
     }
+
+    /**
+     * Delete a promotion.
+     */
     public function destroy($id)
     {
         $promotion = Promotion::findOrFail($id);
@@ -102,34 +108,14 @@ class PromotionController extends Controller
         ]);
     }
 
-    public function check(Request $request)
+    /**
+     * Check and calculate promotion.
+     */
+    public function check(CheckPromotionRequest $request)
     {
-        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
-            'code' => 'required|string',
-            'start_at' => 'required|date_format:Y-m-d H:i:s',
-            'end_at' => 'required|date_format:Y-m-d H:i:s|after:start_at',
-            'car_id' => 'required|exists:cars,id',
-            'delivery_fee' => 'nullable|numeric|min:0',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ.',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để sử dụng mã giảm giá.'
-            ], 401);
-        }
 
         $promotion = Promotion::where('code', $request->code)->first();
-
         if (!$promotion) {
             return response()->json([
                 'success' => false,
@@ -137,58 +123,82 @@ class PromotionController extends Controller
             ], 404);
         }
 
-        if ($promotion->status != 1) {
+        // Validate promotion status, expiration, and usage limits
+        $validationResult = $this->validatePromotionRules($promotion, $user);
+        if ($validationResult !== null) {
             return response()->json([
                 'success' => false,
-                'message' => 'Mã giảm giá đã bị vô hiệu hóa.'
+                'message' => $validationResult['message']
             ], 400);
+        }
+
+        // Calculate pricing and final discount amount
+        $car = Car::find($request->car_id);
+        $pricingData = $this->calculateDiscountData(
+            $promotion,
+            $car,
+            $request->start_at,
+            $request->end_at,
+            floatval($request->input('delivery_fee', 0))
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Áp dụng mã giảm giá thành công.',
+            'data' => $pricingData
+        ]);
+    }
+
+    /**
+     * Validate rules of a promotion (Helper).
+     */
+    private function validatePromotionRules(Promotion $promotion, $user): ?array
+    {
+        if ($promotion->status != 1) {
+            return ['message' => 'Mã giảm giá đã bị vô hiệu hóa.'];
         }
 
         $now = now()->toDateString();
         if ($promotion->start_date > $now || $promotion->end_date < $now) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Mã giảm giá đã hết hạn hoặc chưa đến thời gian sử dụng.'
-            ], 400);
+            return ['message' => 'Mã giảm giá đã hết hạn hoặc chưa đến thời gian sử dụng.'];
         }
 
-        // Check usage_limit
+        // Check total usage limit
         if ($promotion->usage_limit !== null) {
-            $totalUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)->count();
+            $totalUsages = PromotionUsage::where('promotion_id', $promotion->id)->count();
             if ($totalUsages >= $promotion->usage_limit) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Mã giảm giá đã hết lượt sử dụng.'
-                ], 400);
+                return ['message' => 'Mã giảm giá đã hết lượt sử dụng.'];
             }
         }
 
-        // Check per_user_limit
+        // Check limit per user
         if ($promotion->per_user_limit !== null) {
-            $userUsages = \App\Models\PromotionUsage::where('promotion_id', $promotion->id)
+            $userUsages = PromotionUsage::where('promotion_id', $promotion->id)
                 ->where('user_id', $user->id)
                 ->count();
             if ($userUsages >= $promotion->per_user_limit) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Bạn đã sử dụng mã giảm giá này tối đa số lần cho phép.'
-                ], 400);
+                return ['message' => 'Bạn đã sử dụng mã giảm giá này tối đa số lần cho phép.'];
             }
         }
 
-        // Calculate pricing and discount
-        $car = \App\Models\Car::find($request->car_id);
+        return null;
+    }
+
+    /**
+     * Calculate base rental price, discount amount, and new total (Helper).
+     */
+    private function calculateDiscountData(Promotion $promotion, Car $car, string $startAt, string $endAt, float $deliveryFee): array
+    {
         $unitPrice = $car->unit_price;
         $insuranceFee = 0;
         $discountVal = $car->discount_value ?? 0;
 
-        $start = \Carbon\Carbon::parse($request->start_at);
-        $end = \Carbon\Carbon::parse($request->end_at);
+        $start = Carbon::parse($startAt);
+        $end = Carbon::parse($endAt);
         $diffMinutes = $start->diffInMinutes($end);
         $days = max(1, ceil($diffMinutes / 1440));
 
         $baseRentalPrice = ($unitPrice + $insuranceFee - $discountVal) * $days;
-        $deliveryFee = $request->input('delivery_fee', 0);
         $totalPriceBeforePromo = $baseRentalPrice + $deliveryFee;
 
         $discountAmount = 0;
@@ -202,19 +212,14 @@ class PromotionController extends Controller
         $discountAmount = min($discountAmount, $baseRentalPrice);
         $newTotal = max(0, $totalPriceBeforePromo - $discountAmount);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Áp dụng mã giảm giá thành công.',
-            'data' => [
-                'promotion_id' => $promotion->id,
-                'code' => $promotion->code,
-                'name' => $promotion->name,
-                'discount_type' => $promotion->discount_type,
-                'discount_value' => $promotion->discount_value,
-                'discount_amount' => $discountAmount,
-                'new_total' => $newTotal
-            ]
-        ]);
+        return [
+            'promotion_id'    => $promotion->id,
+            'code'            => $promotion->code,
+            'name'            => $promotion->name,
+            'discount_type'   => $promotion->discount_type,
+            'discount_value'  => $promotion->discount_value,
+            'discount_amount' => $discountAmount,
+            'new_total'       => $newTotal
+        ];
     }
 }
-

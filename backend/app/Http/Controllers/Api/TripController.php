@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use App\Enum\TripStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Trip;
+use App\Models\ChatConversation;
 use Illuminate\Http\Request;
 use Exception;
+use InvalidArgumentException;
 
 use App\Http\Requests\Trip\StoreTripRequest;
 use App\Http\Requests\Trip\StartTripRequest;
@@ -26,28 +28,22 @@ use App\Actions\Trip\StoreTripReviewAction;
 class TripController extends Controller
 {
     /**
-     * API Danh sách chuyến đi của người dùng (Renter & Owner)
+     * Get list of trips for current user (Renter & Owner).
      * GET /api/trips
      */
     public function index()
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $this->autoUpdateExpiredTrips();
 
-        // Chuyến đi của tôi (Renter)
+        // My booked trips (Renter)
         $myTrips = Trip::where('user_id', $user->id)
             ->with(['car.carLocation', 'car.images', 'car.carBrand', 'car.carType', 'car.owner', 'reviews.reviewer', 'extensions', 'latestExtension'])
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Xe cho thuê của tôi (Owner)
+        // My rented out cars (Owner)
         $ownerTrips = Trip::whereHas('car', function ($q) use ($user) {
             $q->where('user_id', $user->id);
         })
@@ -67,18 +63,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Tạo chuyến đi mới (Yêu cầu thuê xe)
+     * Create a new trip request.
      * POST /api/trips
      */
     public function store(StoreTripRequest $request, CreateTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $trip = $action->execute($user, $request->validated());
@@ -88,7 +78,7 @@ class TripController extends Controller
                 'message' => 'Gửi yêu cầu thuê xe thành công!',
                 'data' => $trip
             ], 201);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -102,18 +92,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Xem chi tiết chuyến đi
+     * Get trip details.
      * GET /api/trips/{id}
      */
     public function show($id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $this->autoUpdateExpiredTrips();
 
@@ -147,9 +131,9 @@ class TripController extends Controller
             ], 403);
         }
 
-        // Tự động đảm bảo cuộc trò chuyện được tạo cho chuyến đi
+        // Ensure chat conversation exists for this trip
         if (!$trip->conversation) {
-            \App\Models\ChatConversation::createForTrip($trip);
+            ChatConversation::createForTrip($trip);
             $trip->load('conversation');
         }
 
@@ -160,18 +144,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Chủ xe xác nhận yêu cầu thuê xe (chuyển status từ 0 - Pending sang 1 - WaitingPayment)
+     * Owner confirms trip request (Pending -> WaitingPayment).
      * PUT /api/trips/{id}/confirm
      */
     public function confirm($id, ConfirmTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $trip = $action->execute((int)$id, $user);
@@ -181,7 +159,7 @@ class TripController extends Controller
                 'message' => 'Đã xác nhận yêu cầu thuê xe thành công, chờ khách hàng thanh toán!',
                 'data' => $trip
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -196,18 +174,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Chủ xe từ chối yêu cầu thuê xe (chuyển status sang 6 - OwnerCancel)
+     * Owner rejects trip request (Pending -> OwnerCancel).
      * PUT /api/trips/{id}/reject
      */
     public function reject(Request $request, $id, RejectTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $reason = $request->input('reason');
@@ -218,7 +190,7 @@ class TripController extends Controller
                 'message' => 'Đã từ chối yêu cầu thuê xe!',
                 'data' => $trip
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -233,18 +205,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Bắt đầu chuyến đi (upload ảnh trước chuyến đi & đổi trạng thái sang 3 - Ongoing)
+     * Start the trip (Upload images & change status to Ongoing).
      * POST /api/trips/{id}/start
      */
     public function startTrip(StartTripRequest $request, $id, StartTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $trip = $action->execute((int)$id, $user, $request->input('images', []));
@@ -254,7 +220,7 @@ class TripController extends Controller
                 'message' => 'Bắt đầu chuyến đi thành công!',
                 'data' => $trip
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -269,18 +235,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Khách thuê bấm trả xe (Trả xe sớm)
+     * Renter requests to return the car (Early return).
      * POST /api/trips/{id}/return-request
      */
     public function requestReturn($id, RequestReturnTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $trip = $action->execute((int)$id, $user);
@@ -290,7 +250,7 @@ class TripController extends Controller
                 'message' => 'Gửi yêu cầu trả xe thành công!',
                 'data' => $trip
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -305,18 +265,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Chủ xe xác nhận hoàn thành chuyến xe (upload ảnh sau chuyến đi & đổi trạng thái sang 4 - Complete)
+     * Owner confirms trip completion (Upload images & change status to Complete).
      * POST /api/trips/{id}/complete
      */
     public function completeTrip(CompleteTripRequest $request, $id, CompleteTripAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $trip = $action->execute((int)$id, $user, $request->input('images', []));
@@ -326,7 +280,7 @@ class TripController extends Controller
                 'message' => 'Hoàn thành chuyến đi thành công!',
                 'data' => $trip
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -341,18 +295,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Gửi đánh giá cho chuyến đi
+     * Submit a review for the trip.
      * POST /api/trips/{id}/reviews
      */
     public function storeReview(StoreReviewRequest $request, $id, StoreTripReviewAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $review = $action->execute((int)$id, $user, $request->validated());
@@ -362,7 +310,7 @@ class TripController extends Controller
                 'message' => 'Gửi đánh giá thành công!',
                 'data' => $review
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -377,18 +325,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Khách thuê (Renter) tự hủy chuyến đi
+     * Renter cancels the trip.
      * POST /api/trips/{id}/cancel
      */
     public function cancelTrip($id, CancelTripByRenterAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $result = $action->execute((int)$id, $user);
@@ -401,7 +343,7 @@ class TripController extends Controller
                     'cancellation_summary' => $result['summary']
                 ]
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
@@ -416,18 +358,12 @@ class TripController extends Controller
     }
 
     /**
-     * API Chủ xe (Owner) hủy chuyến đi
+     * Owner cancels the trip.
      * POST /api/trips/{id}/owner-cancel
      */
     public function cancelTripByOwner(Request $request, $id, CancelTripByOwnerAction $action)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         try {
             $reason = $request->input('reason');
@@ -441,7 +377,7 @@ class TripController extends Controller
                     'cancellation_summary' => $result['summary']
                 ]
             ]);
-        } catch (\InvalidArgumentException $e) {
+        } catch (InvalidArgumentException $e) {
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()

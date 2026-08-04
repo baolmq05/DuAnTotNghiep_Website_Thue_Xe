@@ -8,12 +8,13 @@ use Google\Client;
 use App\Models\User;
 use Illuminate\Support\Str;
 use Tymon\JWTAuth\Facades\JWTAuth;
+use Exception;
 
 class GoogleAuthController extends Controller
 {
     public function loginWithGoogle(Request $request)
     {
-        // lấy token gửi từ Nuxt lên
+        // Get token from Nuxt
         $idToken = $request->input('token');
         if (!$idToken) {
             return response()->json([
@@ -23,15 +24,17 @@ class GoogleAuthController extends Controller
         }
         try {
             $payload = null;
-            
+
             // Một JWT (ID Token) hợp lệ bắt buộc phải có đúng 3 phân đoạn phân tách bằng dấu chấm (.)
             $isJwt = (count(explode('.', $idToken)) === 3);
 
             // Bổ sung local bypass xác thực token cho môi trường phát triển (local)
-            if (app()->environment('local') && (
-                !$isJwt || 
-                str_starts_with($idToken, 'web_fallback_token_')
-            )) {
+            if (
+                app()->environment('local') && (
+                    !$isJwt ||
+                    str_starts_with($idToken, 'web_fallback_token_')
+                )
+            ) {
                 $email = $request->input('email');
                 $name = $request->input('name') ?? 'Google Local Test';
                 if ($email) {
@@ -51,16 +54,16 @@ class GoogleAuthController extends Controller
             if ($payload) {
                 $email = $payload['email'];
                 $name = $payload['name'];
-                // kiểm tra xem Email này đã có trong DB chưa, chưa có thì tự tạo mới
-                // đã thêm 'status' và 'role_id' dự phòng lỗi NOT NULL của database
+                // Kiểm tra xem Email này đã có trong DB chưa, chưa có thì tự tạo mới
+                // đã thêm 'status' và 'role_id' dự phòng lỗi not null của database
                 $user = User::firstOrCreate(
                     ['email' => $email],
                     [
                         'name' => $name,
-                        'password' => bcrypt(Str::random(16)), 
+                        'password' => bcrypt(Str::random(16)),
                         'email_verified_at' => now(),
-                        'status' => 1,                      
-                        'role_id' => 2,                     
+                        'status' => 1,
+                        'role_id' => 2,
                     ]
                 );
                 // tạo token theo chuẩn JWT-AUTH đồng bộ với Model User của bạn
@@ -76,7 +79,7 @@ class GoogleAuthController extends Controller
                 'success' => false,
                 'message' => 'Xác thực tài khoản Google thất bại hoặc Token hết hạn!'
             ], 401);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi hệ thống: ' . $e->getMessage()

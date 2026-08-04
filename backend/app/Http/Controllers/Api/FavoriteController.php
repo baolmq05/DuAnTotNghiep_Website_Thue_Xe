@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Api;
 
 use App\Enum\TripStatus;
@@ -6,23 +7,20 @@ use App\Models\Favorite;
 use App\Models\FavoriteItem;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Exception;
 
 class FavoriteController extends Controller
 {
-    // Hiển thị danh sách yêu thích
+    /**
+     * Get favorite list of current user.
+     * GET /api/favorites
+     */
     public function index()
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
-            // Lấy danh sách yêu thích của người dùng hiện tại
+            // List favorite of current user
             $favorites = Favorite::with([
                 'items.car' => function ($query) {
                     $query->with([
@@ -34,18 +32,22 @@ class FavoriteController extends Controller
                             $q->select('id', 'name', 'avatar');
                         }
                     ])
-                        ->withAvg(['reviews' => function ($q) {
-                            $q->where('review_type', 1);
-                        }], 'rating')
-                        ->withCount(['trips' => function ($q) {
-                            $q->where('status', TripStatus::Complete->value); // Chỉ đếm các chuyến đi đã hoàn thành thành công
-                        }]);
+                        ->withAvg([
+                            'reviews' => function ($q) {
+                                $q->where('review_type', 1);
+                            }
+                        ], 'rating')
+                        ->withCount([
+                            'trips' => function ($q) {
+                                $q->where('status', TripStatus::Complete->value); // Chỉ đếm các chuyến đi đã hoàn thành thành công
+                            }
+                        ]);
                 }
             ])
                 ->where('user_id', $user->id)
                 ->first();
 
-            // Kiểm tra nếu danh sách yêu thích trống
+            // Check
             if (!$favorites) {
                 return response()->json([
                     'success' => true,
@@ -54,7 +56,7 @@ class FavoriteController extends Controller
                 ]);
             }
 
-            // Trả về danh sách yêu thích
+            // Return
             return response()->json([
                 'success' => true,
                 'message' => 'Danh sách yêu thích.',
@@ -71,115 +73,109 @@ class FavoriteController extends Controller
                     ];
                 })->filter()->values(),
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không hợp lệ hoặc token đã hết hạn',
+                'message' => 'Có lỗi xảy ra khi lấy danh sách yêu thích.',
                 'errors' => $e->getMessage()
-            ], 401);
+            ], 500);
         }
     }
 
-    // Thêm vào danh sách yêu thích
+    /**
+     * Add a car to favorites.
+     * POST /api/favorites
+     */
     public function store(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
             $request->validate([
                 'car_id' => 'required|exists:cars,id',
             ]);
-        
-            // Lấy danh sách yêu thích của người dùng hiện tại
+
+            // Get favorite of current user
             $favorite = Favorite::firstOrCreate([
                 'user_id' => $user->id,
             ]);
-        
-            // Kiểm tra xem xe đã tồn tại trong danh sách chưa
+
+            // Check exist
             $exists = FavoriteItem::where('favorite_id', $favorite->id)
                 ->where('car_id', $request->car_id)
                 ->exists();
-        
+
             if ($exists) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Xe đã có trong danh sách yêu thích.',
                 ]);
             }
-        
-            // Thêm xe vào danh sách yêu thích
+
+            // Eloquent
             $favoriteItem = FavoriteItem::create([
                 'favorite_id' => $favorite->id,
                 'car_id' => $request->car_id,
             ]);
-        
+
             return response()->json([
                 'success' => true,
                 'message' => 'Đã thêm vào danh sách yêu thích.',
                 'data' => $favoriteItem,
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không hợp lệ hoặc token đã hết hạn',
+                'message' => 'Có lỗi xảy ra khi thêm yêu thích.',
                 'errors' => $e->getMessage()
-            ], 401);
+            ], 500);
         }
     }
 
-    // Xóa khỏi danh sách yêu thích
+    /**
+     * Remove a car from favorites.
+     * DELETE /api/favorites/{car_id}
+     */
     public function destroy($carId)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
-            // Lấy danh sách yêu thích của người dùng hiện tại
+            // Get favorite of current user
             $favorite = Favorite::where('user_id', $user->id)->first();
-        
+
             if (!$favorite) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Danh sách yêu thích không tồn tại.',
                 ], 404);
             }
-        
-            // Tìm mục yêu thích cần xóa
+
+            // Find item
             $favoriteItem = FavoriteItem::where('favorite_id', $favorite->id)
                 ->where('car_id', $carId)
                 ->first();
-        
+
             if (!$favoriteItem) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Xe không có trong danh sách yêu thích.',
                 ], 404);
             }
-        
-            // Xóa mục yêu thích
+
+            // Remove
             $favoriteItem->delete();
-        
+
             return response()->json([
                 'success' => true,
                 'message' => 'Đã xóa khỏi danh sách yêu thích.',
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Yêu cầu không hợp lệ hoặc token đã hết hạn',
+                'message' => 'Có lỗi xảy ra khi xóa yêu thích.',
                 'errors' => $e->getMessage()
-            ], 401);
+            ], 500);
         }
     }
 }

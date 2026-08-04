@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Address\StoreAddressRequest;
+use App\Http\Requests\Address\UpdateAddressRequest;
 use App\Models\Address;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
-use Tymon\JWTAuth\Facades\JWTAuth;
+use Exception;
 
 class AddressController extends Controller
 {
@@ -17,13 +18,7 @@ class AddressController extends Controller
     public function index(Request $request)
     {
         try {
-            $user = JWTAuth::parseToken()->authenticate();
-            if (!$user) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Không tìm thấy người dùng'
-                ], 404);
-            }
+            $user = auth('api')->user();
 
             $userId = $request->query('user_id');
             if ($userId) {
@@ -37,7 +32,7 @@ class AddressController extends Controller
                 'message' => 'Lấy danh sách địa chỉ thành công',
                 'data' => $addresses
             ]);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lấy danh sách địa chỉ thất bại',
@@ -50,24 +45,8 @@ class AddressController extends Controller
      * API Thêm địa chỉ mới
      * POST /api/addresses
      */
-    public function store(Request $request)
+    public function store(StoreAddressRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'address_name' => 'required|string|max:255',
-            'user_id' => 'required|exists:users,id',
-        ],[
-            'address_name.required' => 'Địa chỉ không được để trống',
-            'address_name.string' => 'Địa chỉ phải là chuỗi',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu địa chỉ không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         $address = Address::create([
             'address_name' => $request->address_name,
             'user_id' => $request->user_id,
@@ -84,7 +63,7 @@ class AddressController extends Controller
      * API Cập nhật địa chỉ
      * PUT /api/addresses/{id}
      */
-    public function update(Request $request, $id)
+    public function update(UpdateAddressRequest $request, $id)
     {
         $address = Address::find($id);
 
@@ -93,21 +72,6 @@ class AddressController extends Controller
                 'success' => false,
                 'message' => 'Không tìm thấy địa chỉ'
             ], 404);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'address_name' => 'required|string|max:255',
-        ],[
-            'address_name.required' => 'Địa chỉ không được để trống',
-            'address_name.string' => 'Địa chỉ phải là chuỗi',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu địa chỉ không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
         }
 
         $address->update([

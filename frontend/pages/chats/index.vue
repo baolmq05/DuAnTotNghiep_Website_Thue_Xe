@@ -353,6 +353,7 @@ import { ChatBotService } from '~/services/chatbot.service'
 import { ChatService } from '~/services/chat.service'
 
 const { $echo } = useNuxtApp()
+const { showToast } = useToast()
 const chatBotService = new ChatBotService()
 const chatService = new ChatService()
 
@@ -678,9 +679,17 @@ async function uploadImage(event) {
   const file = event.target.files[0]
   if (!file) return
 
+  // Kiểm tra định dạng file (chỉ chấp nhận jpeg, png, jpg)
+  const validExtensions = ['jpeg', 'png', 'jpg']
+  const fileExt = file.name.split('.').pop()?.toLowerCase()
+  if (!fileExt || !validExtensions.includes(fileExt)) {
+    showToast("Định dạng ảnh phải là jpeg, png hoặc jpg.", "error")
+    return
+  }
+
   // Kiểm tra kích thước file (tối đa 10MB)
   if (file.size > 10 * 1024 * 1024) {
-    alert("Dung lượng hình ảnh tải lên tối đa là 10MB.")
+    showToast("Dung lượng hình ảnh tải lên tối đa là 10MB.", "error")
     return
   }
 
@@ -724,13 +733,14 @@ async function uploadImage(event) {
     } else {
       // Xóa tin nhắn tạm thời nếu lỗi
       messages.value = messages.value.filter(m => m.id !== tempId)
-      alert("Tải ảnh lên thất bại.")
+      showToast(res?.message || "Tải ảnh lên thất bại.", "error")
     }
   } catch (error) {
     console.error("Lỗi gửi ảnh:", error)
     // Xóa tin nhắn tạm thời nếu lỗi
     messages.value = messages.value.filter(m => m.id !== tempId)
-    alert("Không thể gửi ảnh.")
+    const errorMsg = error?.response?._data?.message || error?.response?._data?.errors?.image?.[0] || "Không thể gửi ảnh."
+    showToast(errorMsg, "error")
   } finally {
     if (imageInputRef.value) {
       imageInputRef.value.value = ''

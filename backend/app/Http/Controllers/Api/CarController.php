@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Car\FilterCarRequest;
+use App\Http\Requests\Car\StoreCarRequest;
+use App\Http\Requests\Car\UpdateCarRequest;
+use App\Services\CloudinaryService;
 use App\Enum\TripStatus;
 use App\Models\Car;
 use App\Models\Trip;
@@ -24,28 +28,8 @@ class CarController extends Controller
      * API Lọc xe
      * GET /api/cars
      */
-    public function index(Request $request)
+    public function index(FilterCarRequest $request)
     {
-        // Validate dữ liệu đầu vào
-        $validator = Validator::make($request->all(), [
-            'startDate' => 'nullable|date_format:Y-m-d H:i:s',
-            'endDate' => 'nullable|date_format:Y-m-d H:i:s|after:startDate',
-            'address' => 'nullable|string|max:255',
-            'brand_id' => 'nullable|integer|exists:car_brands,id',
-            'type_id' => 'nullable|integer|exists:car_types,id',
-            'seat_count' => 'nullable|integer|min:2',
-            'min_price' => 'nullable|numeric|min:0',
-            'max_price' => 'nullable|numeric|gte:min_price',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu tìm kiếm không hợp lệ',
-                'errors' => $validator->errors()
-            ], 422);
-        }
-
         // Khởi tạo query
         $query = Car::query();
 
@@ -265,93 +249,9 @@ class CarController extends Controller
      * API Đăng ký xe mới
      * POST /api/cars
      */
-    public function store(Request $request)
+    public function store(StoreCarRequest $request)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
-
-        // Giải mã các chuỗi JSON từ FormData trước khi validation
-        if (is_string($request->input('images'))) {
-            $decoded = json_decode($request->input('images'), true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $request->merge(['images' => $decoded]);
-            }
-        }
-
-        if (is_string($request->input('features'))) {
-            $decoded = json_decode($request->input('features'), true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $request->merge(['features' => $decoded]);
-            }
-        }
-
-        $validator = Validator::make($request->all(), [
-            'license_plate' => 'required|string|max:12|unique:cars,license_plate',
-            'VIN' => 'required|string|max:17|unique:cars,VIN',
-            'engine_number' => 'required|string|max:100|unique:cars,engine_number',
-            'car_brand_id' => 'required|exists:car_brands,id',
-            'car_type_id' => 'required|exists:car_types,id',
-            'seat_count' => 'required|integer|min:2',
-            'manufacture_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'fuel_type' => 'required|string|max:255',
-            'transmission' => 'required|string|max:255',
-            'fuel_consumption' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'rental_terms' => 'nullable|string',
-
-            // Location
-            'location' => 'nullable|string',
-            'address' => 'required|string',
-
-            // Pricing & Discount
-            'unit_price' => 'required|numeric|min:0',
-            'discount_value' => 'nullable|numeric|min:0',
-
-            // Delivery options
-            'delivery_enabled' => 'required|in:0,1',
-            'delivery_max_distance' => 'nullable|numeric|min:0',
-            'delivery_fee' => 'nullable|numeric|min:0',
-            'delivery_free_distance' => 'nullable|numeric|min:0',
-
-            // Usage limit
-            'km_limit_enabled' => 'required|in:0,1',
-            'km_limit_val' => 'nullable|numeric|min:0',
-            'over_fee_val' => 'nullable|numeric|min:0',
-
-            // Features
-            'features' => 'nullable|array',
-            'features.*' => 'integer|exists:features,id',
-
-            // Images
-            'images' => 'required|array|min:1',
-            'images.*' => 'required|string|url',
-            'thumbnail_index' => 'required|integer|min:0',
-        ], [
-            'license_plate.required' => 'Biển số xe không được để trống.',
-            'license_plate.unique' => 'Biển số xe này đã được đăng ký trên hệ thống.',
-            'VIN.required' => 'Số khung không được để trống',
-            'VIN.unique' => 'Số khung này đã được đăng ký trên hệ thống',
-            'engine_number.required'=> 'Số máy không được để trống',
-            'engine_number.unique' => 'Số máy này đã được đăng ký trên hệ thống',
-            'car_brand_id.required' => 'Hãng xe không được để trống.',
-            'car_brand_id.exists' => 'Hãng xe không tồn tại.',
-            'car_type_id.required' => 'Mẫu xe không được để trống.',
-            'car_type_id.exists' => 'Mẫu xe không tồn tại.',
-            'images.required' => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',
-            'images.min' => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
-        }
 
         DB::beginTransaction();
         try {
@@ -461,15 +361,9 @@ class CarController extends Controller
      * API Cập nhật thông tin xe
      * PUT /api/cars/{id}
      */
-    public function update(Request $request, $id)
+    public function update(UpdateCarRequest $request, $id)
     {
         $user = auth('api')->user();
-        if (!$user) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Bạn cần đăng nhập để thực hiện chức năng này.'
-            ], 401);
-        }
 
         $car = Car::find($id);
         if (!$car) {
@@ -485,84 +379,6 @@ class CarController extends Controller
                 'success' => false,
                 'message' => 'Bạn không có quyền sửa thông tin xe này.'
             ], 403);
-        }
-
-        // Giải mã các chuỗi JSON từ FormData/JSON nếu cần
-        if (is_string($request->input('images'))) {
-            $decoded = json_decode($request->input('images'), true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $request->merge(['images' => $decoded]);
-            }
-        }
-
-        if (is_string($request->input('features'))) {
-            $decoded = json_decode($request->input('features'), true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                $request->merge(['features' => $decoded]);
-            }
-        }
-
-        $validator = Validator::make($request->all(), [
-            'license_plate' => 'required|string|max:12|unique:cars,license_plate,' . $id,
-            'VIN' => 'required|string|max:17|unique:cars,VIN,' . $id,
-            'engine_number' => 'required|string|max:100|unique:cars,engine_number,' . $id,
-            'car_brand_id' => 'required|exists:car_brands,id',
-            'car_type_id' => 'required|exists:car_types,id',
-            'seat_count' => 'required|integer|min:2',
-            'manufacture_year' => 'required|integer|min:1900|max:' . (date('Y') + 1),
-            'fuel_type' => 'required|string|max:255',
-            'transmission' => 'required|string|max:255',
-            'fuel_consumption' => 'required|numeric|min:0',
-            'description' => 'nullable|string',
-            'rental_terms' => 'nullable|string',
-
-            // Location
-            'location' => 'nullable|string',
-            'address' => 'required|string',
-
-            // Pricing & Discount
-            'unit_price' => 'required|numeric|min:0',
-            'discount_value' => 'nullable|numeric|min:0',
-
-            // Delivery options
-            'delivery_enabled' => 'required|in:0,1',
-            'delivery_max_distance' => 'nullable|numeric|min:0',
-            'delivery_fee' => 'nullable|numeric|min:0',
-            'delivery_free_distance' => 'nullable|numeric|min:0',
-
-            // Usage limit
-            'km_limit_enabled' => 'required|in:0,1',
-            'km_limit_val' => 'nullable|numeric|min:0',
-            'over_fee_val' => 'nullable|numeric|min:0',
-
-            // Features
-            'features' => 'nullable|array',
-            'features.*' => 'integer|exists:features,id',
-
-            // Images
-            'images' => 'required|array|min:1',
-            'images.*' => 'required|string|url',
-            'thumbnail_index' => 'required|integer|min:0',
-        ], [
-            'license_plate.required' => 'Biển số xe không được để trống.',
-            'license_plate.unique' => 'Biển số xe này đã được đăng ký trên hệ thống.',
-            'VIN.required' => 'Số khung không được để trống',
-            'VIN.unique' => 'Số khung này đã được đăng ký trên hệ thống',
-            'engine_number.required'=> 'Số máy không được để trống',
-            'engine_number.unique' => 'Số máy này đã được đăng ký trên hệ thống',
-            'car_brand_id.required' => 'Hãng xe không được để trống.',
-            'car_brand_id.exists' => 'Hãng xe không tồn tại.',
-            'car_type_id.required' => 'Mẫu xe không được để trống.',
-            'car_type_id.exists' => 'Mẫu xe không tồn tại.',
-            'images.required' => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',
-            'images.min' => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'errors' => $validator->errors()
-            ], 422);
         }
 
         DB::beginTransaction();
@@ -665,7 +481,7 @@ class CarController extends Controller
             // Tìm các ảnh cũ bị xóa bỏ khỏi danh sách mới để xóa trên Cloudinary
             $removedUrls = array_diff($oldImageUrls, $imageUrls);
             foreach ($removedUrls as $url) {
-                $this->deleteFromCloudinary($url);
+                CloudinaryService::delete($url);
             }
 
             DB::commit();
@@ -684,67 +500,5 @@ class CarController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
-    }
-
-    /**
-     * Xóa hình ảnh trên Cloudinary bằng URL
-     */
-    private function deleteFromCloudinary($url)
-    {
-        $cloudName = env('CLOUDINARY_CLOUD_NAME', 'djbobb5oe');
-        $apiKey = env('CLOUDINARY_API_KEY');
-        $apiSecret = env('CLOUDINARY_API_SECRET');
-
-        if (!$apiKey || !$apiSecret) {
-            \Illuminate\Support\Facades\Log::warning("Cloudinary credentials missing, skipped deleting image: " . $url);
-            return false;
-        }
-
-        // Tách public ID từ URL
-        $parts = explode('/image/upload/', $url);
-        if (count($parts) === 2) {
-            $path = $parts[1];
-            // Loại bỏ version dạng v1234567/
-            $path = preg_replace('/^v\d+\//', '', $path);
-            // Loại bỏ phần mở rộng (ví dụ: .jpg)
-            $pathParts = explode('.', $path);
-            array_pop($pathParts);
-            $publicId = implode('.', $pathParts);
-
-            $timestamp = time();
-            $params = [
-                'public_id' => $publicId,
-                'timestamp' => $timestamp,
-            ];
-
-            // Tạo chữ ký
-            ksort($params);
-            $signString = "";
-            foreach ($params as $key => $val) {
-                $signString .= "{$key}={$val}&";
-            }
-            $signString = rtrim($signString, '&') . $apiSecret;
-            $signature = sha1($signString);
-
-            try {
-                $response = \Illuminate\Support\Facades\Http::post("https://api.cloudinary.com/v1_1/{$cloudName}/image/destroy", [
-                    'public_id' => $publicId,
-                    'timestamp' => $timestamp,
-                    'api_key' => $apiKey,
-                    'signature' => $signature,
-                ]);
-
-                if ($response->successful()) {
-                    \Illuminate\Support\Facades\Log::info("Deleted from Cloudinary: " . $publicId);
-                    return true;
-                } else {
-                    \Illuminate\Support\Facades\Log::error("Failed to delete from Cloudinary: " . $response->body());
-                }
-            } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error("Error deleting from Cloudinary: " . $e->getMessage());
-            }
-        }
-
-        return false;
     }
 }

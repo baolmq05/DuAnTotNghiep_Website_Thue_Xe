@@ -51,10 +51,10 @@ class PostSeeder extends Seeder
             'published_at' => now(),
         ]);
         Post::create([
-            'title' => 'Bài viết hướng dẫn',
-            'slug' => 'bai-viet-huong-dan',
-            'excerpt' => 'Đây là mô tả ngắn của bài viết hướng dẫn.',
-            'content' => 'Đây là nội dung chi tiết của bài viết hướng dẫn.  Bạn có thể thêm nhiều thông tin hơn ở đây.',
+            'title' => 'Bài viết hướng dẫn 2',
+            'slug' => 'bai-viet-huong-dan-2',
+            'excerpt' => 'Đây là mô tả ngắn của bài viết hướng dẫn 2.',
+            'content' => 'Đây là nội dung chi tiết của bài viết hướng dẫn 2.  Bạn có thể thêm nhiều thông tin hơn ở đây.',
             'thumbnail' => null,
             'user_id' => 1, // Giả sử user_id 1 tồn tại
             'post_category_id' => 3, // Giả sử post_category_id 3 tồn tại
