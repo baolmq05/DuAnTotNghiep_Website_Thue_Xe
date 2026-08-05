@@ -11,6 +11,8 @@ use App\Models\Review;
 use App\Models\Trip;
 use App\Models\Refund;
 use App\Models\PendingBalance;
+use App\Models\SystemSetting;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Wallet\WithdrawRequest;
@@ -47,7 +49,8 @@ class WalletController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'balance'               => $wallet->amount,
+                    'balance'               => floatval($wallet->amount ?? 0),
+                    'hold_balance'          => floatval($wallet->hold_balance ?? 0),
                     'pending_balance'       => floatval($pendingBalance),
                     'rating'                => $rating,
                     'completed_trips_count' => $completedTripsCount,
@@ -162,16 +165,49 @@ class WalletController extends Controller
         $depositWithdrawalChange = 0;
         $cancelledTripsChange = 0;
 
+        $currentMonth = now()->month;
+        $currentYear  = now()->year;
+
         foreach ($transactions as $txn) {
-            if ($txn->trip_id) {
+            $isCurrentMonth = false;
+
+            if ($txn->trip_id && $txn->trip) {
                 $trip = $txn->trip;
-                if ($trip && (int)$trip->status === TripStatus::Complete->value) {
-                    $completedTripsChange += $txn->amount;
-                } elseif ($trip && in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
-                    $cancelledTripsChange += $txn->amount;
+                // Kiểm tra ngày kết thúc chuyến đi (end_at) có thuộc tháng & năm hiện tại không
+                if (!empty($trip->end_at)) {
+                    $endDate = Carbon::parse($trip->end_at);
+                    if ($endDate->month == $currentMonth && $endDate->year == $currentYear) {
+                        $isCurrentMonth = true;
+                    }
+                } elseif (!empty($txn->created_at)) {
+                    $txnDate = Carbon::parse($txn->created_at);
+                    if ($txnDate->month == $currentMonth && $txnDate->year == $currentYear) {
+                        $isCurrentMonth = true;
+                    }
                 }
             } else {
-                $depositWithdrawalChange += $txn->amount;
+                // Giao dịch nạp/rút tiền (không có trip) kiểm tra ngày tạo giao dịch
+                if (!empty($txn->created_at)) {
+                    $txnDate = Carbon::parse($txn->created_at);
+                    if ($txnDate->month == $currentMonth && $txnDate->year == $currentYear) {
+                        $isCurrentMonth = true;
+                    }
+                } else {
+                    $isCurrentMonth = true;
+                }
+            }
+
+            if ($isCurrentMonth) {
+                if ($txn->trip_id && $txn->trip) {
+                    $trip = $txn->trip;
+                    if ((int)$trip->status === TripStatus::Complete->value) {
+                        $completedTripsChange += $txn->amount;
+                    } elseif (in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+                        $cancelledTripsChange += $txn->amount;
+                    }
+                } else {
+                    $depositWithdrawalChange += $txn->amount;
+                }
             }
         }
 
@@ -182,9 +218,17 @@ class WalletController extends Controller
             $startBalance = 0;
         }
 
-        // Deduct 10% tax for completed trips
-        $taxDeducted = intval($completedTripsChange * 0.1);
-        $ownerIncome = $completedTripsChange - $taxDeducted;
+        // Đọc tỷ lệ cài đặt từ DB system_settings (hoặc mặc định: hoa hồng 18%, VAT 7%, phạt nguội 2%)
+        $commissionRate = floatval(SystemSetting::get('commission_rate', 18));
+        $vatRate        = floatval(SystemSetting::get('vat_rate', 7));
+        $taxRate        = $commissionRate + $vatRate; // 18% + 7% = 25%
+        $penaltyRate    = floatval(SystemSetting::get('fee_2_percent', 2));
+
+        // Tính toán các khoản tiền khấu trừ dựa trên tổng amount chuyến đi hoàn thành trong tháng
+        $taxDeducted     = intval($completedTripsChange * ($taxRate / 100));
+        $penaltyDeducted = intval($completedTripsChange * ($penaltyRate / 100));
+
+        $ownerIncome = $completedTripsChange - $taxDeducted - $penaltyDeducted;
 
         return [
             'completed_trips_change'    => $completedTripsChange,
@@ -193,7 +237,10 @@ class WalletController extends Controller
             'total_change'              => $totalChange,
             'start_balance'             => $startBalance,
             'end_balance'               => $wallet->amount,
+            'tax_rate'                  => $taxRate,
+            'penalty_rate'              => $penaltyRate,
             'tax_deducted'              => $taxDeducted,
+            'penalty_deducted'          => $penaltyDeducted,
             'owner_income'              => $ownerIncome
         ];
     }
@@ -246,7 +293,7 @@ class WalletController extends Controller
                 'transaction_code' => $txn->transaction_code,
                 'amount'           => $txn->amount,
                 'prepay'           => $txn->prepay,
-                'created_at'       => $txn->created_at->format('d/m/Y H:i'),
+                'created_at'       => $txn->created_at ? (is_string($txn->created_at) ? date('d/m/Y H:i', strtotime($txn->created_at)) : $txn->created_at->format('d/m/Y H:i')) : null,
                 'trip'             => $txn->trip ? [
                     'id'              => $txn->trip->id,
                     'start_at'        => $txn->trip->start_at ? date('d/m/Y', strtotime($txn->trip->start_at)) : null,

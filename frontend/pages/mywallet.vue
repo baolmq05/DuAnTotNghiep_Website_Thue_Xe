@@ -16,29 +16,33 @@
                     <Icon name="lucide:chevron-left" class="w-4 h-4" />
                     Quay lại
                 </button>
-                <div class="py-2">
-                    <p class="text-slate-500 text-[13px] font-medium">
-                        Số dư ví
-                    </p>
-                    <p class="text-4xl font-bold text-[#286874] mt-1.5 tracking-tight">
-                        {{ formatCurrency(balance) }}
-                    </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 divide-y sm:divide-y-0 sm:divide-x divide-slate-100 pt-6 sm:pt-2 pb-2">
+                    <div class="py-2">
+                        <p class="text-slate-500 text-[13px] font-medium">
+                            Số dư ví (Khả dụng)
+                        </p>
+                        <p class="text-3xl sm:text-4xl font-bold text-[#286874] mt-1.5 tracking-tight">
+                            {{ formatCurrency(balance) }}
+                        </p>
+                    </div>
+                    <div class="pt-4 sm:pt-2">
+                        <p class="text-slate-500 text-[13px] font-medium flex items-center justify-center gap-1">
+                            <span>Tiền tạm giữ (Phạt nguội)</span>
+                        </p>
+                        <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-1.5 tracking-tight">
+                            {{ formatCurrency(holdBalance) }}
+                        </p>
+                    </div>
                 </div>
-
             </div>
             <div class="bg-white rounded-xl border border-slate-200 overflow-hidden mt-6 shadow-sm">
-                <div class="bg-[#111111] text-white px-5 py-3.5 flex items-center justify-between">
+                <div class="bg-[#111111] text-white px-5 py-3.5">
                     <h3 class="font-bold text-xs tracking-wider uppercase">
                         Bảng tổng hợp giao dịch
                     </h3>
-
-                    <div class="flex items-center gap-1 text-xs font-medium text-slate-300 cursor-pointer select-none">
-                        <span>Tháng 06-2026</span>
-                        <Icon name="lucide:chevron-down" class="w-3 h-3 text-slate-400" />
-                    </div>
                 </div>
 
-                <div v-if="user?.role_id !== 2" class="flex w-full text-center bg-white border-b border-slate-200 divide-x divide-slate-100">
+                <!-- <div v-if="user?.role_id !== 2" class="flex w-full text-center bg-white border-b border-slate-200 divide-x divide-slate-100">
                     <div class="flex-1 py-3.5 flex flex-col justify-center items-center">
                         <p
                             class="text-base font-bold text-slate-800 flex items-center justify-center gap-0.5 leading-none">
@@ -66,7 +70,7 @@
                         <p class="text-base font-bold text-slate-800 leading-none">{{ acceptRate }}%</p>
                         <p class="text-[11px] text-slate-400 mt-1.5 leading-none">Tỉ lệ đồng ý</p>
                     </div>
-                </div>
+                </div> -->
 
                 <div class="bg-white text-xs font-medium text-slate-700 divide-y divide-slate-100">
                     <!-- <div class="flex justify-between px-5 py-3 bg-[#fafafa]">
@@ -83,26 +87,24 @@
                     </div> -->
 
                     <div class="p-5 space-y-3 bg-white">
-                        <div class="flex justify-between font-bold text-slate-400 text-[11px] tracking-wider">
-                            <span>TỔNG CỘNG THAY ĐỔI TRONG KÌ</span>
-                            <span class="text-slate-800">{{ formatCurrency(summary.total_change) }}</span>
-                        </div>
-                        <div class="flex justify-between font-normal text-slate-700">
-                            <span>TIỀN ĐẦU KÌ</span>
-                            <span class="text-slate-800">0đ</span>
-                        </div>
-                        <div class="flex justify-between font-bold text-[#286874]">
-                            <span>TIỀN CUỐI KÌ</span>
-                            <span>{{ formatCurrency(summary.end_balance) }}</span>
-                        </div>
-                        <div v-if="user?.role_id !== 2" class="flex justify-between font-semibold text-[#e05638]">
-                            <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ</span>
-                            <span>({{ formatCurrency(summary.tax_deducted) }})</span>
-                        </div>
-                        <div v-if="user?.role_id !== 2" class="flex justify-between font-bold text-[#2f80ed]">
-                            <span>THU NHẬP CHỦ XE</span>
-                            <span>{{ formatCurrency(summary.owner_income) }}</span>
-                        </div>
+                        <template v-if="user?.role_id !== 2">
+                            <div class="flex justify-between font-bold text-slate-800">
+                                <span>TỔNG TIỀN CHUYẾN ĐI TRONG THÁNG</span>
+                                <span class="text-[#286874]">{{ formatCurrency(summary.completed_trips_change) }}</span>
+                            </div>
+                            <div class="flex justify-between font-semibold text-[#e05638]">
+                                <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ ({{ summary.tax_rate || 25 }}%)</span>
+                                <span>({{ formatCurrency(summary.tax_deducted) }})</span>
+                            </div>
+                            <div class="flex justify-between font-semibold text-amber-600">
+                                <span>TIỀN GIỮ PHẠT NGUỘI ({{ summary.penalty_rate || 2 }}%)</span>
+                                <span>({{ formatCurrency(summary.penalty_deducted || 0) }})</span>
+                            </div>
+                            <div class="flex justify-between font-bold text-[#2f80ed] pt-2 border-t border-slate-100">
+                                <span>THU NHẬP CHỦ XE</span>
+                                <span>{{ formatCurrency(summary.owner_income) }}</span>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -237,6 +239,7 @@ const router = useRouter()
 const isLoading = ref(false)
 
 const balance = ref(0)
+const holdBalance = ref(0)
 const rating = ref(5.0)
 const completedTripsCount = ref(0)
 const responseRate = ref(100)
@@ -250,7 +253,10 @@ const summary = ref({
     total_change: 0,
     start_balance: 0,
     end_balance: 0,
+    tax_rate: 25,
+    penalty_rate: 2,
     tax_deducted: 0,
+    penalty_deducted: 0,
     owner_income: 0
 })
 
@@ -264,6 +270,7 @@ const loadWalletDetails = async () => {
         const response = await walletService.getWalletDetails()
         if (response.success && response.data) {
             balance.value = response.data.balance
+            holdBalance.value = response.data.hold_balance || 0
             rating.value = response.data.rating
             completedTripsCount.value = response.data.completed_trips_count
             responseRate.value = response.data.response_rate

@@ -120,7 +120,9 @@ class Trip extends Model
 
                 $totalAmount = $pending->amount;
                 $holdAmount = round($totalAmount * 0.02, 2);
-                $availableAmount = $totalAmount - $holdAmount;
+                $VatAmount = round($totalAmount * 0.07, 2);
+                $commissionAmount = round($totalAmount * 0.18, 2);
+                $availableAmount = $totalAmount - $holdAmount - $VatAmount - $commissionAmount;
                 $wallet->increment('amount', $availableAmount);
                 $wallet->increment('hold_balance', $holdAmount);
             }

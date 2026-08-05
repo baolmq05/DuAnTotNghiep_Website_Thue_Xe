@@ -20,21 +20,28 @@ class SystemSettingSeeder extends Seeder
             [
                 'group'      => 'finance',
                 'key'        => 'commission_rate',
-                'value'      => '18', // Tiền hoa hồng của hệ thống (18%)
+                'value'      => '18', // Tiền hoa hồng hệ thống (18%)
                 'updated_by' => null,
                 'updated_at' => $now,
             ],
             [
                 'group'      => 'finance',
                 'key'        => 'vat_rate',
-                'value'      => '7', // Tiền thuế VAT (7%)
+                'value'      => '7', // Thuế VAT (7%)
                 'updated_by' => null,
                 'updated_at' => $now,
             ],
             [
                 'group'      => 'finance',
-                'key'        => 'hol_amount_rate',
-                'value'      => '2', // Tiền phạt nguội (2%)
+                'key'        => 'fee_2_percent',
+                'value'      => '2', // Tiền giữ phạt nguội (2%)
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
+            [
+                'group'      => 'finance',
+                'key'        => 'rental_fee',
+                'value'      => '5', // Tiền phí thuê xe (5%)
                 'updated_by' => null,
                 'updated_at' => $now,
             ],
@@ -46,9 +53,48 @@ class SystemSettingSeeder extends Seeder
                 'updated_at' => $now,
             ],
 
+            // Cấu hình chung cho hệ thống (General)
+            [
+                'group'      => 'general',
+                'key'        => 'site_name',
+                'value'      => 'Hệ Thống Thuê Xe Tự Lái',
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
+            [
+                'group'      => 'general',
+                'key'        => 'site_logo',
+                'value'      => '/uploads/logo.png',
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
+
+            // Cấu hình Email (Mail)
+            [
+                'group'      => 'mail',
+                'key'        => 'smtp_host',
+                'value'      => 'smtp.gmail.com',
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
+            [
+                'group'      => 'mail',
+                'key'        => 'smtp_port',
+                'value'      => '587',
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
+
+            // Cấu hình Thanh toán (Payment)
+            [
+                'group'      => 'payment',
+                'key'        => 'vnpay_merchant_id',
+                'value'      => 'VNPAY_DEMO_CODE',
+                'updated_by' => null,
+                'updated_at' => $now,
+            ],
         ];
 
-        // Sử dụng updateOrInsert để tránh trùng lặp khi chạy lại Seeder nhiều lần
         foreach ($settings as $setting) {
             DB::table('system_settings')->updateOrInsert(
                 [
