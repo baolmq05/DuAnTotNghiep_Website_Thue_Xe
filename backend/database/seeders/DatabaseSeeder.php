@@ -42,7 +42,7 @@ class DatabaseSeeder extends Seeder
             CarFeatureSeeder::class,
             PostCategorySeeder::class,
             PostSeeder::class,
-            
+            SystemSettingSeeder::class,
         ]);
     }
 }
