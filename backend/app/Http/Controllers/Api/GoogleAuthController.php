@@ -62,6 +62,7 @@ class GoogleAuthController extends Controller
                         'name' => $name,
                         'password' => bcrypt(Str::random(16)),
                         'email_verified_at' => now(),
+                        'avatar' => $payload['picture'] ?? null,
                         'status' => 1,
                         'role_id' => 2,
                     ]
