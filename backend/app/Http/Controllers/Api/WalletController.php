@@ -29,6 +29,9 @@ class WalletController extends Controller
         try {
             $user = auth('api')->user();
 
+            $month = intval($request->query('month', now()->month));
+            $year  = intval($request->query('year', now()->year));
+
             // Ensure the user has a wallet
             $wallet = Wallet::firstOrCreate(
                 ['user_id' => $user->id],
@@ -38,13 +41,37 @@ class WalletController extends Controller
             // Fetch transaction history
             $transactions = $this->getTransactionHistory($user->id);
 
-            // Calculate summaries
-            $summary = $this->calculateSummary($transactions, $wallet);
+            // Calculate summaries for requested month and year
+            $summary = $this->calculateSummary($transactions, $wallet, $month, $year);
 
             // Fetch owner profile stats
             $rating = $this->getOwnerRating($user->id);
             $completedTripsCount = $this->getCompletedTripsCount($user->id);
             $pendingBalance = $this->getPendingBalance($user->id);
+
+            // Fetch refunds from Refunds table for this wallet filtered by month & year
+            $refunds = Refund::where('wallet_id', $wallet->id)
+                ->whereMonth('created_at', $month)
+                ->whereYear('created_at', $year)
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            // Filter transactions by requested month and year for transactions list
+            $monthlyTransactions = $transactions->filter(function ($txn) use ($month, $year) {
+                if ($txn->trip_id && $txn->trip) {
+                    $trip = $txn->trip;
+                    $dateStr = $trip->end_at ?: ($trip->updated_at ?: $trip->start_at);
+                    if ($dateStr) {
+                        $date = Carbon::parse($dateStr);
+                        return $date->month == $month && $date->year == $year;
+                    }
+                }
+                if ($txn->created_at) {
+                    $date = Carbon::parse($txn->created_at);
+                    return $date->month == $month && $date->year == $year;
+                }
+                return false;
+            })->values();
 
             return response()->json([
                 'success' => true,
@@ -57,12 +84,22 @@ class WalletController extends Controller
                     'response_rate'         => 100,
                     'response_time'         => '5 phút',
                     'accept_rate'           => 100,
-                    'transactions'          => $this->formatTransactions($transactions),
+                    'transactions'          => $this->formatTransactions($monthlyTransactions),
+                    'refunds'               => $refunds->map(function ($ref) {
+                        return [
+                            'id'               => $ref->id,
+                            'transaction_code' => 'RF' . sprintf('%06d', $ref->id),
+                            'amount'           => -$ref->amount,
+                            'status'           => $ref->status,
+                            'description'      => $ref->description ?: ('Yêu cầu rút tiền #' . $ref->id),
+                            'created_at'       => $ref->created_at ? (is_string($ref->created_at) ? date('d/m/Y H:i', strtotime($ref->created_at)) : $ref->created_at->format('d/m/Y H:i')) : null,
+                        ];
+                    }),
                     'summary'               => $summary
                 ]
             ]);
 
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Lỗi hệ thống: ' . $e->getMessage()
@@ -159,14 +196,14 @@ class WalletController extends Controller
     /**
      * Calculate financial summary data (Helper).
      */
-    private function calculateSummary($transactions, Wallet $wallet): array
+    private function calculateSummary($transactions, Wallet $wallet, ?int $currentMonth = null, ?int $currentYear = null): array
     {
         $completedTripsChange = 0;
         $depositWithdrawalChange = 0;
         $cancelledTripsChange = 0;
 
-        $currentMonth = now()->month;
-        $currentYear  = now()->year;
+        $currentMonth = $currentMonth ?: now()->month;
+        $currentYear  = $currentYear ?: now()->year;
 
         foreach ($transactions as $txn) {
             $isCurrentMonth = false;
@@ -287,7 +324,12 @@ class WalletController extends Controller
      */
     private function formatTransactions($transactions)
     {
-        return $transactions->map(function ($txn) {
+        $commissionRate = floatval(SystemSetting::get('commission_rate', 18));
+        $vatRate        = floatval(SystemSetting::get('vat_rate', 7));
+        $taxRate        = $commissionRate + $vatRate; // 25%
+        $penaltyRate    = floatval(SystemSetting::get('fee_2_percent', 2)); // 2%
+
+        return $transactions->map(function ($txn) use ($taxRate, $penaltyRate) {
             return [
                 'id'               => $txn->id,
                 'transaction_code' => $txn->transaction_code,
@@ -298,14 +340,16 @@ class WalletController extends Controller
                     'id'              => $txn->trip->id,
                     'start_at'        => $txn->trip->start_at ? date('d/m/Y', strtotime($txn->trip->start_at)) : null,
                     'end_at'          => $txn->trip->end_at ? date('d/m/Y', strtotime($txn->trip->end_at)) : null,
-                    'created_at'      => $txn->trip->created_at ? $txn->trip->created_at->format('d/m/Y') : null,
+                    'created_at'      => $txn->trip->created_at ? (is_string($txn->trip->created_at) ? date('d/m/Y', strtotime($txn->trip->created_at)) : $txn->trip->created_at->format('d/m/Y')) : null,
+                    'updated_at'      => $txn->trip->updated_at ? (is_string($txn->trip->updated_at) ? date('d/m/Y H:i', strtotime($txn->trip->updated_at)) : $txn->trip->updated_at->format('d/m/Y H:i')) : null,
                     'cost'            => $txn->trip->cost,
                     'discount_amount' => $txn->trip->cost_discount ?? $txn->trip->discount_amount ?? 0,
                     'status'          => $txn->trip->status,
+                    'cancel_by_name'  => (int)$txn->trip->status === TripStatus::UserCancel->value ? 'Người thuê hủy' : ((int)$txn->trip->status === TripStatus::OwnerCancel->value ? 'Chủ xe hủy' : 'Hủy chuyến'),
                     'customer_name'   => $txn->trip->user ? $txn->trip->user->name : 'N/A',
                     'owner_name'      => ($txn->trip->car && $txn->trip->car->owner) ? $txn->trip->car->owner->name : 'N/A',
-                    'service_fee'     => intval($txn->trip->cost * 0.1),
-                    'tax_deducted'    => intval($txn->amount * 0.1),
+                    'penalty_deducted'=> intval($txn->amount * ($penaltyRate / 100)),
+                    'tax_deducted'    => intval($txn->amount * ($taxRate / 100)),
                     'car'             => $txn->trip->car ? [
                         'id'            => $txn->trip->car->id,
                         'name'          => $txn->trip->car->name,

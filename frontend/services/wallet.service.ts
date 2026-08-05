@@ -35,14 +35,25 @@ export interface WalletSummary {
     owner_income: number;
 }
 
+export interface RefundDetail {
+    id: number;
+    transaction_code: string;
+    amount: number;
+    status: string;
+    description: string;
+    created_at: string | null;
+}
+
 export interface WalletData {
     balance: number;
+    hold_balance?: number;
     rating: number;
     completed_trips_count: number;
     response_rate: number;
     response_time: string;
     accept_rate: number;
     transactions: TransactionDetail[];
+    refunds?: RefundDetail[];
     summary: WalletSummary;
 }
 
@@ -57,9 +68,10 @@ export class WalletService extends BaseService {
         super("auth/wallet");
     }
 
-    async getWalletDetails(): Promise<WalletResponse> {
+    async getWalletDetails(params?: { month?: number; year?: number }): Promise<WalletResponse> {
         return this.request<WalletResponse>(this.endpoint, {
             method: "GET",
+            params,
             useAuth: true
         });
     }
