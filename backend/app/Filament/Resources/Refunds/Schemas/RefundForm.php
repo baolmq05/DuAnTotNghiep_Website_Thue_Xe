@@ -24,13 +24,7 @@ class RefundForm
                     ->disabled(),
                 Select::make('status')
                     ->label('Trạng thái')
-                    ->options([
-                        'pending' => 'Chờ xử lý (Pending)',
-                        'processing' => 'Đang xử lý (Processing)',
-                        'completed' => 'Hoàn thành (Completed)',
-                        'failed' => 'Thất bại (Failed)',
-                        'canceled' => 'Đã hủy (Canceled)',
-                    ])
+                    ->options(\App\Enum\RefundStatus::class)
                     ->required(),
                 TextInput::make('transaction_id')
                     ->label('Mã giao dịch MoMo/Ngân hàng')

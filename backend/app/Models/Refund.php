@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+use App\Enum\RefundStatus;
+
 class Refund extends Model
 {
     use SoftDeletes;
@@ -18,6 +20,11 @@ class Refund extends Model
         'transaction_id',
         'description',
     ];
+
+    protected $casts = [
+        'status' => RefundStatus::class,
+    ];
+
     public function wallet(): BelongsTo
     {
         return $this->belongsTo(Wallet::class);
@@ -29,36 +36,39 @@ class Refund extends Model
             User::class,
             Wallet::class,
             'id',
+            'id',
             'wallet_id',
-            'wallet_id',
-            'id'
+            'user_id'
         );
     }
 
     protected static function booted()
     {
         static::updating(function ($refund) {
-            // Check if status is changed to failed or canceled
-            if ($refund->isDirty('status') && in_array($refund->status, ['failed', 'canceled'])) {
+            // Check if status is changed to Completed
+            if ($refund->isDirty('status') && $refund->status === RefundStatus::Completed) {
                 $oldStatus = $refund->getOriginal('status');
+                if (!$oldStatus instanceof RefundStatus) {
+                    $oldStatus = RefundStatus::tryFrom($oldStatus);
+                }
 
-                // Only refund if previous status was pending or processing (held amount)
-                if (in_array($oldStatus, ['pending', 'processing'])) {
+                // Only deduct if previous status was pending or processing (not completed yet)
+                if (in_array($oldStatus, [RefundStatus::Pending, RefundStatus::Processing])) {
                     $wallet = $refund->wallet;
                     if ($wallet) {
-                        // 1. Return money to wallet
-                        $wallet->increment('amount', $refund->amount);
+                        // 1. Deduct money from wallet
+                        $wallet->decrement('amount', $refund->amount);
 
                         // 2. Find the user of this wallet
                         $user = $refund->user;
                         if ($user) {
-                            // 3. Create a transaction log in history
+                            // 3. Create a transaction log in history (representing successful withdrawal)
                             \App\Models\Transaction::create([
                                 'user_id' => $user->id,
-                                'transaction_code' => 'RF' . strtoupper(uniqid()),
-                                'amount' => $refund->amount,
+                                'transaction_code' => 'WD' . ($refund->transaction_id ?: strtoupper(uniqid())),
+                                'amount' => -$refund->amount,
                                 'prepay' => 0,
-                                'description' => 'Hoàn trả tiền yêu cầu rút/hoàn tiền thất bại/hủy (Yêu cầu #' . $refund->id . ')'
+                                'description' => $refund->description ?: ('Rút tiền về ngân hàng thành công (Yêu cầu #' . $refund->id . ')')
                             ]);
                         }
                     }

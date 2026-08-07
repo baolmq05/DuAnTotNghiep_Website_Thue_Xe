@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('wallet_id')->constrained('wallets')->onDelete('cascade');
             $table->decimal('amount', 10, 2);
-            $table->string('status')->default('pending'); // pending, processing, completed, failed, canceled
+            $table->unsignedTinyInteger('status')->default(0); // 0: pending, 1: processing, 2: completed, 3: failed, 4: canceled
             $table->string('transaction_id')->nullable(); // Mã giao dịch từ MoMo
             $table->string('description')->nullable();
             $table->softDeletes();

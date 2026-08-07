@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Enum\TripStatus;
+use App\Enum\RefundStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Wallet;
 use App\Models\Transaction;
@@ -90,7 +91,7 @@ class WalletController extends Controller
                             'id'               => $ref->id,
                             'transaction_code' => 'RF' . sprintf('%06d', $ref->id),
                             'amount'           => -$ref->amount,
-                            'status'           => $ref->status,
+                            'status'           => $ref->status->value,
                             'description'      => $ref->description ?: ('Yêu cầu rút tiền #' . $ref->id),
                             'created_at'       => $ref->created_at ? (is_string($ref->created_at) ? date('d/m/Y H:i', strtotime($ref->created_at)) : $ref->created_at->format('d/m/Y H:i')) : null,
                         ];
@@ -140,27 +141,13 @@ class WalletController extends Controller
                 ], 400);
             }
 
-            // Perform DB transaction to deduct balance and record history
-            DB::transaction(function () use ($user, $wallet, $amount, $request) {
-                // 1. Deduct wallet amount
-                $wallet->decrement('amount', $amount);
-
-                // 2. Create Refund request
-                Refund::create([
-                    'wallet_id'   => $wallet->id,
-                    'amount'      => $amount,
-                    'status'      => 'pending',
-                    'description' => $request->input('description') ?: ('Rút tiền về ngân hàng ' . $user->bank_name . ' (' . $user->bank_account_number . ')'),
-                ]);
-
-                // 3. Create Transaction log
-                Transaction::create([
-                    'user_id'          => $user->id,
-                    'transaction_code' => 'WD' . strtoupper(uniqid()),
-                    'amount'           => -$amount,
-                    'prepay'           => 0,
-                ]);
-            });
+            // Create Refund request directly without deducting amount or logging transaction yet
+            Refund::create([
+                'wallet_id'   => $wallet->id,
+                'amount'      => $amount,
+                'status'      => RefundStatus::Pending,
+                'description' => $request->input('description') ?: ('Rút tiền về ngân hàng ' . $user->bank_name . ' (' . $user->bank_account_number . ')'),
+            ]);
 
             return response()->json([
                 'success' => true,

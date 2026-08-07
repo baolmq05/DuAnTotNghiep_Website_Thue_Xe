@@ -335,14 +335,14 @@ class SeePayService
                 ];
             }
 
-            if ($refund->status === 'completed') {
+            if ($refund->status === \App\Enum\RefundStatus::Completed) {
                 return [
                     'success' => true,
                     'message' => 'Yêu cầu hoàn tiền đã hoàn thành trước đó.'
                 ];
             }
 
-            if (!in_array($refund->status, ['pending', 'processing'])) {
+            if (!in_array($refund->status, [\App\Enum\RefundStatus::Pending, \App\Enum\RefundStatus::Processing])) {
                 return [
                     'success' => false,
                     'message' => 'Yêu cầu hoàn tiền ở trạng thái không thể xử lý.'
@@ -351,7 +351,7 @@ class SeePayService
 
             // Update refund status to completed and set transaction ID
             $refund->update([
-                'status' => 'completed',
+                'status' => \App\Enum\RefundStatus::Completed,
                 'transaction_id' => $transactionNo,
                 'description' => 'Hoàn tiền tự động qua SeePay payout.'
             ]);

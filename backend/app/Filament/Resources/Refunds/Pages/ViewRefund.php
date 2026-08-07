@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Refunds\Pages;
 
 use App\Filament\Resources\Refunds\RefundResource;
+use App\Enum\RefundStatus;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
@@ -31,7 +32,7 @@ class ViewRefund extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $this->record->update([
-                        'status' => 'completed',
+                        'status' => RefundStatus::Completed,
                         'transaction_id' => $data['transaction_id'],
                         'description' => $data['description'] ?: $this->record->description,
                     ]);
@@ -41,7 +42,7 @@ class ViewRefund extends ViewRecord
                         ->success()
                         ->send();
                 })
-                ->visible(fn () => in_array($this->record->status, ['pending', 'processing'])),
+                ->visible(fn () => in_array($this->record->status, [RefundStatus::Pending, RefundStatus::Processing])),
 
             Action::make('reject_transfer')
                 ->label('Từ chối / Hủy yêu cầu')
@@ -55,7 +56,7 @@ class ViewRefund extends ViewRecord
                 ])
                 ->action(function (array $data) {
                     $this->record->update([
-                        'status' => 'canceled',
+                        'status' => RefundStatus::Canceled,
                         'description' => $data['description'] ?: 'Yêu cầu bị từ chối bởi Admin.',
                     ]);
 
@@ -64,7 +65,7 @@ class ViewRefund extends ViewRecord
                         ->danger()
                         ->send();
                 })
-                ->visible(fn () => in_array($this->record->status, ['pending', 'processing'])),
+                ->visible(fn () => in_array($this->record->status, [RefundStatus::Pending, RefundStatus::Processing])),
         ];
     }
 }

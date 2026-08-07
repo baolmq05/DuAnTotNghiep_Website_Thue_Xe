@@ -36,21 +36,6 @@ class RefundsTable
                 TextColumn::make('status')
                     ->label('Trạng thái')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
-                        'pending' => 'gray',
-                        'processing' => 'info',
-                        'completed' => 'success',
-                        'failed', 'canceled' => 'danger',
-                        default => 'gray',
-                    })
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'pending' => 'Chờ xử lý',
-                        'processing' => 'Đang xử lý',
-                        'completed' => 'Hoàn thành',
-                        'failed' => 'Thất bại',
-                        'canceled' => 'Đã hủy',
-                        default => $state,
-                    })
                     ->sortable(),
                 TextColumn::make('transaction_id')
                     ->label('Mã GD chuyển tiền')
