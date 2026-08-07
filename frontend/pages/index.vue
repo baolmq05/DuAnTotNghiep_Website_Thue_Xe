@@ -3,6 +3,9 @@
 		<!-- Hero Banner -->
 		<HomePageHero />
 
+		<!-- View History -->
+		<HomePageViewHistory />
+
 		<!-- Why Choose Us / Benefits -->
 		<HomePageBenefits />
 

@@ -80,11 +80,11 @@
 			</div>
 		</div>
 
-		<div class="mt-10 text-center">
+		<!-- <div class="mt-10 text-center">
 			<NuxtLink to="/bookinghowto" class="inline-flex items-center gap-2 px-6 py-3 bg-brand-primary text-white rounded-xl font-semibold hover:bg-brand-dark transition duration-200 shadow-sm">
 				<span>Xem hướng dẫn chi tiết</span>
 				<Icon name="lucide:arrow-right" class="w-4 h-4" />
 			</NuxtLink>
-		</div>
+		</div> -->
 	</section>
 </template>

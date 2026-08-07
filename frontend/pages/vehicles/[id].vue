@@ -754,6 +754,7 @@ import { carService } from "~/services/car.service";
 import { favoriteService } from "~/services/favorite.service";
 import { notificationService } from "~/services/notification.service";
 import { promotionService } from "~/services/promotion.service";
+import { viewHistoryService } from "~/services/view-history.service";
 import DatePickerModal from "~/components/Shared/DatePickerModal.vue";
 
 definePageMeta({ layout: "vehicle-detail" });
@@ -1435,6 +1436,13 @@ const loadCarDetails = async (id: string) => {
 
       // Kiểm tra xem xe này có nằm trong danh sách yêu thích hay không
       await checkFavoriteStatus(id);
+
+      // Ghi nhận lịch sử xem xe (nếu đã đăng nhập)
+      if (user.value) {
+        viewHistoryService.recordViewHistory(car.value.id).catch((err) => {
+          console.error("Lỗi khi ghi nhận lịch sử xem xe:", err);
+        });
+      }
 
       // Tải các xe liên quan cùng hãng
       let similarData: any[] = [];

@@ -23,6 +23,7 @@ use App\Http\Controllers\Api\ReviewController;
 use App\Http\Controllers\Api\SeePayController;
 use App\Http\Controllers\Api\ExtensionTripController;
 use App\Http\Controllers\Api\DrivingLicenseController;
+use App\Http\Controllers\Api\ViewHistoryController;
 
 // ===================================================================
 // PUBLIC ROUTES - No authentication required
@@ -104,6 +105,11 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'auth'], function () {
     // AI Chatbot
     Route::get('chatbot', [AgentController::class, 'index']);
     Route::post('chatbot', [AgentController::class, 'store']);
+
+    // View History
+    Route::get('view-histories', [ViewHistoryController::class, 'index']);
+    Route::post('view-histories', [ViewHistoryController::class, 'store']);
+    Route::delete('view-histories/{carId}', [ViewHistoryController::class, 'destroy']);
 });
 
 // Feature routes (prefix: /api/...)
