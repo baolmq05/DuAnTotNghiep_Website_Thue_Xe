@@ -33,7 +33,7 @@
             <!-- Suggestions list -->
             <div
               v-if="showSuggestions && filteredProvinces.length > 0"
-              class="absolute left-0 top-full z-50 mt-2 max-h-[180px] overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg min-w-[220px] lg:min-w-[260px]"
+              class="absolute left-0 top-full z-50 mt-2 max-h-[140px] overflow-y-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg min-w-[220px] lg:min-w-[260px]"
             >
               <button
                 v-for="province in filteredProvinces"

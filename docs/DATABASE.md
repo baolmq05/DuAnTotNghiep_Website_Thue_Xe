@@ -71,12 +71,12 @@ erDiagram
     cars ||--o{ car_images : "has many"
     cars ||--o{ car_features : "has many"
     cars ||--o{ trips : "has many"
-    cars ||--o{ driving_favorite_items : "has many"
+    cars ||--o{ favorite_items : "has many"
     cars ||--o{ view_histories : "has many"
     cars ||--o{ reviews : "has many"
 
     features ||--o{ car_features : "has many"
-    favorites ||--o{ driving_favorite_items : "has many"
+    favorites ||--o{ favorite_items : "has many"
 
     trips ||--o{ trip_images : "has many"
     trips ||--o{ trip_extensions : "has many"
@@ -545,7 +545,7 @@ erDiagram
 
 ---
 
-#### 🔹 `driving_favorite_items` — Xe yêu thích (Chi tiết)
+#### 🔹 `favorite_items` — Xe yêu thích (Chi tiết)
 
 | Cột | Kiểu | Ràng buộc | Mô tả |
 |-----|------|-----------|-------|

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('driving_favorite_items', function (Blueprint $table) {
+        Schema::create('favorite_items', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
             $table->unsignedBigInteger('favorite_id')->comment('ID của mục yêu thích');
@@ -27,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('driving_favorite_items');
+        Schema::dropIfExists('favorite_items');
     }
 };
