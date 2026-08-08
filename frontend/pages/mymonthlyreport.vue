@@ -448,10 +448,38 @@ const completedTrips = computed(() => {
 })
 
 const depositWithdrawals = computed(() => {
+    const list: any[] = []
+    
     if (refunds.value && refunds.value.length > 0) {
-        return refunds.value.filter(r => isSameMonthYear(r.created_at))
+        const filteredRefunds = refunds.value.filter(r => isSameMonthYear(r.created_at))
+        list.push(...filteredRefunds)
     }
-    return transactions.value.filter(t => !t.trip && isSameMonthYear(t.created_at))
+    
+    if (transactions.value && transactions.value.length > 0) {
+        const filteredTxns = transactions.value.filter(t => {
+            if (t.trip) return false
+            if (!isSameMonthYear(t.created_at)) return false
+            if (t.transaction_code && t.transaction_code.startsWith('WD')) return false
+            return true
+        })
+        list.push(...filteredTxns)
+    }
+    
+    const getTimestamp = (dateStr?: string | null): number => {
+        if (!dateStr || typeof dateStr !== 'string') return 0
+        const parts = dateStr.trim().split(' ')
+        const dateParts = parts[0].split('/')
+        if (dateParts.length === 3) {
+            const d = dateParts[0]
+            const m = dateParts[1]
+            const y = dateParts[2]
+            const timePart = parts[1] || '00:00'
+            return new Date(`${y}-${m}-${d}T${timePart}`).getTime()
+        }
+        return new Date(dateStr).getTime() || 0
+    }
+    
+    return list.sort((a, b) => getTimestamp(b.created_at) - getTimestamp(a.created_at))
 })
 
 const cancelledTrips = computed(() => {

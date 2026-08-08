@@ -32,6 +32,12 @@
                         <p class="text-3xl sm:text-4xl font-bold text-amber-600 mt-1.5 tracking-tight">
                             {{ formatCurrency(holdBalance) }}
                         </p>
+                        <button
+                            @click="openWithdrawHoldModal"
+                            class="mt-2 text-xs font-bold text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100/80 px-3 py-1.5 rounded-full transition-colors inline-flex items-center gap-1">
+                            <Icon name="lucide:arrow-down-left" class="w-3.5 h-3.5" />
+                            Rút về ví khả dụng
+                        </button>
                     </div>
                 </div>
             </div>
@@ -226,6 +232,87 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Rút tiền dự trù -->
+    <div v-if="isWithdrawHoldModalOpen" class="fixed inset-0 z-[999] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeWithdrawHoldModal"></div>
+
+        <!-- Modal Content -->
+        <div class="relative bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl z-10 p-8 border border-slate-100 flex flex-col animate-scale-in">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h3 class="text-xl font-black text-[#286874]">Rút tiền dự trù về ví</h3>
+                    <p class="text-xs text-slate-500 mt-1">Chuyển tiền tạm giữ dự trù phạt nguội sang số dư ví khả dụng.</p>
+                </div>
+                <button @click="closeWithdrawHoldModal" class="h-8 w-8 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition flex items-center justify-center focus:outline-none">
+                    <Icon name="ic:outline-close" size="20" />
+                </button>
+            </div>
+
+            <!-- Hộp cảnh báo chính sách -->
+            <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-5 text-left">
+                <div class="flex gap-2.5 items-start">
+                    <Icon name="lucide:shield-alert" size="20" class="text-amber-600 shrink-0 mt-0.5" />
+                    <div>
+                        <p class="text-xs font-bold text-amber-800">Chính sách tiền giữ dự trù (2%)</p>
+                        <p class="text-[11px] text-amber-700/90 mt-1 leading-relaxed">
+                            Khoản tiền dự trù 2% được hệ thống tạm giữ để xử lý các vấn đề phát sinh sau chuyến đi (ví dụ: phạt nguội). 
+                            Bạn có thật sự muốn rút số tiền này về ví khả dụng không? 
+                            <strong class="block mt-1">Số tiền rút tối thiểu phải từ 20.000đ trở lên.</strong>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <form @submit.prevent="handleWithdrawHold" class="space-y-5">
+                <!-- Số dư dự trù khả dụng -->
+                <div class="flex justify-between items-center text-xs font-semibold text-slate-500 px-1">
+                    <span>Số dư tạm giữ khả dụng:</span>
+                    <span class="font-bold text-amber-600 text-sm">{{ formatCurrency(holdBalance) }}</span>
+                </div>
+
+                <!-- Nhập số tiền rút -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Số tiền muốn chuyển (đ)</label>
+                    <div class="relative">
+                        <input v-model="withdrawHoldForm.amount" type="number" required placeholder="Nhập số tiền muốn chuyển"
+                            class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold outline-none focus:border-[#286874] focus:bg-white transition-all" />
+                        <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">đ</span>
+                    </div>
+                </div>
+
+                <!-- Nút chọn nhanh -->
+                <div class="grid grid-cols-4 gap-2">
+                    <button type="button" :disabled="holdBalance < 50000" @click="setHoldAmount(50000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none">
+                        50k
+                    </button>
+                    <button type="button" :disabled="holdBalance < 100000" @click="setHoldAmount(100000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none">
+                        100k
+                    </button>
+                    <button type="button" :disabled="holdBalance < 200000" @click="setHoldAmount(200000)" class="py-2 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition focus:outline-none">
+                        200k
+                    </button>
+                    <button type="button" @click="setAllHoldAmount" class="py-2 border border-[#286874] text-[#286874] bg-[#286874]/5 rounded-xl text-xs font-bold hover:bg-[#286874]/10 transition focus:outline-none">
+                        Tất cả
+                    </button>
+                </div>
+
+                <!-- Nút hành động -->
+                <div class="grid grid-cols-2 gap-4 pt-2">
+                    <button type="button" @click="closeWithdrawHoldModal"
+                        class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition focus:outline-none text-sm">
+                        Đóng
+                    </button>
+                    <button type="submit" :disabled="submittingWithdrawHold"
+                        class="py-3 px-4 bg-[#286874] hover:bg-[#1d4f59] text-white font-bold rounded-xl transition focus:outline-none text-sm shadow-md shadow-[#286874]/10 flex items-center justify-center gap-2">
+                        <Icon v-if="submittingWithdrawHold" name="svg-spinners:ring-resize" class="w-4 h-4" />
+                        <span>Xác nhận</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </template>
 
 <script setup>
@@ -362,6 +449,70 @@ const handleWithdraw = async () => {
         showToast(errMsg, 'error')
     } finally {
         submittingWithdraw.value = false
+    }
+}
+
+// ==========================================
+// WITHDRAW HOLD BALANCE MANAGEMENT
+// ==========================================
+const isWithdrawHoldModalOpen = ref(false)
+const submittingWithdrawHold = ref(false)
+const withdrawHoldForm = reactive({
+    amount: null
+})
+
+const openWithdrawHoldModal = () => {
+    if (holdBalance.value < 20000) {
+        showToast('Số dư tiền tạm giữ (dự trù) tối thiểu từ 20.000đ trở lên mới có thể rút.', 'error')
+        return
+    }
+    withdrawHoldForm.amount = null
+    isWithdrawHoldModalOpen.value = true
+}
+
+const closeWithdrawHoldModal = () => {
+    isWithdrawHoldModalOpen.value = false
+}
+
+const setHoldAmount = (val) => {
+    withdrawHoldForm.amount = val
+}
+
+const setAllHoldAmount = () => {
+    withdrawHoldForm.amount = holdBalance.value
+}
+
+const handleWithdrawHold = async () => {
+    if (!withdrawHoldForm.amount || withdrawHoldForm.amount <= 0) {
+        showToast('Vui lòng nhập số tiền hợp lệ.', 'error')
+        return
+    }
+    if (withdrawHoldForm.amount < 20000) {
+        showToast('Số tiền chuyển tối thiểu là 20.000đ.', 'error')
+        return
+    }
+    if (withdrawHoldForm.amount > holdBalance.value) {
+        showToast('Số dư tiền tạm giữ không đủ.', 'error')
+        return
+    }
+
+    submittingWithdrawHold.value = true
+    try {
+        const response = await walletService.withdrawHold(withdrawHoldForm.amount)
+        if (response.success) {
+            showToast('Chuyển tiền dự trù về ví khả dụng thành công!', 'success')
+            closeWithdrawHoldModal()
+            // Tải lại dữ liệu ví
+            await loadWalletDetails()
+        } else {
+            showToast(response.message || 'Thao tác thất bại.', 'error')
+        }
+    } catch (error) {
+        console.error('Error claiming hold balance:', error)
+        const errMsg = error.response?._data?.message || 'Có lỗi xảy ra khi rút tiền dự trù. Vui lòng thử lại sau.'
+        showToast(errMsg, 'error')
+    } finally {
+        submittingWithdrawHold.value = false
     }
 }
 </script>

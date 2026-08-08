@@ -17,6 +17,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Requests\Wallet\WithdrawRequest;
+use App\Http\Requests\Wallet\WithdrawHoldRequest;
 use Exception;
 
 class WalletController extends Controller
@@ -153,6 +154,61 @@ class WalletController extends Controller
                 'success' => true,
                 'message' => 'Gửi yêu cầu rút tiền thành công. Yêu cầu đang được chờ phê duyệt.',
                 'balance' => $wallet->fresh()->amount
+            ]);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Lỗi hệ thống: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Withdraw from hold balance to available wallet balance.
+     * POST /api/auth/wallet/withdraw-hold
+     */
+    public function withdrawHold(WithdrawHoldRequest $request)
+    {
+        try {
+            $user = auth('api')->user();
+
+            // Ensure user has a wallet
+            $wallet = Wallet::firstOrCreate(
+                ['user_id' => $user->id],
+                ['amount' => 0, 'hold_balance' => 0]
+            );
+
+            $amount = intval($request->input('amount'));
+
+            // Check hold balance
+            if ($wallet->hold_balance < $amount) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Số dư tiền tạm giữ không đủ để thực hiện giao dịch này.'
+                ], 400);
+            }
+
+            // Perform DB transaction to transfer balance and record history
+            DB::transaction(function () use ($user, $wallet, $amount) {
+                // 1. Deduct hold_balance, increment amount
+                $wallet->decrement('hold_balance', $amount);
+                $wallet->increment('amount', $amount);
+
+                // 2. Create Transaction log
+                Transaction::create([
+                    'user_id'          => $user->id,
+                    'transaction_code' => 'WH' . strtoupper(uniqid()),
+                    'amount'           => $amount,
+                    'prepay'           => 0,
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Rút tiền dự trù về ví thành công.',
+                'balance' => floatval($wallet->fresh()->amount),
+                'hold_balance' => floatval($wallet->fresh()->hold_balance)
             ]);
 
         } catch (Exception $e) {
@@ -322,6 +378,7 @@ class WalletController extends Controller
                 'transaction_code' => $txn->transaction_code,
                 'amount'           => $txn->amount,
                 'prepay'           => $txn->prepay,
+                'description'      => str_starts_with($txn->transaction_code, 'WH') ? 'Rút tiền dự trù (phạt nguội) về ví' : (str_starts_with($txn->transaction_code, 'WD') ? 'Rút tiền về tài khoản ngân hàng' : null),
                 'created_at'       => $txn->created_at ? (is_string($txn->created_at) ? date('d/m/Y H:i', strtotime($txn->created_at)) : $txn->created_at->format('d/m/Y H:i')) : null,
                 'trip'             => $txn->trip ? [
                     'id'              => $txn->trip->id,

@@ -95,6 +95,7 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'auth'], function () {
     // Wallet
     Route::get('wallet', [WalletController::class, 'getWalletDetails']);
     Route::post('wallet/withdraw', [WalletController::class, 'withdraw']);
+    Route::post('wallet/withdraw-hold', [WalletController::class, 'withdrawHold']);
 
     // Payment creation
     Route::post('vnpay/create-payment', [VNPayController::class, 'createPayment']);

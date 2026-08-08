@@ -83,6 +83,14 @@ export class WalletService extends BaseService {
             useAuth: true
         });
     }
+
+    async withdrawHold(amount: number, description?: string): Promise<any> {
+        return this.request<any>(`${this.endpoint}/withdraw-hold`, {
+            method: "POST",
+            body: { amount, description },
+            useAuth: true
+        });
+    }
 }
 
 export const walletService = new WalletService();
