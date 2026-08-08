@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Laravel\Ai\Concerns\HasConversations;
 use Laravel\Ai\Contracts\ConversationStore;
 use Illuminate\Support\Facades\Log;
@@ -21,8 +23,16 @@ use Exception;
 
 #[Fillable(['name', 'email', 'password', 'bank_name', 'bank_account_number'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, FilamentUser
 {
+    /**
+     * Determine if the user can access the Filament Admin Panel.
+     */
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return (int) $this->role_id === 1;
+    }
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, HasConversations;
 

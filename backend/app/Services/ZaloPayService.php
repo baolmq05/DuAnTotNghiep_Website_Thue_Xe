@@ -486,11 +486,12 @@ class ZaloPayService
                     $carOwnerId = $owner->id ?? ($trip->car->user_id ?? 0);
                     $carName = $trip->car->name ?? 'xe';
                     $renterName = $trip->user->name ?? 'Khách hàng';
+                    $tripCodeStr = $trip->trip_code ? $trip->trip_code : "#{$trip->id}";
 
                     if ($carOwnerId) {
                         \App\Models\Notification::create([
                             'user_id' => $carOwnerId,
-                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua ZaloPay.",
+                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi {$tripCodeStr} qua ZaloPay.",
                             'is_read' => '0',
                         ]);
                     }
@@ -498,7 +499,7 @@ class ZaloPayService
                     if ($trip->user_id) {
                         \App\Models\Notification::create([
                             'user_id' => $trip->user_id,
-                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua ZaloPay. Chuyến đi đã được xác nhận.",
+                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi {$tripCodeStr} qua ZaloPay. Chuyến đi đã được xác nhận.",
                             'is_read' => '0',
                         ]);
                     }
@@ -640,16 +641,18 @@ class ZaloPayService
                         "end_at" => $extension->end_date,
                         "cost" => $trip->cost + $amount,
                     ]);
+                    $tripCodeStr = $trip->trip_code ? $trip->trip_code : "#{$trip->id}";
+
                     \App\Models\Notification::create([
                         'user_id' => $trip->car->user_id ?? ($owner->id ?? 0),
-                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi {$tripCodeStr} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                         'is_read' => '0',
                     ]);
 
                     if ($trip->user_id) {
                         \App\Models\Notification::create([
                             'user_id' => $trip->user_id,
-                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi {$tripCodeStr} qua ZaloPay. Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                             'is_read' => '0',
                         ]);
                     }

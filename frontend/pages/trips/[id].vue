@@ -10,7 +10,7 @@
           Quay lại danh sách
         </button>
         <span class="text-xs font-semibold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg border border-slate-200">
-          Mã chuyến đi: #{{ route.params.id }}
+          Mã chuyến đi: {{ trip?.trip_code || ('#' + route.params.id) }}
         </span>
       </div>
 

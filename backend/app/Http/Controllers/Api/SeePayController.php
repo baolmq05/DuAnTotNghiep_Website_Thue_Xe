@@ -91,19 +91,24 @@ class SeePayController extends Controller
             $paymentType = $request->input('payment_type');
             $tripId = $request->input('trip_id');
 
+            $trip = null;
+            if ($tripId && in_array($paymentType, ['rental', 'penalty', 'extension'])) {
+                $trip = Trip::find($tripId);
+            }
+
             // Generate correct transfer description
             switch ($paymentType) {
                 case 'rental':
-                    $description = "RENTAL " . $tripId;
+                    $description = "RENTAL " . ($trip && $trip->trip_code ? $trip->trip_code : $tripId);
                     break;
                 case 'deposit':
                     $description = "DEPOSIT " . $user->id;
                     break;
                 case 'penalty':
-                    $description = "PENALTY " . $tripId;
+                    $description = "PENALTY " . ($trip && $trip->trip_code ? $trip->trip_code : $tripId);
                     break;
                 case 'extension':
-                    $description = "EXT " . $tripId;
+                    $description = "EXT " . ($trip && $trip->trip_code ? $trip->trip_code : $tripId);
                     break;
                 default:
                     $description = "PAY";

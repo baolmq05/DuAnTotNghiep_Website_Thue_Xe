@@ -75,17 +75,17 @@
                     <h2 class="text-base font-bold text-slate-900 px-1">Chuyến đi hoàn thành trong tháng</h2>
                     <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-center text-[11px] border-collapse min-w-[1150px]">
+                            <table class="w-full text-center text-[11px] border-collapse min-w-[1250px]">
                                 <thead>
                                     <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                                        <th colspan="2" class="py-2.5 border-r border-slate-200"></th>
+                                        <th colspan="3" class="py-2.5 border-r border-slate-200"></th>
                                         <th colspan="3" class="py-2.5 border-r border-slate-200">Thời gian</th>
                                         <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi</th>
                                         <th colspan="2" class="py-2.5 border-r border-slate-200">Thanh toán</th>
                                         <th colspan="4" class="py-2.5"></th>
                                     </tr>
                                     <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
-                                        <!-- <th class="py-3 px-1 border-r border-slate-200">Mã chuyến đi</th> -->
+                                        <th class="py-3 px-1 border-r border-slate-200">Mã chuyến đi</th>
                                         <th class="py-3 px-1 border-r border-slate-200">Biển số xe</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Ngày đi</th>
                                         <th class="py-3 px-1 border-r border-gray-200">Ngày về</th>
@@ -106,9 +106,9 @@
                                 <tbody>
                                     <template v-if="completedTrips.length > 0">
                                         <tr v-for="item in completedTrips" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
-                                            <!-- <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-slate-800">
-                                                TRIP{{ item.trip.id }}
-                                            </td> -->
+                                            <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-[#286874]">
+                                                {{ item.trip.trip_code || ('TRIP' + item.trip.id) }}
+                                            </td>
                                             <td class="py-3 px-1 border-r border-slate-100 font-semibold">
                                                 {{ item.trip.car?.license_plate || 'N/A' }}
                                             </td>
@@ -468,7 +468,9 @@ const depositWithdrawals = computed(() => {
     const getTimestamp = (dateStr?: string | null): number => {
         if (!dateStr || typeof dateStr !== 'string') return 0
         const parts = dateStr.trim().split(' ')
-        const dateParts = parts[0].split('/')
+        const cleanDate = parts[0] || ''
+        if (!cleanDate) return 0
+        const dateParts = cleanDate.split('/')
         if (dateParts.length === 3) {
             const d = dateParts[0]
             const m = dateParts[1]

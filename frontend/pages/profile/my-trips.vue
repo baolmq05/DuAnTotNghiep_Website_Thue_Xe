@@ -124,6 +124,9 @@
                                         <span
                                             class="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-semibold text-slate-500">{{
                                                 trip.car.license_plate }}</span>
+                                        <span v-if="trip.trip_code"
+                                            class="rounded-md bg-[#1e4e57]/10 px-2 py-0.5 text-xs font-bold text-[#1e4e57]">{{
+                                                trip.trip_code }}</span>
                                     </div>
                                 </div>
 
@@ -336,7 +339,8 @@ function applyFilters(list: Trip[]): Trip[] {
         const q = searchQuery.value.toLowerCase()
         result = result.filter(t =>
             t.car.name.toLowerCase().includes(q) ||
-            t.car.license_plate.toLowerCase().includes(q)
+            t.car.license_plate.toLowerCase().includes(q) ||
+            (t.trip_code && t.trip_code.toLowerCase().includes(q))
         )
     }
     if (filterStatus.value !== '') {

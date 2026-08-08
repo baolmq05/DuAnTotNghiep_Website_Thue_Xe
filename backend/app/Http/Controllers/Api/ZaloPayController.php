@@ -202,7 +202,7 @@ class ZaloPayController extends Controller
                 $ownerId = $trip->car->user_id ?? 0;
                 return [
                     'appTransId'  => "{$datePrefix}_rental_{$trip->id}_{$ownerId}_{$timestamp}",
-                    'description' => "Thanh toán thuê xe #{$trip->id}"
+                    'description' => "Thanh toán thuê xe " . ($trip->trip_code ?? "#{$trip->id}")
                 ];
 
             case 'deposit':
@@ -218,7 +218,7 @@ class ZaloPayController extends Controller
                 }
                 return [
                     'appTransId'  => "{$datePrefix}_penalty_{$trip->id}_{$user->id}_{$timestamp}",
-                    'description' => "Thanh toán tiền phạt #{$tripId}"
+                    'description' => "Thanh toán tiền phạt " . ($trip->trip_code ?? "#{$tripId}")
                 ];
 
             case 'extension':
@@ -233,7 +233,7 @@ class ZaloPayController extends Controller
                 $ownerId = $trip->car->user_id ?? 0;
                 return [
                     'appTransId'  => "{$datePrefix}_ext_{$trip->id}_{$extension->id}_{$ownerId}_{$timestamp}",
-                    'description' => "Thanh toán phí gia hạn chuyến đi #{$trip->id}"
+                    'description' => "Thanh toán phí gia hạn chuyến đi " . ($trip->trip_code ?? "#{$trip->id}")
                 ];
         }
 

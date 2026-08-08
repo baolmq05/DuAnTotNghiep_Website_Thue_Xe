@@ -49,11 +49,20 @@ class SeePayService
     {
         $content = strtoupper($content);
         
-        if (preg_match('/RENTAL\s+(\d+)/', $content, $matches)) {
-            return [
-                'type' => 'rental',
-                'trip_id' => intval($matches[1]),
-            ];
+        if (preg_match('/RENTAL\s+([A-Z0-9-]+)/', $content, $matches)) {
+            $val = $matches[1];
+            if (is_numeric($val)) {
+                return [
+                    'type' => 'rental',
+                    'trip_id' => intval($val),
+                ];
+            } else {
+                $trip = Trip::where('trip_code', $val)->first();
+                return [
+                    'type' => 'rental',
+                    'trip_id' => $trip ? $trip->id : null,
+                ];
+            }
         }
         
         if (preg_match('/DEPOSIT\s+(\d+)/', $content, $matches)) {
@@ -63,18 +72,36 @@ class SeePayService
             ];
         }
 
-        if (preg_match('/PENALTY\s+(\d+)/', $content, $matches)) {
-            return [
-                'type' => 'penalty',
-                'trip_id' => intval($matches[1]),
-            ];
+        if (preg_match('/PENALTY\s+([A-Z0-9-]+)/', $content, $matches)) {
+            $val = $matches[1];
+            if (is_numeric($val)) {
+                return [
+                    'type' => 'penalty',
+                    'trip_id' => intval($val),
+                ];
+            } else {
+                $trip = Trip::where('trip_code', $val)->first();
+                return [
+                    'type' => 'penalty',
+                    'trip_id' => $trip ? $trip->id : null,
+                ];
+            }
         }
 
-        if (preg_match('/EXT\s+(\d+)/', $content, $matches)) {
-            return [
-                'type' => 'extension',
-                'trip_id' => intval($matches[1]),
-            ];
+        if (preg_match('/EXT\s+([A-Z0-9-]+)/', $content, $matches)) {
+            $val = $matches[1];
+            if (is_numeric($val)) {
+                return [
+                    'type' => 'extension',
+                    'trip_id' => intval($val),
+                ];
+            } else {
+                $trip = Trip::where('trip_code', $val)->first();
+                return [
+                    'type' => 'extension',
+                    'trip_id' => $trip ? $trip->id : null,
+                ];
+            }
         }
         
         return ['type' => 'unknown'];
@@ -144,11 +171,12 @@ class SeePayService
                     // 4. Notifications
                     $carName = $trip->car->name ?? 'xe';
                     $renterName = $trip->user->name ?? 'Khách hàng';
+                    $tripCodeStr = $trip->trip_code ? $trip->trip_code : "#{$trip->id}";
 
                     if ($ownerId) {
                         \App\Models\Notification::create([
                             'user_id' => $ownerId,
-                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay).",
+                            'message' => "Khách hàng {$renterName} đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi {$tripCodeStr} qua Chuyển khoản ngân hàng (SeePay).",
                             'is_read' => '0',
                         ]);
                     }
@@ -156,7 +184,7 @@ class SeePayService
                     if ($trip->user_id) {
                         \App\Models\Notification::create([
                             'user_id' => $trip->user_id,
-                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Chuyến đi đã được xác nhận.",
+                            'message' => "Bạn đã thanh toán thành công tiền thuê xe '{$carName}' cho chuyến đi {$tripCodeStr} qua Chuyển khoản ngân hàng (SeePay). Chuyến đi đã được xác nhận.",
                             'is_read' => '0',
                         ]);
                     }
@@ -265,16 +293,18 @@ class SeePayService
                         'cost' => $trip->cost + $amount,
                     ]);
 
+                    $tripCodeStr = $trip->trip_code ? $trip->trip_code : "#{$trip->id}";
+
                     \App\Models\Notification::create([
                         'user_id' => $trip->car->user_id ?? ($ownerId ?? 0),
-                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                        'message' => "Khách hàng đã thanh toán thành công phí gia hạn chuyến đi {$tripCodeStr} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                         'is_read' => '0',
                     ]);
 
                     if ($trip->user_id) {
                         \App\Models\Notification::create([
                             'user_id' => $trip->user_id,
-                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi #{$trip->id} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
+                            'message' => "Bạn đã thanh toán thành công phí gia hạn chuyến đi {$tripCodeStr} qua Chuyển khoản ngân hàng (SeePay). Thời gian trả xe mới là " . date('H:i d/m/Y', strtotime($extension->end_date)) . ".",
                             'is_read' => '0',
                         ]);
                     }

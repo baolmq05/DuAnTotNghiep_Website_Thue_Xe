@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -14,6 +13,7 @@ return new class extends Migration
         Schema::create('trips', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
+            $table->string('trip_code')->nullable()->unique()->comment('Mã chuyến đi hiển thị cho người dùng');
             $table->decimal('cost', 10, 2)->comment('chi phí chuyến đi')->unsigned();
             $table->decimal('discount_amount', 10, 2)->comment('số tiền giảm giá')->unsigned()->default(0);
             $table->tinyInteger('status')->comment('trạng thái chuyến đi:	0 - Chờ duyệt, 1 - Chờ thanh toán, 2 - Đã xác nhận, 3 - Đang diễn ra, 4 - Đã hoàn thành, 5 - Người dùng hủy, 6 - Chủ xe hủy')->default(0);

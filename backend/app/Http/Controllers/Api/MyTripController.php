@@ -22,14 +22,15 @@ class MyTripController extends Controller
         // Get all trip and car of user
         $tripQuery = Trip::where('user_id', $user->id)->with(['car', 'extensions', 'latestExtension']);
 
-        // Search car name or license plate
+        // Search car name, license plate or trip code
         if ($request->filled('search')) {
             $search = $request->search;
             $tripQuery->where(function ($q) use ($search) {
-                $q->whereHas('car', function ($carQuery) use ($search) {
-                    $carQuery->where('name', 'like', "%{$search}%")
-                        ->orWhere('license_plate', 'like', "%{$search}%");
-                });
+                $q->where('trip_code', 'like', "%{$search}%")
+                    ->orWhereHas('car', function ($carQuery) use ($search) {
+                        $carQuery->where('name', 'like', "%{$search}%")
+                            ->orWhere('license_plate', 'like', "%{$search}%");
+                    });
             });
         }
 

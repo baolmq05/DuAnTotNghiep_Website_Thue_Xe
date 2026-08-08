@@ -9,10 +9,11 @@ use App\Models\PromotionUsage;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Support\Str;
 
 class Trip extends Model
 {
-    protected $fillable = ['cost', 'discount_amount', 'status', 'trip_type', 'start_at', 'end_at', 'car_id', 'user_id', 'delivery_address', 'delivery_location'];
+    protected $fillable = ['cost', 'discount_amount', 'status', 'trip_type', 'start_at', 'end_at', 'car_id', 'user_id', 'delivery_address', 'delivery_location', 'trip_code'];
 
     protected $appends = ['payment_held', 'owner_payment_note'];
 
@@ -47,6 +48,12 @@ class Trip extends Model
     protected static function boot()
     {
         parent::boot();
+
+        static::creating(function ($trip) {
+            if (empty($trip->trip_code)) {
+                $trip->trip_code = 'TRIP-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+            }
+        });
 
         static::updated(function ($trip) {
             if (in_array((int) $trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {

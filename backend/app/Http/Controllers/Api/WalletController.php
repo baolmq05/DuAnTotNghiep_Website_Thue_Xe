@@ -382,6 +382,7 @@ class WalletController extends Controller
                 'created_at'       => $txn->created_at ? (is_string($txn->created_at) ? date('d/m/Y H:i', strtotime($txn->created_at)) : $txn->created_at->format('d/m/Y H:i')) : null,
                 'trip'             => $txn->trip ? [
                     'id'              => $txn->trip->id,
+                    'trip_code'       => $txn->trip->trip_code,
                     'start_at'        => $txn->trip->start_at ? date('d/m/Y', strtotime($txn->trip->start_at)) : null,
                     'end_at'          => $txn->trip->end_at ? date('d/m/Y', strtotime($txn->trip->end_at)) : null,
                     'created_at'      => $txn->trip->created_at ? (is_string($txn->trip->created_at) ? date('d/m/Y', strtotime($txn->trip->created_at)) : $txn->trip->created_at->format('d/m/Y')) : null,
