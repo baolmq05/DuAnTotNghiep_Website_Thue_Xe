@@ -21,7 +21,11 @@ class PostsTable
     {
         return $table
             ->columns([
-                TextColumn::make('title')->searchable()->label("Tiêu đề"),
+                TextColumn::make('title')
+                    ->searchable()
+                    ->label("Tiêu đề")
+                    ->limit(60)
+                    ->tooltip(fn($record): string => $record->title),
                 TextColumn::make('category.name')->searchable()->label('Danh mục')->badge(),
                 TextColumn::make('status')
                     ->label('Trạng thái')

@@ -1,0 +1,20 @@
+{
+    "Dashboard": "Bảng điều khiển",
+    "Search": "Tìm kiếm",
+    "Create": "Tạo mới",
+    "Edit": "Chỉnh sửa",
+    "Delete": "Xóa",
+    "Save": "Lưu thay đổi",
+    "Cancel": "Hủy bỏ",
+    "Filter": "Bộ lọc",
+    "Actions": "Hành động",
+    "Status": "Trạng thái",
+    "Created at": "Thời gian tạo",
+    "Updated at": "Thời gian cập nhật",
+    "Title": "Tiêu đề",
+    "Content": "Nội dung",
+    "Thumbnail": "Ảnh đại diện",
+    "The :attribute field is required.": "Trường :attribute không được để trống.",
+    "The :attribute must be an image.": "Trường :attribute phải là một hình ảnh.",
+    "The :attribute must be a file of type: :values.": "Trường :attribute phải là tệp có định dạng: :values."
+}

@@ -55,7 +55,7 @@ class PostForm
                             ->placeholder('Nhập từ khóa SEO bài viết (ví dụ: thue xe tu lai, meo thue xe)...')
                             ->maxLength(255),
 
-                        Textarea::make('summary')
+                        Textarea::make('excerpt')
                             ->label('Mô tả ngắn')
                             ->required()
                             ->rows(3)
@@ -73,7 +73,7 @@ class PostForm
                                 Select::make('status')
                                     ->label('Trạng thái')
                                     ->options([
-                                        '1' => 'Đã xuất bản',
+                                        '1' => 'Xuất bản',
                                         '0' => 'Bản nháp',
                                     ])
                                     ->default(1),
@@ -94,14 +94,19 @@ class PostForm
                                 FileUpload::make('thumbnail')
                                     ->label("Ảnh đại diện")
                                     ->image()
+                                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/x-webp', 'image/gif', 'image/svg+xml', 'image/jpg'])
                                     ->disk('public')
                                     ->directory('blogs/' . date('Y/m'))
+                                    ->visibility('public')
+                                    ->imagePreviewHeight('250')
                                     ->getUploadedFileNameForStorageUsing(
                                         fn(TemporaryUploadedFile $file): string => date('Y-m-d-H-i-s') . '.' . $file->getClientOriginalExtension()
-                                    )
-                                    ->imageEditor()
-                                    ->imageEditorViewportWidth('1920')
-                                    ->imageEditorViewportHeight('1080'),
+                                    ),
+
+                                TextInput::make('thumbnail_alt')
+                                    ->label('Thẻ ALT (Mô tả ảnh đại diện)')
+                                    ->placeholder('Nhập mô tả thẻ ALT cho ảnh đại diện (phục vụ SEO)...')
+                                    ->maxLength(255),
                             ]),
                     ])
             ]);

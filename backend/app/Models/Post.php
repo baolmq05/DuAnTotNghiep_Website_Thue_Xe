@@ -18,6 +18,7 @@ class Post extends Model
         'excerpt',
         'content',
         'thumbnail',
+        'thumbnail_alt',
         'seo_keywords',
         'user_id',
         'post_category_id',
