@@ -28,6 +28,6 @@ class AgentConversation extends Model
 
     public function messages(): HasMany
     {
-        return $this->hasMany(AgentConversationMessage::class, 'conversation_id');
+        return $this->hasMany(AgentConversationMessage::class, 'conversation_id')->orderBy('id', 'asc');
     }
 }

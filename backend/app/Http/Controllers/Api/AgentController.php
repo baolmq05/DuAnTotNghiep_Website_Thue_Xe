@@ -69,6 +69,9 @@ class AgentController extends Controller
 
         $response = $agent->prompt($message, provider: Lab::Gemini, model: 'gemini-2.5-flash');
 
-        return response($response->text);
+        return response()->json([
+            'text' => $response->text,
+            'conversation_id' => $agent->currentConversation() ?? $conversationId
+        ]);
     }
 }

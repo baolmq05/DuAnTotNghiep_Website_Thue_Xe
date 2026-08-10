@@ -216,7 +216,7 @@
                 </div>
               </div>
 
-              <div class="max-w-lg">
+              <div class="max-w-lg md:max-w-xl w-full">
                 <div :class="[
                   msg.type === 'image'
                     ? 'rounded-2xl overflow-hidden shadow-xs'
@@ -240,7 +240,85 @@
                     </div>
                   </div>
                   <div v-else>
-                    <p v-if="activeConvId === 'bot'" class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
+                    <!-- Chatbot AI Message Handling -->
+                    <div v-if="activeConvId === 'bot'">
+                      <!-- AI Car List Response -->
+                      <div v-if="parseBotMessage(msg.text).type === 'car_list'" class="space-y-3">
+                        <p v-if="parseBotMessage(msg.text).message" class="text-sm text-gray-800 leading-relaxed font-medium">
+                          {{ parseBotMessage(msg.text).message }}
+                        </p>
+
+                        <div v-if="parseBotMessage(msg.text).cars && parseBotMessage(msg.text).cars.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                          <div 
+                            v-for="car in parseBotMessage(msg.text).cars" 
+                            :key="car.id"
+                            class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-xs hover:shadow-md hover:border-brand-primary/40 transition-all duration-300 flex flex-col justify-between group"
+                          >
+                            <!-- Car Image Thumbnail -->
+                            <div class="relative w-full h-28 bg-gray-100 overflow-hidden">
+                              <img 
+                                :src="car.thumbnail || '/images/default-car.png'" 
+                                :alt="car.name" 
+                                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                @error="(e) => e.target.src = '/images/default-car.png'"
+                              />
+                              <span v-if="car.discount_value > 0" class="absolute top-2 left-2 bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow-xs">
+                                Giảm {{ formatMoney(car.discount_value) }}đ
+                              </span>
+                            </div>
+
+                            <!-- Car Details -->
+                            <div class="p-2.5 flex-1 flex flex-col justify-between">
+                              <div>
+                                <h4 class="font-bold text-gray-900 text-xs sm:text-sm line-clamp-1 group-hover:text-brand-primary transition-colors">
+                                  {{ car.name }}
+                                </h4>
+                                <p class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
+                                  <Icon name="lucide:user" class="w-3 h-3 text-gray-400 shrink-0" />
+                                  <span class="truncate">Chủ xe: {{ car.owner || 'Drivio' }}</span>
+                                </p>
+
+                                <div class="flex items-center gap-1.5 mt-1.5 text-[10px] text-gray-600 flex-wrap">
+                                  <span v-if="car.transmission" class="bg-gray-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <Icon name="lucide:settings-2" class="w-2.5 h-2.5 text-gray-400" />
+                                    {{ car.transmission }}
+                                  </span>
+                                  <span v-if="car.seat_count" class="bg-gray-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                                    <Icon name="lucide:users" class="w-2.5 h-2.5 text-gray-400" />
+                                    {{ car.seat_count }} chỗ
+                                  </span>
+                                </div>
+                              </div>
+
+                              <!-- Price & Action Link -->
+                              <div class="mt-2.5 pt-2 border-t border-gray-100 flex items-center justify-between gap-1">
+                                <div>
+                                  <span class="text-[10px] text-gray-400 line-through block" v-if="car.original_price && car.discount_value > 0">
+                                    {{ formatMoney(car.original_price) }}đ
+                                  </span>
+                                  <span class="text-xs font-bold text-brand-primary">
+                                    {{ formatMoney(car.price) }}đ<span class="text-[9px] font-normal text-gray-500">/ngày</span>
+                                  </span>
+                                </div>
+
+                                <NuxtLink 
+                                  :to="`/vehicles/${car.id}`" 
+                                  class="px-2.5 py-1.5 bg-brand-primary hover:bg-brand-dark text-white text-[11px] font-semibold rounded-lg transition-colors flex items-center gap-0.5 shadow-xs shrink-0"
+                                >
+                                  <span>Xem xe</span>
+                                  <Icon name="lucide:chevron-right" class="w-3 h-3" />
+                                </NuxtLink>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- Regular Text Message -->
+                      <p v-else class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
+                    </div>
+
+                    <!-- Host / User regular message -->
                     <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
                   </div>
                 </div>
@@ -549,7 +627,16 @@ async function sendMessage() {
     try {
       const reply = await chatBotService.sendMessage(botConversationId.value || undefined, text)
       isTyping.value = false
-      const replyText = typeof reply === 'string' ? reply : (reply.text || reply)
+
+      let replyText = ''
+      if (typeof reply === 'string') {
+        replyText = reply
+      } else if (reply && reply.text) {
+        replyText = reply.text
+        if (reply.conversation_id) {
+          botConversationId.value = reply.conversation_id
+        }
+      }
 
       messages.value.push({
         role: 'bot',
@@ -557,10 +644,6 @@ async function sendMessage() {
         time: getTime()
       })
       lastBotMessage.value = replyText
-
-      if (!botConversationId.value) {
-        await fetchBotMessages()
-      }
     } catch (e) {
       isTyping.value = false
       messages.value.push({
@@ -645,6 +728,39 @@ function exitChat() {
 }
 
 // ---------------- UI HELPERS ----------------
+const formatMoney = (amount) => {
+  if (!amount) return '0'
+  return new Intl.NumberFormat('vi-VN').format(amount)
+}
+
+function parseBotMessage(rawText) {
+  if (!rawText || typeof rawText !== 'string') {
+    return { type: 'text', text: rawText || '' }
+  }
+
+  try {
+    const jsonStart = rawText.indexOf('{')
+    const jsonEnd = rawText.lastIndexOf('}')
+
+    if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
+      const jsonStr = rawText.substring(jsonStart, jsonEnd + 1)
+      const data = JSON.parse(jsonStr)
+
+      if (data && (data.cars || data.status === 'success' || data.status === 'empty')) {
+        return {
+          type: 'car_list',
+          message: data.message || '',
+          cars: Array.isArray(data.cars) ? data.cars : []
+        }
+      }
+    }
+  } catch (e) {
+    // Không phải JSON
+  }
+
+  return { type: 'text', text: rawText }
+}
+
 function getTime() {
   return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
 }
