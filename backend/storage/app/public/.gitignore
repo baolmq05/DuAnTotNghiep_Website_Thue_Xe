@@ -1,3 +1,5 @@
 # Cho phép lưu ảnh upload lên Git để chia sẻ giữa các thành viên trong nhóm
+# Không ignore toàn bộ thư mục này nữa, vì khi đó mọi file upload đều bị Git bỏ qua
+# Nếu cần giới hạn loại file, hãy thêm pattern cụ thể thay vì '*' 
 # *
 !.gitignore
