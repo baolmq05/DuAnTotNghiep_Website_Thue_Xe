@@ -5,12 +5,12 @@
     >
       <button
         type="button"
-        class="inline-flex items-center gap-2 bg-slate-900 text-white text-sm font-bold px-5 py-3 rounded-full shadow-2xl"
+        class="inline-flex items-center gap-2 bg-slate-900 text-white text-sm font-bold px-8 py-5 rounded-full shadow-2xl"
         @click="openMap"
       >
         <Icon
           name="lucide:map"
-          size="16"
+          size="18"
           class="text-[#53cf84]"
         />
         Mở bản đồ
