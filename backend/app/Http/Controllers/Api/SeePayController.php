@@ -52,13 +52,13 @@ class SeePayController extends Controller
                 ], 400);
             }
 
-            if ($transferType === 'out') {
+            if ($transferType == 'out') {
                 $result = $this->sepayService->processRefundPayout($content, $amount, $referenceCode);
             } else {
                 $result = $this->sepayService->processPayment($content, $amount, $referenceCode);
             }
 
-            if ($result['success'] || (isset($result['code']) && $result['code'] === '02')) {
+            if ($result['success'] || (isset($result['code']) && $result['code'] == '02')) {
                 return response()->json([
                     'success' => true,
                     'message' => $result['message']
@@ -149,7 +149,7 @@ class SeePayController extends Controller
                 case 'rental':
                     // Check if trip status changed to Confirmed (2) and transaction exists
                     $trip = Trip::find($id);
-                    if ($trip && $trip->status === 2) {
+                    if ($trip && $trip->status == 2) {
                         $isPaid = Transaction::where('trip_id', $id)
                             ->where('amount', $amount)
                             ->exists();

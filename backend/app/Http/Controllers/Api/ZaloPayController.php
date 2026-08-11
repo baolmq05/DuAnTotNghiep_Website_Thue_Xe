@@ -115,7 +115,7 @@ class ZaloPayController extends Controller
                     $paymentType
                 );
 
-                if ($processRes['success'] || $processRes['message'] === 'Giao dịch đã xử lý.') {
+                if ($processRes['success'] || $processRes['message'] == 'Giao dịch đã xử lý.') {
                     return response()->json([
                         'success' => true,
                         'message' => 'Thanh toán thành công.',

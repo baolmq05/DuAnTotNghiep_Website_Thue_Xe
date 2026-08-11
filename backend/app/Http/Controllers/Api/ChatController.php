@@ -154,7 +154,7 @@ class ChatController extends Controller
             $user = auth('api')->user();
             $messageText = $request->input('text');
 
-            if ($request->input('type') === 'image' && $request->hasFile('image')) {
+            if ($request->input('type') == 'image' && $request->hasFile('image')) {
                 $messageText = CloudinaryService::upload($request->file('image'), 'chats');
             }
 

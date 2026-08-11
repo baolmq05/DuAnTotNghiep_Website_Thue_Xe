@@ -46,7 +46,7 @@ class Refund extends Model
     {
         static::updating(function ($refund) {
             // Check if status is changed to Completed
-            if ($refund->isDirty('status') && $refund->status === RefundStatus::Completed) {
+            if ($refund->isDirty('status') && $refund->status == RefundStatus::Completed) {
                 $oldStatus = $refund->getOriginal('status');
                 if (!$oldStatus instanceof RefundStatus) {
                     $oldStatus = RefundStatus::tryFrom($oldStatus);

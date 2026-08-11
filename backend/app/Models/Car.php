@@ -37,9 +37,9 @@ class Car extends Model
                 if ($owner) {
                     $status = (int) $car->status;
                     $message = '';
-                    if ($status === 1) {
+                    if ($status == 1) {
                         $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã được phê duyệt thành công. Xe đã sẵn sàng để hoạt động!";
-                    } elseif ($status === 3) {
+                    } elseif ($status == 3) {
                         $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã bị từ chối phê duyệt. Vui lòng kiểm tra lại thông tin xe.";
                     }
 

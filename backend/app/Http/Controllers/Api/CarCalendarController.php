@@ -14,7 +14,7 @@ class CarCalendarController extends Controller
     {
         $user = auth('api')->user();
 
-        //  KIỂM TRA XEM NGƯỜI DÙNG CÓ ĐANG LỌC NGÀY HAY KHÔNG
+        // CHECK WHETHER THE USER IS FILTERING BY DATE
         $isFilteringDate = $request->filled('fromDate') && $request->filled('toDate');
 
         $now = null;
@@ -24,7 +24,7 @@ class CarCalendarController extends Controller
             $now = Carbon::parse($request->fromDate)->startOfDay();
             $toDate = Carbon::parse($request->toDate)->endOfDay();
         } else {
-            // Nếu clear trống ngày -> Lấy mốc tuần hiện tại làm chuẩn để vẽ 7 ô Timeline
+            // If the date is cleared, use the current week as the reference point to draw a 7-cell timeline
             $currentMonday = Carbon::now()->startOfWeek()->startOfDay();
             if ($request->filled('fromDate')) {
                 $currentMonday = Carbon::parse($request->fromDate)->startOfWeek()->startOfDay();
@@ -33,12 +33,12 @@ class CarCalendarController extends Controller
             $toDate = $currentMonday->copy()->endOfWeek()->endOfDay();
         }
 
-        // KHỞI TẠO QUERY CƠ BẢN
+        // Create query
         $query = Car::where('user_id', $user->id)
             ->where('status', 1)
             ->with(['carBrand', 'carType', 'carLocation', 'images', 'trips']);
 
-        // Tìm kiếm nhanh theo tên hoặc biển số
+        // Filter by car name and license plate
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -47,42 +47,42 @@ class CarCalendarController extends Controller
             });
         }
 
-        // Lọc theo Hãng xe
+        // Filter by car brand
         if ($request->filled('brandFilter') && $request->brandFilter !== 'all') {
             $query->whereHas('carBrand', function ($q) use ($request) {
                 $q->where('brand_name', 'like', "%{$request->brandFilter}%");
             });
         }
 
-        // Lọc theo Dòng xe
+        // Filter by car type
         if ($request->filled('typeFilter') && $request->typeFilter !== 'all') {
             $query->whereHas('carType', function ($q) use ($request) {
                 $q->where('type_name', 'like', "%{$request->typeFilter}%");
             });
         }
 
-        // BỘ LỌC CÂU LỆNH SQL: Chỉ lọc giao thoa cứng nếu Front-end có truyền chọn ngày
+        // If there is a date filter
         if ($isFilteringDate) {
             $query->whereHas('trips', function ($q) use ($now, $toDate) {
                 $q->where('start_at', '<=', $toDate)
                     ->where('end_at', '>=', $now)
                     ->whereIn('status', [
-                        TripStatus::Pending->value, // 0 - chờ duyệt
-                        TripStatus::WaitingPayment->value,  // 1 - chờ thanh toán
-                        TripStatus::Confirmed->value,       // 2 - đã xác nhận
-                        TripStatus::Ongoing->value,         // 3 - đang diễn ra
-                        TripStatus::Complete->value,        // 4 - đã hoàn thành
-                        TripStatus::UserCancel->value,      // 5 - người dùng hủy
-                        TripStatus::OwnerCancel->value,     // 6 - chủ xe hủy
-                        TripStatus::WaitingExtension->value, // 7 - chờ gia hạn
-                        TripStatus::WaitingReturn->value,    // 8 - chờ trả xe
+                        TripStatus::Pending->value, // 0 - pending approval
+                        TripStatus::WaitingPayment->value,  // 1 - waiting payment
+                        TripStatus::Confirmed->value,       // 2 - confirmed
+                        TripStatus::Ongoing->value,         // 3 - in progress
+                        TripStatus::Complete->value,        // 4 - completed
+                        TripStatus::UserCancel->value,      // 5 - user canceled
+                        TripStatus::OwnerCancel->value,     // 6 - car owner canceled
+                        TripStatus::WaitingExtension->value, // 7 - waiting for extension
+                        TripStatus::WaitingReturn->value,    // 8 - waiting for return
                     ]);
             });
         }
 
         $cars = $query->get();
 
-        // TÁI CẤU TRÚC: Duyệt tách riêng từng Chuyến đi thành các Card độc lập
+        // RESTRUCTURE: Process each trip separately and create individual cards
         $formattedData = collect();
 
         foreach ($cars as $car) {
@@ -148,7 +148,7 @@ class CarCalendarController extends Controller
                     ]);
                 }
             } else {
-                // Giữ lại 1 Card thông báo xe trống nếu không dính lịch nào trong tuần
+                // Keep one card to show the car is available if there is no booking in the week
                 $thumbnailImage = $car->images->where('is_thumbnail', 1)->first() ?? $car->images->first();
                 $formattedData->push([
                     'trip_id' => 'empty-' . $car->id,
@@ -168,31 +168,31 @@ class CarCalendarController extends Controller
             }
         }
 
-        // Lọc theo trạng thái (statusFilter) sau khi map dữ liệu
+        // Filter by status after mapping the data
         if ($request->filled('statusFilter') && $request->statusFilter !== 'all') {
             $statusFilter = (int)$request->statusFilter;
             $formattedData = $formattedData->filter(function ($item) use ($statusFilter) {
-                return $item['status'] === $statusFilter;
+                return $item['status'] == $statusFilter;
             })->values();
         }
 
-        // Xử lý sắp xếp sortBy
+        // Handle sorting by sortBy
         if ($request->filled('sortBy')) {
             $sortBy = $request->sortBy;
-            if ($sortBy === 'default') {
+            if ($sortBy == 'default') {
                 $formattedData = $formattedData->sortBy('status');
-            } elseif ($sortBy === 'brand') {
+            } elseif ($sortBy == 'brand') {
                 $formattedData = $formattedData->sortBy('brand', SORT_NATURAL | SORT_FLAG_CASE);
-            } elseif ($sortBy === 'type') {
+            } elseif ($sortBy == 'type') {
                 $formattedData = $formattedData->sortBy('type', SORT_NATURAL | SORT_FLAG_CASE);
-            } elseif ($sortBy === 'name') {
+            } elseif ($sortBy == 'name') {
                 $formattedData = $formattedData->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE);
-            } elseif ($sortBy === 'busy') {
+            } elseif ($sortBy == 'busy') {
                 $formattedData = $formattedData->sortByDesc('status');
             }
         }
 
-        // BỔ SUNG ĐÚNG VỊ TRÍ: Trả kết quả JSON về cho Nuxt 3 gặm nhấm hiển thị
+        // IMPORTANT: Return the JSON result in the correct format for Nuxt 3 to display
         return response()->json($formattedData->values()->all(), 200);
     }
 
@@ -250,13 +250,13 @@ class CarCalendarController extends Controller
         return $timeline;
     }
 
-    // Tính toán timeline chi tiết cho từng chuyến đi trong modal
+    // Calculate the detailed timeline for each trip in the modal
     private function calculateTripDetailedTimeline($trip)
     {
         $startDate = Carbon::parse($trip->start_at)->startOfDay();
         $endDate = Carbon::parse($trip->end_at)->endOfDay();
 
-        // Mảng ánh xạ Thứ sang tiếng Việt viết tắt
+        // Array mapping weekdays to short Vietnamese names
         $dayNames = [
             1 => 'T2',
             2 => 'T3',
@@ -269,14 +269,14 @@ class CarCalendarController extends Controller
 
         $timeline = [];
 
-        // Chạy vòng lặp từ ngày bắt đầu đến ngày kết thúc của chuyến đi
+        // Loop from the trip start date to the trip end date
         $currentDay = $startDate->copy();
         while ($currentDay->lte($endDate)) {
 
             $dayOfWeekIso = $currentDay->dayOfWeekIso;
             $label = $dayNames[$dayOfWeekIso] ?? 'N/A';
 
-            // Tô màu theo trạng thái của chính chuyến đi này
+            // Color based on this trip's status
             $color = 'bg-gray-200';
             $tooltip = 'Trống lịch';
 
@@ -317,7 +317,7 @@ class CarCalendarController extends Controller
                 'tooltip' => $tooltip
             ];
 
-            // Tịnh tiến thêm 1 ngày
+            // Move forward by one day
             $currentDay->addDay();
         }
 

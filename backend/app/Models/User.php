@@ -30,7 +30,7 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return (int) $this->role_id === 1;
+        return (int) $this->role_id == 1;
     }
 
     /** @use HasFactory<UserFactory> */

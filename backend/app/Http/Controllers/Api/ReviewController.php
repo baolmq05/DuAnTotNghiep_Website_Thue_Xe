@@ -35,7 +35,7 @@ class ReviewController extends Controller
                 ], 404);
             }
 
-            $isOwner = $request->query('isOwner') === 'true';
+            $isOwner = $request->query('isOwner') == 'true';
 
             // 1. Get and format reviews list
             $reviews = $this->getFormattedReviews($targetId, $isOwner);

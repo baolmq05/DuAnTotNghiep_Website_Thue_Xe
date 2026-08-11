@@ -147,12 +147,12 @@ class VNPayController extends Controller
             $meta = $this->vnpayService->parseTxnRef($txnRef);
             $paymentType = $meta['type'] ?? 'unknown';
 
-            if ($responseCode === '00') {
+            if ($responseCode == '00') {
                 // Trigger processing as backup if IPN is pending or failed
                 $result = $this->vnpayService->processPayment($txnRef, $amount, $vnpTransactionNo, $paymentType);
                 
                 // Allow successful returns even if duplicate transaction was already processed by IPN
-                if ($result['success'] || $result['code'] === '02') {
+                if ($result['success'] || $result['code'] == '02') {
                     return response()->json([
                         'success' => true,
                         'message' => 'Thanh toán thành công.',

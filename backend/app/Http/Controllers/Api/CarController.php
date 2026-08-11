@@ -128,7 +128,7 @@ class CarController extends Controller
             ]);
 
         // Sắp xếp theo xe nổi bật (điểm đánh giá cao nhất & nhiều chuyến đi đã hoàn thành nhất)
-        if ($request->input('sort_by') === 'featured') {
+        if ($request->input('sort_by') == 'featured') {
             $query->orderByDesc('reviews_avg_rating')
                   ->orderByDesc('trips_count');
         }

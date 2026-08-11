@@ -26,7 +26,7 @@ class GoogleAuthController extends Controller
             $payload = null;
 
             // Một JWT (ID Token) hợp lệ bắt buộc phải có đúng 3 phân đoạn phân tách bằng dấu chấm (.)
-            $isJwt = (count(explode('.', $idToken)) === 3);
+            $isJwt = (count(explode('.', $idToken)) == 3);
 
             // Bổ sung local bypass xác thực token cho môi trường phát triển (local)
             if (

@@ -343,7 +343,7 @@ class ExtensionTripController extends Controller
         // Yêu cầu gia hạn bị từ chối được lưu trong trip_extensions (không sửa status của trip)
 
         // Tạo thông báo
-        $notifyUserId = ($trip->car->user_id === $user->id) ? $trip->user_id : $trip->car->user_id;
+        $notifyUserId = ($trip->car->user_id == $user->id) ? $trip->user_id : $trip->car->user_id;
         Notification::create([
             'user_id' => $notifyUserId,
             'message' => "Yêu cầu gia hạn cho chuyến đi #{$trip->id} (xe {$trip->car->name}) đã bị từ chối/hủy. Lý do: {$reason}.",

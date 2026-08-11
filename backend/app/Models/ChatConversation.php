@@ -51,7 +51,7 @@ class ChatConversation extends Model
             ['status' => 1]
         );
 
-        if ($conversation->messages()->count() === 0 && $trip->car) {
+        if ($conversation->messages()->count() == 0 && $trip->car) {
             ChatMessage::create([
                 'conversation_id' => $conversation->id,
                 'sender_id' => $trip->car->user_id,

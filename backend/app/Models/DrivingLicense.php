@@ -18,9 +18,9 @@ class DrivingLicense extends Model
                 if ($user) {
                     $status = (int) $drivingLicense->status;
                     $message = '';
-                    if ($status === 1) {
+                    if ($status == 1) {
                         $message = 'Giấy phép lái xe của bạn đã được duyệt thành công. Giờ đây bạn đã có thể tiến hành thuê xe!';
-                    } elseif ($status === 2) {
+                    } elseif ($status == 2) {
                         $message = 'Giấy phép lái xe của bạn đã bị từ chối do thông tin chưa hợp lệ. Vui lòng cập nhật lại hình ảnh hoặc thông tin GPLX chính xác.';
                     }
 

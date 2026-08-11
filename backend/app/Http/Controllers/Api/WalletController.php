@@ -280,7 +280,7 @@ class WalletController extends Controller
             if ($isCurrentMonth) {
                 if ($txn->trip_id && $txn->trip) {
                     $trip = $txn->trip;
-                    if ((int)$trip->status === TripStatus::Complete->value) {
+                    if ((int)$trip->status == TripStatus::Complete->value) {
                         $completedTripsChange += $txn->amount;
                     } elseif (in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
                         $cancelledTripsChange += $txn->amount;
@@ -390,7 +390,7 @@ class WalletController extends Controller
                     'cost'            => $txn->trip->cost,
                     'discount_amount' => $txn->trip->cost_discount ?? $txn->trip->discount_amount ?? 0,
                     'status'          => $txn->trip->status,
-                    'cancel_by_name'  => (int)$txn->trip->status === TripStatus::UserCancel->value ? 'Người thuê hủy' : ((int)$txn->trip->status === TripStatus::OwnerCancel->value ? 'Chủ xe hủy' : 'Hủy chuyến'),
+                    'cancel_by_name'  => (int)$txn->trip->status == TripStatus::UserCancel->value ? 'Người thuê hủy' : ((int)$txn->trip->status == TripStatus::OwnerCancel->value ? 'Chủ xe hủy' : 'Hủy chuyến'),
                     'customer_name'   => $txn->trip->user ? $txn->trip->user->name : 'N/A',
                     'owner_name'      => ($txn->trip->car && $txn->trip->car->owner) ? $txn->trip->car->owner->name : 'N/A',
                     'penalty_deducted'=> intval($txn->amount * ($penaltyRate / 100)),
