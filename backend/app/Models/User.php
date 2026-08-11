@@ -81,7 +81,7 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
     public function getRatingAttribute()
     {
         $rating = Review::where('target_id', $this->id)->avg('rating');
-        return $rating ? round(floatval($rating), 1) : 5.0;
+        return $rating ? round(floatval($rating), 1) : 0.0;
     }
 
     protected $fillable = [

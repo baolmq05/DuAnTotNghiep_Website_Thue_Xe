@@ -335,7 +335,7 @@ class WalletController extends Controller
             ->where('review_type', 1)
             ->avg('rating');
 
-        return $rating ? round(floatval($rating), 1) : 5.0;
+        return $rating ? round(floatval($rating), 1) : 0.0;
     }
 
     /**
