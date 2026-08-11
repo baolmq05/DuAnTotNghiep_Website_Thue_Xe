@@ -381,6 +381,14 @@ class CarController extends Controller
             ], 403);
         }
 
+        // Kiểm tra chuyến đi đang diễn ra
+        if ($car->has_ongoing_trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe đang có chuyến đi đang diễn ra, không thể thay đổi trạng thái hoặc chỉnh sửa thông tin xe.'
+            ], 400);
+        }
+
         DB::beginTransaction();
         try {
             // 1. Update/Create Location
@@ -500,5 +508,57 @@ class CarController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * API Thay đổi trạng thái hoạt động của xe (Kích hoạt / Tạm dừng)
+     * PATCH /api/cars/{id}/status
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $user = auth('api')->user();
+
+        $car = Car::find($id);
+        if (!$car) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin xe'
+            ], 404);
+        }
+
+        // Kiểm tra quyền sở hữu
+        if ($car->user_id !== $user->id && $user->role_id !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền thay đổi trạng thái xe này.'
+            ], 403);
+        }
+
+        // Kiểm tra chuyến đi đang diễn ra
+        if ($car->has_ongoing_trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe đang có chuyến đi đang diễn ra, không thể thay đổi trạng thái.'
+            ], 400);
+        }
+
+        // Chỉ cho phép toggle giữa 0 (Dừng hoạt động) và 1 (Đang hoạt động)
+        if (!in_array((int)$car->status, [0, 1])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe chưa được phê duyệt hoặc đang chờ duyệt, không thể tự thay đổi trạng thái.'
+            ], 400);
+        }
+
+        $newStatus = $car->status == 1 ? 0 : 1;
+        
+        // Cập nhật trạng thái mới
+        $car->update(['status' => $newStatus]);
+
+        return response()->json([
+            'success' => true,
+            'message' => $newStatus == 1 ? 'Kích hoạt hoạt động xe thành công!' : 'Tạm dừng hoạt động xe thành công!',
+            'data' => $car
+        ], 200);
     }
 }

@@ -74,6 +74,16 @@ export class MyCarService extends BaseService {
       useAuth: false
     });
   }
+
+  /**
+   * Thay đổi trạng thái hoạt động của xe (Bật/Tắt hoạt động)
+   */
+  async toggleCarStatus(id: number): Promise<ApiResponse<Car>> {
+    return this.request<ApiResponse<Car>>(`${this.endpoint}/${id}/status`, {
+      method: "PATCH",
+      useAuth: true
+    });
+  }
 }
 
 export const myCarService = new MyCarService();

@@ -89,31 +89,45 @@
         <div class="p-5 flex flex-col flex-grow justify-between">
           <div class="flex flex-col flex-grow justify-start">
 
-            <!-- Status Badge -->
-            <div class="flex flex-wrap gap-1.5 mb-3 min-h-[24px]">
-              <span v-if="car.status === 1"
-                class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                <!-- <span class="relative flex h-2 w-2">
-                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span> -->
-                Đang hoạt động
-              </span>
-              <span v-else-if="car.status === 2"
-                class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                <!-- <span class="w-2 h-2 rounded-full bg-amber-500"></span> -->
-                Chờ phê duyệt
-              </span>
-              <span v-else-if="car.status === 3"
-                class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                <!-- <span class="w-2 h-2 rounded-full bg-rose-500"></span> -->
-                Bị từ chối
-              </span>
-              <span v-else-if="car.status === 0"
-                class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                <!-- <span class="w-2 h-2 rounded-full bg-slate-400"></span> -->
-                Dừng hoạt động
-              </span>
+            <!-- Status Badge & Toggle -->
+            <div class="flex items-center justify-between gap-1.5 mb-3 min-h-[24px]">
+              <div>
+                <span v-if="car.status === 1"
+                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Đang hoạt động
+                </span>
+                <span v-else-if="car.status === 2"
+                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Chờ phê duyệt
+                </span>
+                <span v-else-if="car.status === 3"
+                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Bị từ chối
+                </span>
+                <span v-else-if="car.status === 0"
+                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Dừng hoạt động
+                </span>
+              </div>
+
+              <!-- Toggle switch for Active / Inactive -->
+              <div v-if="car.status === 1 || car.status === 0" class="flex items-center gap-1.5 shrink-0">
+                <span class="text-[10px] text-slate-400 font-semibold">{{ car.status === 1 ? 'Hoạt động' : 'Tạm dừng' }}</span>
+                <button
+                  @click.stop="toggleStatus(car)"
+                  :disabled="car.statusChanging || car.hasOngoingTrip"
+                  class="relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none"
+                  :class="[
+                    car.status === 1 ? 'bg-emerald-500' : 'bg-slate-200', 
+                    (car.statusChanging || car.hasOngoingTrip) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                  ]"
+                >
+                  <span
+                    class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                    :class="car.status === 1 ? 'translate-x-4' : 'translate-x-0'"
+                  ></span>
+                </button>
+              </div>
             </div>
 
             <!-- Title & Location -->
@@ -210,7 +224,16 @@
                   {{ formatPrice(car.revenue) }}
                 </p>
               </div>
-              <NuxtLink :to="`/my-cars/edit/${car.id}`"
+              <button v-if="car.hasOngoingTrip" @click="showToast('Xe đang có chuyến đi, không thể chỉnh sửa', 'error')"
+                class="px-4 py-2 text-xs font-bold text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed flex items-center gap-1.5 border border-slate-200 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                </svg>
+                Chỉnh sửa
+              </button>
+              <NuxtLink v-else :to="`/my-cars/edit/${car.id}`"
                 class="px-4 py-2 text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#163a41] rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -258,12 +281,14 @@
 import { ref, computed, onMounted } from 'vue';
 import { myCarService, type Car } from '~/services/my_car.service';
 import { BASE_URL } from '~/enviroment/enviroment';
+import { useToast } from '~/composables/useToast';
 
 definePageMeta({
   layout: "my-cars",
 });
 
 const { user } = useAuth();
+const { showToast } = useToast();
 const loading = ref(true);
 const userCars = ref<Car[]>([]);
 
@@ -319,7 +344,9 @@ const formattedCars = computed(() => {
       status: car.status, // Giữ nguyên giá trị số (0, 1, 2, 3) để hiển thị và lọc
       rentalType: 'Xe tự lái',
       revenue: computedRevenue,
-      activeDays: activeDays
+      activeDays: activeDays,
+      hasOngoingTrip: !!car.has_ongoing_trip,
+      statusChanging: (car as any).statusChanging || false
     };
   });
 });
@@ -337,6 +364,38 @@ const formatPrice = (val: any) => {
   if (val === undefined || val === null) return "0đ";
   const num = Math.round(Number(val)) || 0;
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "đ";
+};
+
+const handleEditOngoingTrip = () => {
+  showToast('Xe đang có chuyến đi đang diễn ra, không thể thay đổi trạng thái hoặc chỉnh sửa thông tin xe.', 'error');
+};
+
+const toggleStatus = async (car: any) => {
+  if (car.hasOngoingTrip) {
+    showToast('Xe đang có chuyến đi đang diễn ra, không thể thay đổi trạng thái.', 'error');
+    return;
+  }
+
+  const origCar = userCars.value.find(c => c.id === car.id);
+  if (!origCar) return;
+
+  (origCar as any).statusChanging = true;
+
+  try {
+    const res = await myCarService.toggleCarStatus(car.id);
+    if (res.success && res.data) {
+      origCar.status = res.data.status;
+      showToast(res.message, 'success');
+    } else {
+      showToast(res.message || 'Có lỗi xảy ra khi thay đổi trạng thái.', 'error');
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi thay đổi trạng thái xe:', err);
+    const errMsg = err?.data?.message || 'Không thể thay đổi trạng thái xe.';
+    showToast(errMsg, 'error');
+  } finally {
+    (origCar as any).statusChanging = false;
+  }
 };
 
 onMounted(async () => {

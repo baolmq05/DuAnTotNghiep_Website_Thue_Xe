@@ -123,6 +123,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     // Cars management
     Route::post('cars', [CarController::class, 'store']);
     Route::put('cars/{id}', [CarController::class, 'update']);
+    Route::patch('cars/{id}/status', [CarController::class, 'updateStatus']);
 
     // Trips
     Route::get('trips', [TripController::class, 'index']);

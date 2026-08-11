@@ -761,6 +761,13 @@ const fetchCarData = async () => {
         return
       }
 
+      // Kiểm tra xe có chuyến đi đang diễn ra hay không
+      if (car.has_ongoing_trip) {
+        showToast('Xe đang có chuyến đi đang diễn ra, không thể thay đổi trạng thái hoặc chỉnh sửa thông tin xe.', 'error')
+        navigateTo('/my-cars')
+        return
+      }
+
       licensePlate.value = car.license_plate
       VIN.value = car.VIN
       engineNumber.value = car.engine_number

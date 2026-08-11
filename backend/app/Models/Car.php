@@ -29,8 +29,27 @@ class Car extends Model
         'status'
     ];
 
+    protected $appends = ['has_ongoing_trip'];
+
+    public function getHasOngoingTripAttribute(): bool
+    {
+        return $this->trips()->whereNotIn('status', [
+            \App\Enum\TripStatus::Complete->value,
+            \App\Enum\TripStatus::UserCancel->value,
+            \App\Enum\TripStatus::OwnerCancel->value,
+        ])->exists();
+    }
+
     protected static function booted()
     {
+        static::updating(function ($car) {
+            if ($car->isDirty('status')) {
+                if ($car->has_ongoing_trip) {
+                    throw new \Exception('Xe đang có chuyến đi hoặc yêu cầu thuê đang diễn ra, không thể thay đổi trạng thái.');
+                }
+            }
+        });
+
         static::updated(function ($car) {
             if ($car->wasChanged('status')) {
                 $owner = $car->owner;
