@@ -164,7 +164,7 @@ const isCarFavorited = (carId: number) => {
 
 const handleToggleFavorite = async (carId: number) => {
     if (!user.value) {
-        showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "warning")
+        showToast("Vui lòng đăng nhập để lưu xe yêu thích!", "error")
         openLogin()
         return
     }
@@ -261,7 +261,8 @@ const mappedCarList = computed(() => {
             isDelivery: car.delivery_option_id ? true : false,
             noDeposit: false,
             discount: discountPct,
-            ownerAvatar: car.owner?.avatar || ''
+            ownerAvatar: car.owner?.avatar || '',
+            status: car.status
         };
     });
 })
