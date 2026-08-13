@@ -27,6 +27,11 @@ class UserResource extends Resource
     {
         return UserForm::configure($schema);
     }
+    
+    public static function canCreate(): bool
+    {
+        return false;
+    }
 
     public static function table(Table $table): Table
     {
@@ -44,7 +49,6 @@ class UserResource extends Resource
     {
         return [
             'index' => ListUsers::route('/'),
-            'create' => CreateUser::route('/create'),
             'edit' => EditUser::route('/{record}/edit'),
         ];
     }
