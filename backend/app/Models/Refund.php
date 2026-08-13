@@ -44,33 +44,88 @@ class Refund extends Model
 
     protected static function booted()
     {
+        static::created(function ($refund) {
+            // Deduct the wallet balance immediately when a withdrawal request is created as Active (Pending/Processing)
+            $deductedStatuses = [
+                RefundStatus::Pending,
+                RefundStatus::Processing,
+                RefundStatus::Completed
+            ];
+
+            if (in_array($refund->status, $deductedStatuses)) {
+                $wallet = $refund->wallet;
+                if ($wallet) {
+                    $wallet->decrement('amount', $refund->amount);
+
+                    // If created directly as completed, also log transaction
+                    if ($refund->status == RefundStatus::Completed) {
+                        $user = $refund->user;
+                        if ($user) {
+                            \App\Models\Transaction::create([
+                                'user_id' => $user->id,
+                                'transaction_code' => 'WD' . ($refund->transaction_id ?: $refund->id),
+                                'amount' => -$refund->amount,
+                                'prepay' => 0,
+                            ]);
+                        }
+                    }
+                }
+            }
+        });
+
         static::updating(function ($refund) {
-            // Check if status is changed to Completed
-            if ($refund->isDirty('status') && $refund->status == RefundStatus::Completed) {
+            if ($refund->isDirty('status')) {
                 $oldStatus = $refund->getOriginal('status');
                 if (!$oldStatus instanceof RefundStatus) {
                     $oldStatus = RefundStatus::tryFrom($oldStatus);
                 }
+                $newStatus = $refund->status;
 
-                // Only deduct if previous status was pending or processing (not completed yet)
-                if (in_array($oldStatus, [RefundStatus::Pending, RefundStatus::Processing])) {
-                    $wallet = $refund->wallet;
-                    if ($wallet) {
-                        // 1. Deduct money from wallet
-                        $wallet->decrement('amount', $refund->amount);
+                $deductedStatuses = [
+                    RefundStatus::Pending,
+                    RefundStatus::Processing,
+                    RefundStatus::Completed
+                ];
 
-                        // 2. Find the user of this wallet
-                        $user = $refund->user;
-                        if ($user) {
-                            // 3. Create a transaction log in history (representing successful withdrawal)
-                            \App\Models\Transaction::create([
-                                'user_id' => $user->id,
-                                'transaction_code' => 'WD' . ($refund->transaction_id ?: strtoupper(uniqid())),
-                                'amount' => -$refund->amount,
-                                'prepay' => 0,
-                                'description' => $refund->description ?: ('Rút tiền về ngân hàng thành công (Yêu cầu #' . $refund->id . ')')
-                            ]);
+                $oldWasDeducted = in_array($oldStatus, $deductedStatuses);
+                $newIsDeducted = in_array($newStatus, $deductedStatuses);
+
+                $wallet = $refund->wallet;
+                if ($wallet) {
+                    // Transition 1: From deducted status to non-deducted status (e.g. Pending -> Canceled)
+                    if ($oldWasDeducted && !$newIsDeducted) {
+                        $wallet->increment('amount', $refund->amount);
+
+                        // If old status was Completed, we also delete the transaction log if it exists
+                        if ($oldStatus == RefundStatus::Completed) {
+                            $user = $refund->user;
+                            if ($user) {
+                                $codes = [
+                                    'WD' . $refund->transaction_id,
+                                    'WD' . $refund->id,
+                                ];
+                                \App\Models\Transaction::where('user_id', $user->id)
+                                    ->whereIn('transaction_code', $codes)
+                                    ->delete();
+                            }
                         }
+                    }
+                    // Transition 2: From non-deducted status to deducted status (e.g. Canceled -> Pending)
+                    elseif (!$oldWasDeducted && $newIsDeducted) {
+                        $wallet->decrement('amount', $refund->amount);
+                    }
+                }
+
+                // Handle Transaction creation when entering Completed state
+                if ($newStatus == RefundStatus::Completed && $oldStatus != RefundStatus::Completed) {
+                    $user = $refund->user;
+                    if ($user) {
+                        \App\Models\Transaction::create([
+                            'user_id' => $user->id,
+                            'transaction_code' => 'WD' . ($refund->transaction_id ?: $refund->id),
+                            'amount' => -$refund->amount,
+                            'prepay' => 0,
+                        ]);
                     }
                 }
             }
