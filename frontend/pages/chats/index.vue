@@ -16,19 +16,13 @@
             <p class="text-[10px] uppercase tracking-widest text-gray-400 font-semibold mb-1.5 px-1">Trợ lý AI</p>
             <button @click="selectConv('bot')"
               :class="['conv-item w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all', activeConvId === 'bot' ? 'active' : '']">
-              <div
-                class="w-10 h-10 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
-                </svg>
-              </div>
+              <img src="/drivio_logo.png" class="w-10 h-10 rounded-full object-cover flex-shrink-0 bg-gray-50 border border-gray-100" />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
                 </div>
                 <p class="text-xs text-gray-500 truncate">
-                  {{ lastBotMessage }}
+                  {{ parseBotMessage(lastBotMessage).text }}
                 </p>
               </div>
             </button>
@@ -72,7 +66,12 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center justify-between gap-1">
-                    <p class="text-sm font-semibold text-gray-800 truncate">{{ conversation.other_user?.name }}</p>
+                    <div class="flex items-center gap-1.5 min-w-0">
+                      <p class="text-sm font-semibold text-gray-800 truncate">{{ conversation.other_user?.name }}</p>
+                      <span v-if="conversation.trip_code" class="text-[10px] font-normal text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded shrink-0 select-none">
+                        #{{ conversation.trip_code }}
+                      </span>
+                    </div>
                     <span class="text-[10px] text-gray-400 flex-shrink-0">
                       {{ conversation.last_message?.time || 'Vừa xong' }}
                     </span>
@@ -115,13 +114,7 @@
 
           <!-- Bot header -->
           <template v-if="activeConvId === 'bot'">
-            <div
-              class="w-9 h-9 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-white" viewBox="0 0 24 24">
-                <path fill="currentColor"
-                  d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
-              </svg>
-            </div>
+            <img src="/drivio_logo.png" class="w-9 h-9 rounded-full object-cover flex-shrink-0 bg-gray-50 border border-gray-100" />
             <div>
               <p class="text-sm font-semibold text-gray-800">Chatbot Drivio</p>
             </div>
@@ -138,7 +131,12 @@
               </div>
             </div>
             <div>
-              <p class="text-sm font-semibold text-gray-800">{{ activeHost.other_user?.name }}</p>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-semibold text-gray-800">{{ activeHost.other_user?.name }}</p>
+                <span v-if="activeHost.trip_code" class="text-[10px] font-medium text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full select-none">
+                  #{{ activeHost.trip_code }}
+                </span>
+              </div>
               <p v-if="activeHost.car" class="text-xs text-gray-500">{{ activeHost.car.name }}</p>
             </div>
             <!-- Car info pill -->
@@ -199,13 +197,7 @@
             <!-- Bot / host (left side) -->
             <div v-else class="flex gap-3 msg-anim">
               <!-- Bot avatar -->
-              <div v-if="activeConvId === 'bot'"
-                class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0 mt-0.5">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
-                </svg>
-              </div>
+              <img v-if="activeConvId === 'bot'" src="/drivio_logo.png" class="w-8 h-8 rounded-full object-cover flex-shrink-0 bg-gray-50 border border-gray-100 mt-0.5" />
               <!-- Host avatar -->
               <div v-else-if="activeHost" class="w-8 h-8 flex-shrink-0 mt-0.5">
                 <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
@@ -315,7 +307,7 @@
                       </div>
 
                       <!-- Regular Text Message -->
-                      <p v-else class="text-sm text-gray-800 leading-relaxed" v-html="msg.text"></p>
+                      <p v-else class="text-sm text-gray-800 leading-relaxed" v-html="parseBotMessage(msg.text).text"></p>
                     </div>
 
                     <!-- Host / User regular message -->
@@ -333,13 +325,7 @@
           <!-- Typing indicator -->
           <div v-if="isTyping" class="flex gap-3 msg-anim items-start">
             <!-- Bot Avatar -->
-            <div v-if="activeConvId === 'bot'"
-              class="w-8 h-8 rounded-full bg-gradient-to-br from-brand-primary to-brand-dark flex items-center justify-center flex-shrink-0 animate-pulse mt-0.5">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" viewBox="0 0 24 24">
-                <path fill="currentColor"
-                  d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7H4a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2M7.5 13A2.5 2.5 0 0 0 5 15.5A2.5 2.5 0 0 0 7.5 18a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 7.5 13m9 0a2.5 2.5 0 0 0-2.5 2.5a2.5 2.5 0 0 0 2.5 2.5a2.5 2.5 0 0 0 2.5-2.5A2.5 2.5 0 0 0 16.5 13M4 21v-1a7 7 0 0 1 7-7h2a7 7 0 0 1 7 7v1H4z" />
-              </svg>
-            </div>
+            <img v-if="activeConvId === 'bot'" src="/drivio_logo.png" class="w-8 h-8 rounded-full object-cover flex-shrink-0 animate-pulse mt-0.5 bg-gray-50 border border-gray-100" />
             <!-- Host Avatar -->
             <div v-else-if="activeHost" class="w-8 h-8 flex-shrink-0 mt-0.5">
               <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
@@ -380,7 +366,17 @@
         <!-- Input area -->
         <div class="bg-gray-50 px-3 sm:px-4 md:px-6 pb-3 sm:pb-4 md:pb-6 pt-2 flex-shrink-0 w-full">
           <div class="max-w-4xl mx-auto">
-            <div class="flex items-center gap-1.5 sm:gap-2 bg-white border border-gray-200 focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/10 rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 shadow-xs transition-all">
+            <!-- Cuộc trò chuyện đã đóng -->
+            <div v-if="activeHost && (activeHost.status === 0 || activeHost.status === '0')" class="bg-gray-100/80 border border-gray-200/60 rounded-2xl p-4 text-center text-gray-500 shadow-xs flex flex-col items-center justify-center gap-1.5">
+              <div class="flex items-center gap-1.5 font-semibold text-gray-700 text-sm">
+                <Icon name="lucide:lock" class="w-4 h-4 text-gray-500 shrink-0" />
+                <span>Cuộc trò chuyện đã đóng</span>
+              </div>
+              <p class="text-xs text-gray-400">Chuyến đi đã kết thúc hoặc đã hủy. Bạn chỉ có thể xem lại lịch sử tin nhắn.</p>
+            </div>
+
+            <!-- Cuộc trò chuyện hoạt động hoặc Bot -->
+            <div v-else class="flex items-center gap-1.5 sm:gap-2 bg-white border border-gray-200 focus-within:border-brand-primary focus-within:ring-2 focus-within:ring-brand-primary/10 rounded-2xl sm:rounded-3xl p-1.5 sm:p-2 shadow-xs transition-all">
               <!-- Input chọn file ẩn -->
               <input type="file" ref="imageInputRef" accept="image/*" class="hidden" @change="uploadImage" />
               <!-- Nút hình ảnh bên trái -->
@@ -609,6 +605,9 @@ async function fetchHostMessages(id) {
 
 // ---------------- CHAT ACTIONS ----------------
 async function sendMessage() {
+  if (activeHost.value && (activeHost.value.status === 0 || activeHost.value.status === '0')) {
+    return
+  }
   const text = inputText.value.trim()
   if (!text || isTyping.value) return
 
@@ -694,6 +693,7 @@ function sendSuggestion(text) {
 }
 
 async function selectConv(id) {
+  messages.value = [] // Reset messages to avoid UI flash
   activeConvId.value = id
   chat_id.value = id === 'bot' ? null : id
   showChatOnMobile.value = true
@@ -746,11 +746,19 @@ function parseBotMessage(rawText) {
       const jsonStr = rawText.substring(jsonStart, jsonEnd + 1)
       const data = JSON.parse(jsonStr)
 
-      if (data && (data.cars || data.status === 'success' || data.status === 'empty')) {
+      if (data && Array.isArray(data.cars)) {
         return {
           type: 'car_list',
           message: data.message || '',
-          cars: Array.isArray(data.cars) ? data.cars : []
+          cars: data.cars,
+          text: data.message || ''
+        }
+      }
+
+      if (data && data.message) {
+        return {
+          type: 'text',
+          text: data.message
         }
       }
     }
@@ -792,6 +800,10 @@ function triggerImageSelect() {
 }
 
 async function uploadImage(event) {
+  if (activeHost.value && (activeHost.value.status === 0 || activeHost.value.status === '0')) {
+    showToast("Cuộc trò chuyện đã đóng, không thể gửi ảnh.", "error")
+    return
+  }
   const file = event.target.files[0]
   if (!file) return
 

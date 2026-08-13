@@ -59,6 +59,7 @@ class ChatController extends Controller
                         'id' => $conversation->id,
                         'status' => $conversation->status,
                         'trip_id' => $conversation->trip_id,
+                        'trip_code' => $conversation->trip?->trip_code,
                         'created_at' => $conversation->created_at,
                         'updated_at' => $conversation->updated_at,
                         'other_user' => $otherUser ? [
@@ -125,9 +126,18 @@ class ChatController extends Controller
         try {
             $conversation = ChatConversation::where('trip_id', $request->trip_id)->first();
             if (!$conversation) {
+                $trip = \App\Models\Trip::find($request->trip_id);
+                $status = 1;
+                if ($trip && in_array((int)$trip->status, [
+                    \App\Enum\TripStatus::Complete->value,
+                    \App\Enum\TripStatus::UserCancel->value,
+                    \App\Enum\TripStatus::OwnerCancel->value
+                ])) {
+                    $status = 0;
+                }
                 $conversation = ChatConversation::create([
                     'trip_id' => $request->trip_id,
-                    'status' => 1,
+                    'status' => $status,
                 ]);
             }
 
@@ -151,6 +161,14 @@ class ChatController extends Controller
     public function storeMessage(StoreMessageRequest $request)
     {
         try {
+            $conversation = ChatConversation::findOrFail($request->conversation_id);
+            if ($conversation->status == 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Cuộc trò chuyện đã đóng, không thể gửi tin nhắn.'
+                ], 403);
+            }
+
             $user = auth('api')->user();
             $messageText = $request->input('text');
 
