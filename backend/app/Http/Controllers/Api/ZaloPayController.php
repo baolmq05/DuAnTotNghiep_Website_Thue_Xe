@@ -88,6 +88,14 @@ class ZaloPayController extends Controller
     public function verify(Request $request)
     {
         try {
+            $user = auth('api')->user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để xem kết quả thanh toán.'
+                ], 401);
+            }
+
             $appTransId = $request->input('app_trans_id');
             if (!$appTransId) {
                 return response()->json([
@@ -106,6 +114,13 @@ class ZaloPayController extends Controller
                 $zpTransId = $result['zp_trans_id'] ?? '';
                 $meta = $this->zalopayService->parseAppTransId($appTransId);
                 $paymentType = $meta['type'] ?? 'unknown';
+
+                if (!$this->isTransactionOwnedByUser($meta, $paymentType, $user->id)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Bạn không có quyền xem giao dịch này.'
+                    ], 403);
+                }
 
                 // Backup processing if callback delay occurs
                 $processRes = $this->zalopayService->processPayment(
@@ -151,6 +166,28 @@ class ZaloPayController extends Controller
                 'success' => false,
                 'message' => 'Lỗi hệ thống khi xác thực thanh toán: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function isTransactionOwnedByUser(array $meta, string $paymentType, int $userId): bool
+    {
+        switch ($paymentType) {
+            case 'rental':
+            case 'extension':
+                $tripId = $meta['trip_id'] ?? null;
+                if (!$tripId) {
+                    return false;
+                }
+
+                $trip = Trip::find($tripId);
+                return $trip && (int) $trip->user_id === $userId;
+
+            case 'deposit':
+            case 'penalty':
+                return isset($meta['user_id']) && (int) $meta['user_id'] === $userId;
+
+            default:
+                return false;
         }
     }
 

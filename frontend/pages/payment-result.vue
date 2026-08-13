@@ -23,6 +23,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import { useVNPay } from '~/composables/useVNPay'
 import { useZaloPay } from '~/composables/useZaloPay'
 import PaymentStatusCard from '~/components/payment/PaymentStatusCard.vue'
@@ -32,6 +33,7 @@ definePageMeta({
 })
 
 const route = useRoute()
+const router = useRouter()
 const { verifyPayment: verifyVNPay } = useVNPay()
 const { verifyPayment: verifyZaloPay } = useZaloPay()
 
@@ -42,7 +44,11 @@ const paymentData = ref<any>(null)
 const provider = ref<'vnpay' | 'zalopay'>('vnpay')
 
 onMounted(async () => {
-    const queryParams = route.query
+    const queryParams = { ...route.query }
+
+    if (typeof window !== 'undefined' && window.history?.replaceState) {
+        window.history.replaceState({}, document.title, '/payment-result')
+    }
 
     if (Object.keys(queryParams).length === 0) {
         verifying.value = false
@@ -74,6 +80,11 @@ onMounted(async () => {
         }
     } catch (err: any) {
         isSuccess.value = false
+        if (err?.response?.status === 401) {
+            await router.push('/')
+            return
+        }
+
         resultMessage.value = 'Đã xảy ra lỗi bất ngờ khi xác thực giao dịch của bạn.'
     } finally {
         verifying.value = false

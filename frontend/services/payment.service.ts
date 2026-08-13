@@ -60,7 +60,7 @@ export class PaymentService extends BaseService {
         return this.request<PaymentVerifyResponse>(`zalopay/verify`, {
             method: "GET",
             params: { app_trans_id: appTransId },
-            useAuth: false
+            useAuth: true
         });
     }
 
@@ -68,7 +68,7 @@ export class PaymentService extends BaseService {
         return this.request<PaymentVerifyResponse>(`vnpay/verify`, {
             method: "GET",
             params: queryParams,
-            useAuth: false
+            useAuth: true
         });
     }
 

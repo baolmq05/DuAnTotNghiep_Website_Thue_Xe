@@ -129,6 +129,14 @@ class VNPayController extends Controller
     public function verify(Request $request)
     {
         try {
+            $user = auth('api')->user();
+            if (!$user) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Vui lòng đăng nhập để xem kết quả thanh toán.'
+                ], 401);
+            }
+
             $inputData = $request->all();
             Log::info('VNPay Verify Called:', $inputData);
 
@@ -146,6 +154,13 @@ class VNPayController extends Controller
 
             $meta = $this->vnpayService->parseTxnRef($txnRef);
             $paymentType = $meta['type'] ?? 'unknown';
+
+            if (!$this->isTransactionOwnedByUser($meta, $paymentType, $user->id)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không có quyền xem giao dịch này.'
+                ], 403);
+            }
 
             if ($responseCode == '00') {
                 // Trigger processing as backup if IPN is pending or failed
@@ -184,6 +199,28 @@ class VNPayController extends Controller
                 'success' => false,
                 'message' => 'Lỗi hệ thống khi xác thực thanh toán: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function isTransactionOwnedByUser(array $meta, string $paymentType, int $userId): bool
+    {
+        switch ($paymentType) {
+            case 'rental':
+            case 'extension':
+                $tripId = $meta['trip_id'] ?? null;
+                if (!$tripId) {
+                    return false;
+                }
+
+                $trip = Trip::find($tripId);
+                return $trip && (int) $trip->user_id === $userId;
+
+            case 'deposit':
+            case 'penalty':
+                return isset($meta['user_id']) && (int) $meta['user_id'] === $userId;
+
+            default:
+                return false;
         }
     }
 

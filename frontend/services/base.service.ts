@@ -127,7 +127,7 @@ export abstract class BaseService {
                     if (typeof window !== "undefined") {
                         localStorage.removeItem("USER_TOKEN");
                         localStorage.removeItem("USER_INFO");
-                        window.location.href = "/?showLogin=true";
+                        window.location.href = "/";
                     }
                     throw refreshErr;
                 }

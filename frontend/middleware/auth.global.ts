@@ -16,6 +16,6 @@ export default defineNuxtRouteMiddleware((to, from) => {
   );
 
   if (requiresAuth && (!token.value || !user.value)) {
-    return navigateTo("/?showLogin=true");
+    return navigateTo("/");
   }
 });

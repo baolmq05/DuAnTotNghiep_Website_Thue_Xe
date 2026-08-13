@@ -60,11 +60,14 @@ Route::group(['prefix' => 'auth'], function () {
 
 // Payment webhooks & callbacks (public endpoints called by payment providers)
 Route::get('vnpay/ipn', [VNPayController::class, 'ipn']);
-Route::get('vnpay/verify', [VNPayController::class, 'verify']);
 Route::post('zalopay/callback', [ZaloPayController::class, 'callback']);
-Route::get('zalopay/verify', [ZaloPayController::class, 'verify']);
 Route::get('zalopay/banks', [ZaloPayController::class, 'getBanks']);
 Route::post('sepay/webhook', [SeePayController::class, 'handleWebhook']);
+
+Route::group(['middleware' => 'auth:api'], function () {
+    Route::get('vnpay/verify', [VNPayController::class, 'verify']);
+    Route::get('zalopay/verify', [ZaloPayController::class, 'verify']);
+});
 
 // ===================================================================
 // AUTHENTICATED ROUTES - Require valid JWT token (auth:api)
