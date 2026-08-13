@@ -4,6 +4,15 @@ namespace App\Filament\Widgets;
 
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
+use App\Models\Trip;
+use App\Models\User;
+use App\Models\Car;
+use App\Models\Promotion;
+use App\Models\Transaction;
+use App\Models\Post;
+use App\Models\CarBrand;
+use App\Models\SystemSetting;
+use App\Enum\TripStatus;
 
 class StatsOverview extends StatsOverviewWidget
 {
@@ -14,45 +23,73 @@ class StatsOverview extends StatsOverviewWidget
     {
         return 4;
     }
+
     protected function getStats(): array
     {
-        //tính tháng hiện tại và tháng trước để so sánh doanh thu
-        $currentRevenue = \App\Models\Transaction::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->sum('amount');
-        $lastRevenue = \App\Models\Transaction::whereYear('created_at', now()->subMonth()->year)->whereMonth('created_at', now()->subMonth()->month)->sum('amount');
-        $growth = $lastRevenue > 0 ? (($currentRevenue - $lastRevenue) / $lastRevenue) * 100 : 0;
+        // 1. Lấy các tỷ lệ phần trăm từ SystemSetting (hoa hồng: 18%, phạt nguội: 2%, VAT: 7%)
+        $commissionRate = floatval(SystemSetting::get('commission_rate', 18));
+        $penaltyRate    = floatval(SystemSetting::get('fee_2_percent', SystemSetting::get('hol_amount_rate', 2)));
+        $vatRate        = floatval(SystemSetting::get('vat_rate', 7));
 
-        // tính số người dùng mới trong tháng hiện tại
-        $newUsersThisMonth = \App\Models\User::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();
+        $totalRatePercent = $commissionRate + $penaltyRate + $vatRate; // 18% + 2% + 7% = 27%
+        $revenueRate      = $totalRatePercent / 100;
 
-        // tính số đơn thuê trong tháng hiện tại
-        $currentMonthTrips = \App\Models\Trip::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();
+        // 2. Tính tổng doanh thu hệ thống từ tất cả các trip có trạng thái là 4 (Complete - Đã hoàn thành)
+        $totalCompletedCost = (float) (Trip::where('status', TripStatus::Complete->value)
+            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
+            ->value('total') ?? 0);
 
-        // tính số khuyến mãi đang hoạt động
-        $activePromotions = \App\Models\Promotion::where('start_date', '<=', now())->where('end_date', '>=', now())->count();
-        
+        $totalRevenue = $totalCompletedCost * $revenueRate;
+
+        // 3. Tính doanh thu tháng hiện tại và tháng trước để so sánh tỷ lệ tăng trưởng (%)
+        $currentMonthCost = (float) (Trip::where('status', TripStatus::Complete->value)
+            ->whereYear('created_at', now()->year)
+            ->whereMonth('created_at', now()->month)
+            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
+            ->value('total') ?? 0);
+
+        $lastMonthCost = (float) (Trip::where('status', TripStatus::Complete->value)
+            ->whereYear('created_at', now()->subMonth()->year)
+            ->whereMonth('created_at', now()->subMonth()->month)
+            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
+            ->value('total') ?? 0);
+
+        $currentRevenue = $currentMonthCost * $revenueRate;
+        $lastRevenue    = $lastMonthCost * $revenueRate;
+        $growth         = $lastRevenue > 0 ? (($currentRevenue - $lastRevenue) / $lastRevenue) * 100 : 0;
+
+        // Tính số người dùng mới trong tháng hiện tại
+        $newUsersThisMonth = User::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();
+
+        // Tính số đơn thuê trong tháng hiện tại
+        $currentMonthTrips = Trip::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();
+
+        // Tính số khuyến mãi đang hoạt động
+        $activePromotions = Promotion::where('start_date', '<=', now())->where('end_date', '>=', now())->count();
+
         return [
-            Stat::make('Xe', \App\Models\Car::count())
+            Stat::make('Xe', Car::count())
                 ->description('Tổng xe trong hệ thống')
                 ->color('success')
                 ->icon('heroicon-o-truck'),
 
-            Stat::make('Người dùng', \App\Models\User::count())
+            Stat::make('Người dùng', User::count())
                 ->description("+{$newUsersThisMonth} người tháng này")
                 ->color('success')
                 ->icon('heroicon-o-users'),
 
-            Stat::make('Đơn thuê', \App\Models\Trip::count())
+            Stat::make('Đơn thuê', Trip::count())
                 ->description("+{$currentMonthTrips} đơn tháng này")
                 ->color('warning')
                 ->icon('heroicon-o-clipboard-document-list'),
 
-            Stat::make('Doanh thu', number_format(\App\Models\Transaction::sum('amount')) . ' VND')
+            Stat::make('Doanh thu', number_format($totalRevenue) . ' VND')
                 ->description(number_format($growth, 1) . '% so với tháng trước')
                 ->descriptionIcon($growth >= 0 ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down')
                 ->color($growth >= 0 ? 'success' : 'danger')
                 ->icon('heroicon-o-banknotes'),
 
-            Stat::make('Giao dịch', \App\Models\Transaction::count())
+            Stat::make('Giao dịch', Transaction::count())
                 ->description('Tổng số giao dịch')
                 ->color('info')
                 ->icon('heroicon-o-credit-card'),
@@ -62,12 +99,12 @@ class StatsOverview extends StatsOverviewWidget
                 ->color('primary')
                 ->icon('heroicon-o-gift'),
 
-            Stat::make('Bài viết', \App\Models\Post::count())
+            Stat::make('Bài viết', Post::count())
                 ->description('Tổng số bài viết')
                 ->color('warning')
                 ->icon('heroicon-o-newspaper'),
 
-            Stat::make('Hãng xe', \App\Models\CarBrand::count())
+            Stat::make('Hãng xe', CarBrand::count())
                 ->description('Tổng số hãng xe')
                 ->color('gray')
                 ->icon('heroicon-o-building-office-2'),

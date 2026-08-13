@@ -11,7 +11,7 @@
                 <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
                     <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-xl shadow-inner">
                         <Icon name="lucide:calendar" class="w-4 h-4 text-cyan-200" />
-                        <span class="text-xs font-semibold text-cyan-100 uppercase tracking-wider">Kỳ sao kê:</span>
+                        <span class="text-xs font-semibold text-cyan-100 uppercase tracking-wider">Tháng sao kê:</span>
                         <select
                             v-model="selectedMonthYear"
                             @change="onMonthChange"
@@ -152,7 +152,7 @@
                                     </template>
                                     <tr v-else>
                                         <td colspan="14" class="py-8 text-slate-400 text-center font-medium bg-white">
-                                            Không có chuyến đi hoàn thành trong kỳ.
+                                            Không có chuyến đi hoàn thành trong tháng.
                                         </td>
                                     </tr>
                                     <tr class="border-t border-slate-200 bg-slate-50/50">
@@ -194,7 +194,7 @@
                                 </template>
                                 <tr v-else>
                                     <td colspan="3" class="py-6 text-slate-400 text-center font-medium bg-white">
-                                        Không có giao dịch rút/nộp tiền trong kỳ.
+                                        Không có giao dịch rút/nộp tiền trong tháng.
                                     </td>
                                 </tr>
                                 <!-- <tr class="border-t border-slate-200 bg-slate-50/50">
@@ -282,7 +282,7 @@
                                     </template>
                                     <tr v-else>
                                         <td colspan="12" class="py-8 text-slate-400 text-center font-medium bg-white">
-                                            Không có giao dịch hủy chuyến trong kỳ.
+                                            Không có giao dịch hủy chuyến trong tháng.
                                         </td>
                                     </tr>
                                     <tr class="border-t border-slate-200 bg-slate-50/50">

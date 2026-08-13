@@ -13,16 +13,26 @@ class RevenueChart extends ChartWidget
     protected function getData(): array
     {
         $year = now()->year;
-        $rawData = \App\Models\Transaction::selectRaw('MONTH(created_at) as month, SUM(amount) as total')
+
+        $commissionRate = floatval(\App\Models\SystemSetting::get('commission_rate', 18));
+        $penaltyRate    = floatval(\App\Models\SystemSetting::get('fee_2_percent', \App\Models\SystemSetting::get('hol_amount_rate', 2)));
+        $vatRate        = floatval(\App\Models\SystemSetting::get('vat_rate', 7));
+        $revenueRate    = ($commissionRate + $penaltyRate + $vatRate) / 100;
+
+        $rawData = \App\Models\Trip::selectRaw('MONTH(created_at) as month, SUM(cost - COALESCE(discount_amount, 0)) as total')
+            ->where('status', \App\Enum\TripStatus::Complete->value)
             ->whereYear('created_at', $year)
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('total', 'month')
             ->toArray();
+
         $data = [];
         for ($i = 1; $i <= 12; $i++) {
-            $data[] = $rawData[$i] ?? 0;
+            $monthTotal = (float) ($rawData[$i] ?? 0);
+            $data[] = $monthTotal * $revenueRate;
         }
+
         return [
             'datasets' => [
                 [
