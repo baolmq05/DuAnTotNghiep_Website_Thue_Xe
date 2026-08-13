@@ -31,12 +31,14 @@ class UserForm
                         TextInput::make('name')
                             ->label('Họ và tên')
                             ->placeholder('Nhập họ và tên')
-                            ->required(),
+                            ->required()
+                            ->disabled(fn (string $operation): bool => $operation === 'edit'),
                         TextInput::make('email')
                             ->label('Email')
                             ->placeholder('Nhập email')
                             ->email()
-                            ->required(),
+                            ->required()
+                            ->disabled(fn (string $operation): bool => $operation === 'edit'),
                         Select::make('role')
                             ->label('Vai trò')
                             ->options([
