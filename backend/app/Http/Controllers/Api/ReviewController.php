@@ -190,25 +190,6 @@ class ReviewController extends Controller
      */
     private function calculateAverageRating(User $user, $reviews, bool $isOwner): float
     {
-        if ($isOwner) {
-            $cars = $user->cars;
-            if (!$cars || $cars->isEmpty()) {
-                return 0.0;
-            }
-
-            $totalRatingSum = 0;
-            $carCount = 0;
-
-            foreach ($cars as $car) {
-                $carReviews = $car->reviews ? $car->reviews->where('review_type', 1) : collect();
-                $finalCarRating = $carReviews->isNotEmpty() ? (float) round($carReviews->avg('rating'), 1) : 0.0;
-                $totalRatingSum += $finalCarRating;
-                $carCount++;
-            }
-
-            return $carCount > 0 ? round($totalRatingSum / $carCount, 1) : 0.0;
-        }
-
         return $reviews->isNotEmpty() ? (float) round($reviews->avg('rating'), 1) : 0.0;
     }
 

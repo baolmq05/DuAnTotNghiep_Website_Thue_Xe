@@ -330,8 +330,7 @@ class WalletController extends Controller
      */
     private function getOwnerRating(int $userId): float
     {
-        $carIds = Car::where('user_id', $userId)->pluck('id');
-        $rating = Review::whereIn('car_id', $carIds)
+        $rating = Review::where('target_id', $userId)
             ->where('review_type', 1)
             ->avg('rating');
 

@@ -203,7 +203,7 @@ const viewedCars = computed(() => {
           seats: Number(car.seat_count),
           transmission: normalizeTransmission(car.transmission),
           fuel: normalizeFuel(car.fuel_type),
-          rating: car.reviews_avg_rating ? parseFloat(car.reviews_avg_rating) : 5.0,
+          rating: car.reviews_avg_rating ? parseFloat(car.reviews_avg_rating) : 0.0,
           trips: car.trips_count || 0,
           isInstantBook: true,
           isDelivery: Boolean(car.delivery_option_id),

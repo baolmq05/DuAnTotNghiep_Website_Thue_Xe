@@ -46,7 +46,9 @@ class ViewHistoryController extends Controller
             ->with([
                 'car' => function ($query) {
                     $query->with(['images', 'carBrand', 'carType', 'carLocation', 'owner'])
-                        ->withAvg('reviews as reviews_avg_rating', 'rating')
+                        ->withAvg(['reviews as reviews_avg_rating' => function ($q) {
+                            $q->where('review_type', 1);
+                        }], 'rating')
                         ->withCount(['trips as trips_count' => function ($q) {
                             $q->where('status', 4); // Chỉ đếm các chuyến đi đã hoàn thành (Complete)
                         }]);
