@@ -67,7 +67,7 @@
                     <!-- Điểm đánh giá xe -->
                     <div
                         class="flex items-center gap-0.5 bg-amber-50 text-amber-600 px-2 py-0.5 rounded-lg text-xs font-bold shrink-0 mt-0.5">
-                        <Icon name="heroicons:star-solid" /> {{ rating?.toFixed(1) || '5.0' }}
+                        <Icon name="heroicons:star-solid" /> {{ rating || '0' }}
                     </div>
                 </div>
             </div>

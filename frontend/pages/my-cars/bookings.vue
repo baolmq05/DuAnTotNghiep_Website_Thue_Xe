@@ -693,6 +693,7 @@ const loadOwnerTrips = async () => {
             location: trip.car?.car_location?.address || 'Chưa cập nhật'
           },
           renter: {
+            id: trip.user?.id,
             name: trip.user?.name || 'Khách hàng',
             phone: trip.user?.phone || 'Chưa cập nhật SĐT'
           }
