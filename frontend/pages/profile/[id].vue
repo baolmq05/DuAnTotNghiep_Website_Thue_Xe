@@ -43,7 +43,7 @@
             <div class="bg-amber-50 border border-amber-100 rounded-2xl px-4 py-2 flex items-center gap-1.5 shadow-sm">
               <Icon name="ic:outline-star" class="text-amber-500" size="18" />
               <span class="font-bold text-amber-800 text-sm">
-                {{ profileData.rating ? parseFloat(profileData.rating).toFixed(1) : '5.0' }} sao
+                {{ profileData.rating ? parseFloat(profileData.rating).toFixed(1) : '0' }} sao
               </span>
             </div>
 
@@ -139,7 +139,7 @@
                     <div class="border-t border-slate-100 pt-3 flex items-center justify-between">
                       <div class="flex items-center gap-1.5 text-xs text-slate-600 font-bold">
                         <Icon name="ic:outline-star" class="text-amber-500 w-4 h-4" />
-                        <span>{{ car.reviews_avg_rating ? parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
+                        <span>{{ car.reviews_avg_rating ? parseFloat(car.reviews_avg_rating).toFixed(1) : '0' }}</span>
                         <span class="text-slate-300">•</span>
                         <span>{{ car.trips_count }} chuyến</span>
                       </div>

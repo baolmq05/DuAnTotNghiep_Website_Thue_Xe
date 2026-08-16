@@ -49,7 +49,7 @@
             <div class="mt-4 border border-slate-200 bg-slate-50/50 rounded-xl px-4 py-2 flex items-center gap-1.5 shadow-sm">
               <Icon name="ic:outline-star" class="text-yellow-500" size="20" />
               <span class="font-bold text-slate-800 text-sm">
-                {{ user?.rating ? parseFloat(user.rating).toFixed(1) : '5.0' }} sao
+                {{ user?.rating ? parseFloat(user.rating).toFixed(1) : '0' }} sao
               </span>
             </div>
           </div>
