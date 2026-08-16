@@ -338,10 +338,19 @@
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100/80 overflow-hidden">
               <!-- Price header -->
               <div class="bg-brand-dark px-6 py-5">
-                <div class="flex items-end gap-2">
-                  <span class="text-3xl font-black text-white">{{ car ? (car.unit_price / 1000).toFixed(0) : ''
-                  }}K</span>
-                  <span class="text-brand-light text-sm font-medium pb-0.5">/ngày</span>
+                <div class="flex flex-col">
+                  <span v-if="car && car.discount_value > 0" class="text-xs text-white/50 line-through mb-0.5">
+                    {{ (car.unit_price / 1000).toFixed(0) }}K/ngày
+                  </span>
+                  <div class="flex items-end gap-2">
+                    <span class="text-3xl font-black text-white">
+                      {{ car ? ((car.unit_price - (car.discount_value || 0)) / 1000).toFixed(0) : '' }}K
+                    </span>
+                    <span class="text-brand-light text-sm font-medium pb-0.5">/ngày</span>
+                    <span v-if="car && car.discount_value > 0" class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-1 mb-0.5">
+                      -{{ Math.round((car.discount_value / car.unit_price) * 100) }}%
+                    </span>
+                  </div>
                 </div>
                 <div class="flex items-center gap-2 mt-1.5 text-white">
                   <Icon name="heroicons:star-solid" class="w-3.5 h-3.5 text-yellow-400" />
@@ -608,8 +617,14 @@
               <span class="text-[10px] font-bold text-gray-500">{{ simCar.rating }} • {{ simCar.trips }} chuyến</span>
             </div>
             <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
-              <span class="text-sm font-black text-brand-primary">{{ simCar.price
-              }}<span class="text-[10px] font-semibold text-gray-400">/ngày</span></span>
+              <div class="flex flex-col">
+                <span v-if="simCar.discountPct > 0" class="text-[10px] text-gray-400 line-through leading-none mb-0.5">
+                  {{ simCar.price.toLocaleString('vi-VN') }}đ
+                </span>
+                <span class="text-sm font-black text-brand-primary">
+                  {{ simCar.discountedPrice.toLocaleString('vi-VN') }}đ<span class="text-[10px] font-semibold text-gray-400">/ngày</span>
+                </span>
+              </div>
               <div class="flex items-center gap-1 text-[10px] text-gray-400 font-bold">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-300" viewBox="0 0 24 24">
                   <path fill="currentColor"
@@ -1690,7 +1705,9 @@ const similarCars = computed(() => {
       id: c.id,
       name: c.name,
       image: thumbnailImg,
-      price: c.unit_price.toLocaleString('vi-VN') + 'đ',
+      price: c.unit_price,
+      discountedPrice: c.unit_price - (c.discount_value || 0),
+      discountPct: discountPct,
       location: c.car_location?.address || 'Chưa cập nhật',
       rating: c.reviews_avg_rating ? parseFloat(c.reviews_avg_rating).toFixed(1) : '5.0',
       trips: c.trips_count || 0,

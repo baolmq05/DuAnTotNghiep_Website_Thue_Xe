@@ -104,10 +104,15 @@
                     <!-- Bên phải: Giá tiền -->
                     <div class="text-right">
                         <p class="text-[10px] text-slate-400 font-medium uppercase tracking-wider mb-0.5">Giá từ</p>
-                        <p class="font-extrabold text-lg text-[#286874] leading-none">
-                            {{ formatPrice(price) }}
-                            <span class="text-xs text-slate-500 font-normal">/ngày</span>
-                        </p>
+                        <div class="flex flex-col items-end">
+                            <span v-if="discount > 0" class="text-[11px] text-slate-400 line-through mb-0.5">
+                                {{ formatPrice(price) }}
+                            </span>
+                            <p class="font-extrabold text-lg text-[#286874] leading-none">
+                                {{ formatPrice(discountedPrice) }}
+                                <span class="text-xs text-slate-500 font-normal">/ngày</span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -116,7 +121,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
     name: { type: String, required: true },
     image: { type: String, required: true },
     price: { type: [String, Number], required: true },
@@ -138,6 +145,14 @@ defineProps({
 })
 
 defineEmits(['toggle-favorite'])
+
+const discountedPrice = computed(() => {
+    const originalPrice = Number(props.price)
+    if (props.discount > 0) {
+        return originalPrice * (1 - props.discount / 100)
+    }
+    return originalPrice
+})
 
 const formatPrice = (val: string | number) => {
     if (typeof val === 'number') {
