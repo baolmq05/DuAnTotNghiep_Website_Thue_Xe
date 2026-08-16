@@ -276,10 +276,9 @@ class CarController extends Controller
                 'extra_distance_fee' => $request->input('km_limit_enabled') == '1' ? floatval($request->input('over_fee_val', 0)) : 0,
             ]);
 
-            // Brand & Type name for automatic full name of car (e.g. Toyota Camry)
-            $brand = CarBrand::find($request->car_brand_id);
+            // Type name for car name (e.g. Camry)
             $type = CarType::find($request->car_type_id);
-            $carName = ($brand ? $brand->brand_name : '') . ' ' . ($type ? $type->type_name : '');
+            $carName = $type ? $type->type_name : '';
 
             // 4. Create Car
             $car = Car::create([
@@ -421,10 +420,9 @@ class CarController extends Controller
                 ]
             );
 
-            // Brand & Type name for automatic full name of car (e.g. Toyota Camry)
-            $brand = CarBrand::find($request->car_brand_id);
+            // Type name for car name (e.g. Camry)
             $type = CarType::find($request->car_type_id);
-            $carName = ($brand ? $brand->brand_name : '') . ' ' . ($type ? $type->type_name : '');
+            $carName = $type ? $type->type_name : '';
 
             // 4. Update Car
             $car->update([
