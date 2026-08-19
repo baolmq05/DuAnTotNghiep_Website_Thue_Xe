@@ -22,7 +22,8 @@
     "v-calendar": "^3.1.2",
     "vue": "^3.5.35",
     "vue-chartjs": "^5.3.3",
-    "vue-router": "^5.1.0"
+    "vue-router": "^5.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@rolldown/binding-win32-x64-msvc": "^1.1.1",

@@ -1,295 +1,266 @@
 <template>
-    <div class="min-h-screen bg-slate-50 font-sans text-[#333333] pb-12 antialiased">
+    <div class="min-h-screen bg-slate-50/70 font-sans text-slate-800 pb-16 antialiased">
         <CommonLoadingOverlay :loading="isLoading" text="Đang tải dữ liệu..." />
 
-        <section class="bg-gradient-to-r from-[#1e4e57] to-[#286874] text-white relative">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 md:pt-28 md:pb-20 text-center">
-                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">
-                    Sao kê chi tiết giao dịch
-                </h1>
+        <!-- HEADER SECTION -->
+        <section class="bg-gradient-to-r from-[#1e4e57] via-[#245f6a] to-[#286874] text-white relative shadow-md">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-14 md:pt-24 md:pb-16">
+                <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                    <!-- Title & Subtitle -->
+                    <div class="text-center md:text-left">
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/15 text-cyan-100 text-xs font-semibold tracking-wide backdrop-blur-md mb-2 border border-white/10">
+                            <Icon name="lucide:file-text" class="w-3.5 h-3.5" />
+                            Báo cáo tài chính & Sao kê
+                        </span>
+                        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-white">
+                            Sao kê chi tiết giao dịch
+                        </h1>
+                        <p class="text-xs sm:text-sm text-cyan-100/90 mt-1">
+                            Kỳ sao kê từ {{ fromDate }} đến {{ toDate }}
+                        </p>
+                    </div>
 
-                <div class="mt-5 flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-xl shadow-inner">
-                        <Icon name="lucide:calendar" class="w-4 h-4 text-cyan-200" />
-                        <span class="text-xs font-semibold text-cyan-100 uppercase tracking-wider">Tháng sao kê:</span>
-                        <select
-                            v-model="selectedMonthYear"
-                            @change="onMonthChange"
-                            class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer pr-1">
-                            <option
-                                v-for="opt in monthOptions"
-                                :key="opt.value"
-                                :value="opt.value"
-                                class="text-slate-800 bg-white">
-                                {{ opt.label }}
-                            </option>
-                        </select>
+                    <!-- Action Controls (Month Picker + Export Excel) -->
+                    <div class="flex flex-wrap items-center justify-center gap-3">
+                        <!-- Month selector -->
+                        <div class="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/25 px-3.5 py-2 rounded-xl shadow-inner hover:bg-white/15 transition">
+                            <Icon name="lucide:calendar" class="w-4 h-4 text-cyan-200" />
+                            <span class="text-xs font-semibold text-cyan-100 uppercase tracking-wider hidden sm:inline">Tháng:</span>
+                            <select
+                                v-model="selectedMonthYear"
+                                @change="onMonthChange"
+                                class="bg-transparent text-white font-bold text-sm focus:outline-none cursor-pointer pr-2 border-none">
+                                <option
+                                    v-for="opt in monthOptions"
+                                    :key="opt.value"
+                                    :value="opt.value"
+                                    class="text-slate-800 bg-white">
+                                    {{ opt.label }}
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Export Excel Button -->
+                        <button
+                            @click="exportToExcel"
+                            :disabled="isExporting"
+                            class="inline-flex items-center gap-2 bg-emerald-500 hover:bg-emerald-600 active:bg-emerald-700 text-white text-xs sm:text-sm font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-emerald-900/20 transition-all transform active:scale-95 border border-emerald-400/30 disabled:opacity-50 cursor-pointer">
+                            <Icon v-if="!isExporting" name="lucide:file-spreadsheet" class="w-4 h-4" />
+                            <Icon v-else name="lucide:loader-2" class="w-4 h-4 animate-spin" />
+                            <span>{{ isExporting ? 'Đang xuất...' : 'Xuất Excel' }}</span>
+                        </button>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section class="pb-6 mt-3">
+        <!-- TOP BAR & USER SUMMARY CARD -->
+        <section class="mt-6 mb-4">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-start w-full">
+                <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
                     <button
                         @click="goBack"
-                        class="flex items-center gap-1 text-slate-500 hover:text-black transition text-sm font-medium focus:outline-none pt-2">
-                        <Icon name="lucide:chevron-left" class="w-4 h-4" />
+                        class="inline-flex items-center gap-1.5 text-slate-600 hover:text-slate-900 transition text-sm font-semibold focus:outline-none py-1 group">
+                        <Icon name="lucide:chevron-left" class="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
                         Quay lại
                     </button>
 
-                    <!-- KHỐI THÔNG TIN CHỦ XE: Bị đẩy sát về góc bên phải -->
-                    <div
-                        class="rounded-2xl shadow-lg shadow-[#286874]/5 bg-white p-4 md:p-5 w-full max-w-sm border border-slate-100">
-                        <table class="w-full border-separate border-spacing-y-1 text-sm">
-                            <tbody>
-                                <tr>
-                                    <td class="w-20 text-slate-500 font-bold">
-                                        {{ user?.role_id === 2 ? 'Khách hàng' : 'Chủ xe' }}
-                                    </td>
-                                    <td class="bg-slate-50 px-3 py-1.5 text-slate-800 font-semibold rounded-lg">
-                                        {{ userName }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="text-slate-500 font-bold">Mã số</td>
-                                    <td
-                                        class="bg-slate-50 px-3 py-1.5 text-slate-800 font-mono font-semibold rounded-lg">
-                                        {{ userCode }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                    <!-- Khối thông tin đối tác/người dùng -->
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 flex items-center justify-between gap-6 max-w-md">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-[#1e4e57]/10 text-[#1e4e57] flex items-center justify-center font-bold">
+                                <Icon :name="user?.role_id === 2 ? 'lucide:user' : 'lucide:car'" class="w-5 h-5" />
+                            </div>
+                            <div>
+                                <div class="text-[11px] font-bold tracking-wide uppercase text-slate-400">
+                                    {{ user?.role_id === 2 ? 'Tài khoản Khách hàng' : 'Tài khoản Chủ xe' }}
+                                </div>
+                                <div class="text-sm font-bold text-slate-800">
+                                    {{ userName }}
+                                </div>
+                            </div>
+                        </div>
 
+                        <div class="text-right border-l border-slate-100 pl-4">
+                            <div class="text-[11px] font-bold tracking-wide uppercase text-slate-400">Mã định danh</div>
+                            <div class="text-xs font-mono font-bold text-[#1e4e57] bg-slate-100 px-2 py-0.5 rounded">
+                                {{ userCode }}
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <section class="py-6 space-y-10">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+        <!-- MAIN TABLES SECTION -->
+        <section class="py-4 space-y-8">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
                 <!-- 1. CHUYẾN ĐI HOÀN THÀNH -->
                 <div class="space-y-3">
-                    <h2 class="text-base font-bold text-slate-900 px-1">Chuyến đi hoàn thành trong tháng</h2>
-                    <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <h2 class="text-base font-bold text-slate-900">
+                                1. Chuyến đi hoàn thành trong tháng
+                            </h2>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                {{ completedTrips.length }} chuyến
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-center text-[11px] border-collapse min-w-[1250px]">
+                            <table class="w-full text-left text-sm border-collapse min-w-[1350px]">
                                 <thead>
-                                    <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200"></th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thời gian</th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi</th>
-                                        <th colspan="2" class="py-2.5 border-r border-slate-200">Thanh toán</th>
-                                        <th colspan="4" class="py-2.5"></th>
+                                    <!-- Categorized Grouping Header Row -->
+                                    <tr class="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+                                        <th colspan="3" class="py-3 px-3.5 border-r border-slate-200/80">Thông tin chung</th>
+                                        <th colspan="3" class="py-3 px-3.5 border-r border-slate-200/80 text-center">Thời gian</th>
+                                        <th colspan="1" class="py-3 px-3.5 border-r border-slate-200/80">Đối tác</th>
+                                        <th colspan="7" class="py-3 px-3.5 text-right">Chi tiết Thanh toán & Số dư (VND)</th>
                                     </tr>
-                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
-                                        <th class="py-3 px-1 border-r border-slate-200">Mã chuyến đi</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Biển số xe</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Ngày đi</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Ngày về</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Ngày đặt xe</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">
+                                    <!-- Detailed Column Header Row -->
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold text-sm">
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 whitespace-nowrap">Mã chuyến</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 whitespace-nowrap">Biển số xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 whitespace-nowrap">Tên xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-center whitespace-nowrap">Ngày đi</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-center whitespace-nowrap">Ngày về</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 text-center whitespace-nowrap">Ngày đặt</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 whitespace-nowrap">
                                             {{ user?.role_id === 2 ? 'Chủ xe' : 'Khách hàng' }}
                                         </th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Xe thuê</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Đơn giá</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Thanh toán giữ chỗ</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Thanh toán chủ xe</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Giảm giá KM</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Giữ phạt nguội (2%)</th>
-                                        <th class="py-3 px-1 border-r border-gray-200">Thuế khấu trừ (25%)</th>
-                                        <th class="py-3 px-1">Thay đổi số dư</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Đơn giá</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 text-right whitespace-nowrap">Thanh toán cọc</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Tiền thuê xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Giảm giá KM</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Giữ phạt nguội (2%)</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Thuế (25%)</th>
+                                        <th class="py-3.5 px-3.5 text-right whitespace-nowrap">Thay đổi số dư</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody class="divide-y divide-slate-100 text-sm">
                                     <template v-if="completedTrips.length > 0">
-                                        <tr v-for="item in completedTrips" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-[#286874]">
+                                        <tr v-for="item in completedTrips" :key="item.id" class="hover:bg-cyan-50/30 transition-colors bg-white">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono font-bold text-[#1e4e57] text-sm whitespace-nowrap">
                                                 {{ item.trip.trip_code || ('TRIP' + item.trip.id) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-semibold">
-                                                {{ item.trip.car?.license_plate || 'N/A' }}
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono font-bold text-slate-800 text-sm whitespace-nowrap">
+                                                <span class="bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 text-slate-800">
+                                                    {{ item.trip.car?.license_plate || 'N/A' }}
+                                                </span>
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip.start_at }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip.end_at }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip.created_at }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-medium">
-                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-semibold text-slate-800 max-w-[180px] truncate">
                                                 {{ item.trip.car?.name || 'N/A' }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-700 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip.start_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-700 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip.end_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-600 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip.created_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-medium text-slate-800 whitespace-nowrap">
+                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-slate-800 font-medium whitespace-nowrap">
                                                 {{ formatCurrency(item.trip.car?.unit_price || 0) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-emerald-600">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-emerald-600 font-bold whitespace-nowrap">
                                                 {{ formatCurrency(item.prepay) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-blue-600">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-blue-600 font-bold whitespace-nowrap">
                                                 {{ formatCurrency(item.trip.cost) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-rose-500">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-rose-500 font-semibold whitespace-nowrap">
                                                 {{ formatCurrency(item.trip.discount_amount) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-amber-600">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-amber-600 font-semibold whitespace-nowrap">
                                                 {{ formatCurrency(item.trip.penalty_deducted || (item.amount * 0.02)) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-orange-500">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-orange-600 font-semibold whitespace-nowrap">
                                                 {{ formatCurrency(item.trip.tax_deducted || (item.amount * 0.25)) }}
                                             </td>
-                                            <td class="py-3 px-1 font-mono font-bold text-emerald-600">
+                                            <td class="py-3.5 px-3.5 font-mono font-black text-right text-emerald-600 text-base whitespace-nowrap">
                                                 +{{ formatCurrency(item.amount) }}
                                             </td>
                                         </tr>
                                     </template>
                                     <tr v-else>
-                                        <td colspan="14" class="py-8 text-slate-400 text-center font-medium bg-white">
-                                            Không có chuyến đi hoàn thành trong tháng.
-                                        </td>
-                                    </tr>
-                                    <tr class="border-t border-slate-200 bg-slate-50/50">
-                                        <td colspan="13"
-                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay đổi - Chuyến đi hoàn thành</td>
-                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
-                                            {{ formatCurrency(summary.completed_trips_change) }}
+                                        <td colspan="14" class="py-10 text-slate-400 text-center font-medium bg-slate-50/30">
+                                            Không có chuyến đi hoàn thành trong tháng này.
                                         </td>
                                     </tr>
                                 </tbody>
+                                <tfoot>
+                                    <tr class="bg-slate-100/90 font-bold border-t-2 border-slate-200 text-sm">
+                                        <td colspan="13" class="text-right py-4 px-4 text-slate-800 uppercase tracking-wider">
+                                            Tổng thay đổi - Chuyến đi hoàn thành:
+                                        </td>
+                                        <td class="py-4 px-3.5 font-black text-emerald-700 text-base text-right font-mono whitespace-nowrap">
+                                            +{{ formatCurrency(summary.completed_trips_change) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     </div>
                 </div>
 
                 <!-- 2. RÚT NỘP TIỀN -->
-                <div class="space-y-3 max-w-xl">
-                    <h2 class="text-base font-bold text-slate-900 px-1">Giao dịch rút/nộp tiền trong tháng</h2>
-                    <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
-                        <table class="w-full text-center text-[11px] border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
-                                    <th class="py-3 border-r border-slate-200 w-1/3">Ngày giao dịch</th>
-                                    <th class="py-3 border-r border-slate-200 w-1/3">Nội dung</th>
-                                    <th class="py-3 w-1/3">Thay đổi số dư</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <template v-if="depositWithdrawals.length > 0">
-                                    <tr v-for="item in depositWithdrawals" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
-                                        <td class="py-3.5 border-r border-slate-100 font-mono text-slate-500">{{ item.created_at }}</td>
-                                        <td class="py-3.5 border-r border-slate-100 font-medium text-slate-800 text-left pl-6">
-                                            {{ item.description || ('Giao dịch ' + (item.amount > 0 ? 'Nạp tiền' : 'Rút tiền')) }} 
-                                        </td>
-                                        <td class="py-3.5 font-mono font-bold" :class="item.amount > 0 ? 'text-emerald-600' : 'text-rose-600'">
-                                            {{ item.amount > 0 ? '+' : '' }}{{ formatCurrency(item.amount) }}
-                                        </td>
-                                    </tr>
-                                </template>
-                                <tr v-else>
-                                    <td colspan="3" class="py-6 text-slate-400 text-center font-medium bg-white">
-                                        Không có giao dịch rút/nộp tiền trong tháng.
-                                    </td>
-                                </tr>
-                                <!-- <tr class="border-t border-slate-200 bg-slate-50/50">
-                                    <td colspan="2" class="text-left pl-6 py-3.5 font-bold text-slate-900 text-xs">Tổng thay đổi - Giao dịch rút/nộp tiền</td>
-                                    <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
-                                        {{ formatCurrency(summary.deposit_withdrawal_change) }}
-                                    </td>
-                                </tr> -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- 3. HỦY CHUYẾN -->
                 <div class="space-y-3">
-                    <h2 class="text-base font-bold text-slate-900 px-1">Giao dịch hủy chuyến trong tháng</h2>
-                    <div class="bg-white rounded-2xl border border-slate-200/60 shadow-sm overflow-hidden">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                            <h2 class="text-base font-bold text-slate-900">
+                                2. Giao dịch rút / nộp tiền trong tháng
+                            </h2>
+                            <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                                {{ depositWithdrawals.length }} giao dịch
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden max-w-4xl">
                         <div class="overflow-x-auto">
-                            <table class="w-full text-center text-[11px] border-collapse min-w-[1100px]">
+                            <table class="w-full text-left text-sm border-collapse">
                                 <thead>
-                                    <tr class="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
-                                        <th colspan="2" class="py-2.5 border-r border-slate-200"></th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thời gian</th>
-                                        <th colspan="3" class="py-2.5 border-r border-slate-200">Thông tin chuyến đi</th>
-                                        <th colspan="2" class="py-2.5 border-r border-slate-200">Thanh toán</th>
-                                        <th colspan="2" class="py-2.5"></th>
-                                    </tr>
-                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 font-bold">
-                                        <!-- <th class="py-3 px-1 border-r border-slate-200">Mã chuyến đi</th> -->
-                                        <th class="py-3 px-1 border-r border-slate-200">Biển số xe</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Ngày đi</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Ngày về</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Ngày hủy chuyến</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">
-                                            {{ user?.role_id === 2 ? 'Chủ xe' : 'Khách hàng' }}
-                                        </th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Xe thuê</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Đơn giá</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Thanh toán giữ chỗ</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Thanh toán chủ xe</th>
-                                        <th class="py-3 px-1 border-r border-slate-200">Nội dung hủy chuyến</th>
-                                        <th class="py-3 px-1">Thay đổi số dư</th>
+                                    <tr class="bg-slate-100/90 border-b border-slate-200 text-slate-800 font-bold text-sm uppercase tracking-wider">
+                                        <th class="py-3.5 px-4 w-44 whitespace-nowrap">Ngày giao dịch</th>
+                                        <th class="py-3.5 px-4 w-36 text-center whitespace-nowrap">Loại giao dịch</th>
+                                        <th class="py-3.5 px-4">Nội dung diễn giải</th>
+                                        <th class="py-3.5 px-4 text-right w-48 whitespace-nowrap">Thay đổi số dư</th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    <template v-if="cancelledTrips.length > 0">
-                                        <tr v-for="item in cancelledTrips" :key="item.id" class="border-t border-slate-100 hover:bg-slate-50/50 bg-white">
-                                            <!-- <td class="py-3 px-1 border-r border-slate-100 font-mono font-bold text-slate-800">
-                                                TRIP{{ item.trip.id }}
-                                            </td> -->
-                                            <td class="py-3 px-1 border-r border-slate-100 font-semibold">
-                                                {{ item.trip.car?.license_plate || 'N/A' }}
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    <template v-if="depositWithdrawals.length > 0">
+                                        <tr v-for="item in depositWithdrawals" :key="item.id" class="hover:bg-slate-50 transition-colors bg-white">
+                                            <td class="py-4 px-4 font-mono text-slate-700 font-medium whitespace-nowrap">
+                                                {{ item.created_at }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip.start_at }}
+                                            <td class="py-4 px-4 text-center whitespace-nowrap">
+                                                <span
+                                                    :class="item.amount > 0 ? 'bg-emerald-100 text-emerald-800 border-emerald-200' : 'bg-rose-100 text-rose-800 border-rose-200'"
+                                                    class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full border">
+                                                    <Icon :name="item.amount > 0 ? 'lucide:arrow-down-left' : 'lucide:arrow-up-right'" class="w-3.5 h-3.5" />
+                                                    {{ item.amount > 0 ? 'Nạp tiền' : 'Rút tiền' }}
+                                                </span>
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip.end_at }}
+                                            <td class="py-4 px-4 font-semibold text-slate-800">
+                                                {{ item.description || ('Giao dịch ' + (item.amount > 0 ? 'Nạp tiền vào ví' : 'Rút tiền từ ví')) }}
                                             </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-slate-500 font-mono">
-                                                {{ item.trip?.updated_at || item.created_at }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-medium">
-                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 text-left pl-3 text-slate-700 font-medium">
-                                                {{ item.trip.car?.name || 'N/A' }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono">
-                                                {{ formatCurrency(item.trip.car?.unit_price || 0) }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-slate-400">
-                                                {{ formatCurrency(item.prepay) }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-mono text-slate-400">
-                                                {{ formatCurrency(item.trip.cost) }}
-                                            </td>
-                                            <td class="py-3 px-1 border-r border-slate-100 font-medium text-rose-500 text-left pl-2">
-                                                {{ item.trip?.cancel_by_name || (Number(item.trip?.status) === TripStatus.UserCancel ? 'Người thuê hủy' : 'Chủ xe hủy') }}
-                                            </td>
-                                            <td class="py-3 px-1 font-mono font-bold text-rose-600">
-                                                {{ formatCurrency(item.amount) }}
+                                            <td class="py-4 px-4 font-mono font-black text-right text-base whitespace-nowrap" :class="item.amount > 0 ? 'text-emerald-600' : 'text-rose-600'">
+                                                {{ item.amount > 0 ? '+' : '' }}{{ formatCurrency(item.amount) }}
                                             </td>
                                         </tr>
                                     </template>
                                     <tr v-else>
-                                        <td colspan="12" class="py-8 text-slate-400 text-center font-medium bg-white">
-                                            Không có giao dịch hủy chuyến trong tháng.
-                                        </td>
-                                    </tr>
-                                    <tr class="border-t border-slate-200 bg-slate-50/50">
-                                        <td colspan="11"
-                                            class="text-right py-3.5 font-bold text-slate-900 pr-12 text-xs">Tổng thay đổi - Giao dịch hủy chuyến</td>
-                                        <td class="py-3.5 font-bold text-slate-900 text-xs text-center">
-                                            {{ formatCurrency(summary.cancelled_trips_change) }}
+                                        <td colspan="4" class="py-8 text-slate-400 text-center font-medium bg-slate-50/30">
+                                            Không có giao dịch rút hoặc nộp tiền trong tháng này.
                                         </td>
                                     </tr>
                                 </tbody>
@@ -298,36 +269,167 @@
                     </div>
                 </div>
 
-                <!-- BẢNG TỔNG HỢP TIỀN -->
-                <div
-                    class="rounded-2xl border border-slate-200/60 bg-white text-xs font-medium text-slate-700 divide-y divide-slate-100 shadow-sm overflow-hidden">
-                    <div class="p-6 space-y-3 bg-white">
-                        <template v-if="user?.role_id !== 2">
-                            <div class="flex justify-between font-bold text-slate-800">
-                                <span>TỔNG TIỀN CHUYẾN ĐI TRONG THÁNG</span>
-                                <span class="text-[#286874]">{{ formatCurrency(summary.completed_trips_change) }}</span>
-                            </div>
-                            <div class="flex justify-between font-semibold text-[#e05638]">
-                                <span>THUẾ KINH DOANH ĐÃ KHẤU TRỪ ({{ summary.tax_rate || 25 }}%)</span>
-                                <span>({{ formatCurrency(summary.tax_deducted) }})</span>
-                            </div>
-                            <div class="flex justify-between font-semibold text-amber-600">
-                                <span>TIỀN GIỮ PHẠT NGUỘI ({{ summary.penalty_rate || 2 }}%)</span>
-                                <span>({{ formatCurrency(summary.penalty_deducted || 0) }})</span>
-                            </div>
-                            <div class="flex justify-between font-bold text-[#2f80ed] pt-2 border-t border-slate-100">
-                                <span>THU NHẬP CHỦ XE</span>
-                                <span>{{ formatCurrency(summary.owner_income) }}</span>
-                            </div>
-                        </template>
+                <!-- 3. HỦY CHUYẾN -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between px-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <h2 class="text-base font-bold text-slate-900">
+                                3. Giao dịch hủy chuyến trong tháng
+                            </h2>
+                            <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200">
+                                {{ cancelledTrips.length }} chuyến
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm border-collapse min-w-[1200px]">
+                                <thead>
+                                    <tr class="bg-slate-100/90 text-slate-700 font-bold border-b border-slate-200 text-xs uppercase tracking-wider">
+                                        <th colspan="2" class="py-3 px-3.5 border-r border-slate-200/80">Thông tin xe</th>
+                                        <th colspan="3" class="py-3 px-3.5 border-r border-slate-200/80 text-center">Thời gian</th>
+                                        <th colspan="1" class="py-3 px-3.5 border-r border-slate-200/80">Đối tác</th>
+                                        <th colspan="3" class="py-3 px-3.5 border-r border-slate-200/80 text-right">Chi tiết chi phí</th>
+                                        <th colspan="2" class="py-3 px-3.5 text-right">Kết quả hủy chuyến</th>
+                                    </tr>
+                                    <tr class="bg-slate-50 border-b border-slate-200 text-slate-800 font-bold text-sm">
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 whitespace-nowrap">Biển số xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 whitespace-nowrap">Tên xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-center whitespace-nowrap">Ngày đi</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-center whitespace-nowrap">Ngày về</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 text-center whitespace-nowrap">Ngày hủy</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 whitespace-nowrap">
+                                            {{ user?.role_id === 2 ? 'Chủ xe' : 'Khách hàng' }}
+                                        </th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 text-right whitespace-nowrap">Đơn giá</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/60 text-right whitespace-nowrap">Thanh toán cọc</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 text-right whitespace-nowrap">Thanh toán chủ xe</th>
+                                        <th class="py-3.5 px-3.5 border-r border-slate-200/80 whitespace-nowrap">Lý do / Nội dung hủy</th>
+                                        <th class="py-3.5 px-3.5 text-right whitespace-nowrap">Thay đổi số dư</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-slate-100 text-sm">
+                                    <template v-if="cancelledTrips.length > 0">
+                                        <tr v-for="item in cancelledTrips" :key="item.id" class="hover:bg-rose-50/20 transition-colors bg-white">
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono font-bold text-slate-800 text-sm whitespace-nowrap">
+                                                <span class="bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200 text-slate-800">
+                                                    {{ item.trip.car?.license_plate || 'N/A' }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-semibold text-slate-800 max-w-[180px] truncate">
+                                                {{ item.trip.car?.name || 'N/A' }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-700 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip.start_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-700 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip.end_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 text-slate-600 font-mono text-center whitespace-nowrap">
+                                                {{ item.trip?.updated_at || item.created_at }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-medium text-slate-800 whitespace-nowrap">
+                                                {{ user?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-slate-800 font-medium whitespace-nowrap">
+                                                {{ formatCurrency(item.trip.car?.unit_price || 0) }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-slate-500 whitespace-nowrap">
+                                                {{ formatCurrency(item.prepay) }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-mono text-right text-slate-500 whitespace-nowrap">
+                                                {{ formatCurrency(item.trip.cost) }}
+                                            </td>
+                                            <td class="py-3.5 px-3.5 border-r border-slate-100 font-semibold text-rose-600 whitespace-nowrap">
+                                                <span class="inline-flex items-center gap-1 bg-rose-50 text-rose-700 px-2.5 py-1 rounded-md border border-rose-200 text-xs font-bold">
+                                                    {{ item.trip?.cancel_by_name || (Number(item.trip?.status) === TripStatus.UserCancel ? 'Người thuê hủy' : 'Chủ xe hủy') }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3.5 px-3.5 font-mono font-black text-right text-rose-600 text-base whitespace-nowrap">
+                                                {{ formatCurrency(item.amount) }}
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr v-else>
+                                        <td colspan="11" class="py-8 text-slate-400 text-center font-medium bg-slate-50/30">
+                                            Không có giao dịch hủy chuyến trong tháng này.
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr class="bg-slate-100/90 font-bold border-t-2 border-slate-200 text-sm">
+                                        <td colspan="10" class="text-right py-4 px-4 text-slate-800 uppercase tracking-wider">
+                                            Tổng thay đổi - Giao dịch hủy chuyến:
+                                        </td>
+                                        <td class="py-4 px-3.5 font-black text-rose-600 text-base text-right font-mono whitespace-nowrap">
+                                            {{ formatCurrency(summary.cancelled_trips_change) }}
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <p class="text-[11px] text-slate-400 italic leading-relaxed text-left px-1">
-                    Ghi chú: Mọi vấn đề thắc mắc về thông tin ghi nhận trên bản sao kê chi tiết giao dịch, Quý đối tác
-                    vui lòng liên hệ với bộ phận Chăm Sóc Khách Hàng của Drivio tại 1900 9217 để biết thêm chi tiết. Xin
-                    cám ơn!
-                </p>
+                <!-- BẢNG TỔNG HỢP TIỀN & THU NHẬP -->
+                <div v-if="user?.role_id !== 2" class="bg-white rounded-2xl border border-slate-200/80 shadow-md overflow-hidden max-w-2xl">
+                    <div class="bg-gradient-to-r from-[#1e4e57] to-[#286874] px-6 py-4 text-white flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <Icon name="lucide:calculator" class="w-5 h-5 text-cyan-200" />
+                            <h3 class="font-bold text-base">Tổng hợp doanh thu & Thu nhập chủ xe</h3>
+                        </div>
+                        <span class="text-xs text-cyan-100 bg-white/10 px-2.5 py-1 rounded-full border border-white/20">
+                            Tháng {{ selectedMonth }}/{{ selectedYear }}
+                        </span>
+                    </div>
+
+                    <div class="p-6 space-y-4 text-sm divide-y divide-slate-100">
+                        <div class="flex justify-between items-center font-bold text-slate-800">
+                            <span class="text-slate-600">Tổng doanh thu chuyến đi trong tháng:</span>
+                            <span class="font-mono text-base text-[#1e4e57]">{{ formatCurrency(summary.completed_trips_change) }}</span>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 font-semibold text-rose-600">
+                            <div class="flex items-center gap-1.5">
+                                <span>Thuế kinh doanh đã khấu trừ</span>
+                                <span class="bg-rose-50 text-rose-700 text-[11px] px-2 py-0.5 rounded-full border border-rose-200">
+                                    {{ summary.tax_rate || 25 }}%
+                                </span>
+                            </div>
+                            <span class="font-mono">-{{ formatCurrency(summary.tax_deducted) }}</span>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-3 font-semibold text-amber-600">
+                            <div class="flex items-center gap-1.5">
+                                <span>Tiền giữ phạt nguội</span>
+                                <span class="bg-amber-50 text-amber-700 text-[11px] px-2 py-0.5 rounded-full border border-amber-200">
+                                    {{ summary.penalty_rate || 2 }}%
+                                </span>
+                            </div>
+                            <span class="font-mono">-{{ formatCurrency(summary.penalty_deducted || 0) }}</span>
+                        </div>
+
+                        <div class="flex justify-between items-center pt-4 border-t-2 border-slate-200 bg-emerald-50/60 p-4 rounded-xl">
+                            <div class="flex items-center gap-2">
+                                <Icon name="lucide:wallet" class="w-5 h-5 text-emerald-600" />
+                                <span class="font-black text-slate-900 uppercase tracking-wide">THU NHẬP THỰC NHẬN CHỦ XE:</span>
+                            </div>
+                            <span class="font-mono font-black text-xl text-emerald-600">
+                                {{ formatCurrency(summary.owner_income) }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FOOTER NOTE -->
+                <div class="bg-amber-50/60 border border-amber-200/80 rounded-xl p-4 flex items-start gap-3 text-xs text-amber-900">
+                    <Icon name="lucide:info" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <p class="leading-relaxed">
+                        <strong>Ghi chú:</strong> Mọi thắc mắc về thông tin ghi nhận trên bản sao kê chi tiết giao dịch, Quý đối tác vui lòng liên hệ Bộ phận Chăm sóc Khách hàng của Drivio qua đường dây nóng <strong>1900 9217</strong> hoặc email hỗ trợ để được giải đáp kịp thời.
+                    </p>
+                </div>
 
             </div>
         </section>
@@ -337,7 +439,6 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import { walletService } from '~/services/wallet.service'
-import { authService } from '~/services/auth.service'
 import { useRouter } from 'vue-router'
 import { TripStatus } from '~/config/trip-status'
 
@@ -351,6 +452,7 @@ const userName = ref('')
 const userCode = ref('')
 const balance = ref(0)
 const isLoading = ref(true)
+const isExporting = ref(false)
 
 const summary = ref({
     completed_trips_change: 0,
@@ -537,7 +639,171 @@ const onMonthChange = () => {
     fetchReportData()
 }
 
-// 5. Tự động gọi API khi component được Mounted vào DOM
+// 5. Hàm xuất dữ liệu ra Excel (.xlsx)
+const exportToExcel = async () => {
+    isExporting.value = true
+    try {
+        let XLSXModule: any = null
+        try {
+            XLSXModule = await import('xlsx')
+        } catch (e) {
+            console.warn('XLSX module dynamic import failed, falling back to Excel spreadsheet export', e)
+        }
+
+        const monthStr = String(selectedMonth.value).padStart(2, '0')
+        const fileName = `Sao_Ke_Chi_Tiet_Thang_${monthStr}_${selectedYear.value}.xlsx`
+
+        if (XLSXModule && XLSXModule.utils) {
+            const wb = XLSXModule.utils.book_new()
+
+            // 1. Sheet Chuyến đi hoàn thành
+            const completedData = completedTrips.value.map((item: any, idx: number) => ({
+                'STT': idx + 1,
+                'Mã chuyến đi': item.trip.trip_code || ('TRIP' + item.trip.id),
+                'Biển số xe': item.trip.car?.license_plate || 'N/A',
+                'Tên xe': item.trip.car?.name || 'N/A',
+                'Ngày đi': item.trip.start_at,
+                'Ngày về': item.trip.end_at,
+                'Ngày đặt xe': item.trip.created_at,
+                [user.value?.role_id === 2 ? 'Chủ xe' : 'Khách hàng']: user.value?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name,
+                'Đơn giá (VNĐ)': item.trip.car?.unit_price || 0,
+                'Thanh toán cọc (VNĐ)': item.prepay || 0,
+                'Thanh toán chủ xe (VNĐ)': item.trip.cost || 0,
+                'Giảm giá KM (VNĐ)': item.trip.discount_amount || 0,
+                'Giữ phạt nguội 2% (VNĐ)': item.trip.penalty_deducted || (item.amount * 0.02),
+                'Thuế 25% (VNĐ)': item.trip.tax_deducted || (item.amount * 0.25),
+                'Thay đổi số dư (VNĐ)': item.amount || 0
+            }))
+            const wsCompleted = XLSXModule.utils.json_to_sheet(completedData.length > 0 ? completedData : [{ 'Thông báo': 'Không có dữ liệu chuyến đi hoàn thành' }])
+            XLSXModule.utils.book_append_sheet(wb, wsCompleted, 'Chuyến đi hoàn thành')
+
+            // 2. Sheet Giao dịch nộp/rút tiền
+            const depositData = depositWithdrawals.value.map((item: any, idx: number) => ({
+                'STT': idx + 1,
+                'Ngày giao dịch': item.created_at,
+                'Loại giao dịch': item.amount > 0 ? 'Nạp tiền' : 'Rút tiền',
+                'Nội dung diễn giải': item.description || ('Giao dịch ' + (item.amount > 0 ? 'Nạp tiền' : 'Rút tiền')),
+                'Thay đổi số dư (VNĐ)': item.amount || 0
+            }))
+            const wsDeposit = XLSXModule.utils.json_to_sheet(depositData.length > 0 ? depositData : [{ 'Thông báo': 'Không có dữ liệu rút/nộp tiền' }])
+            XLSXModule.utils.book_append_sheet(wb, wsDeposit, 'Giao dịch Nạp-Rút')
+
+            // 3. Sheet Chuyến đi hủy
+            const cancelledData = cancelledTrips.value.map((item: any, idx: number) => ({
+                'STT': idx + 1,
+                'Biển số xe': item.trip.car?.license_plate || 'N/A',
+                'Tên xe': item.trip.car?.name || 'N/A',
+                'Ngày đi': item.trip.start_at,
+                'Ngày về': item.trip.end_at,
+                'Ngày hủy': item.trip?.updated_at || item.created_at,
+                [user.value?.role_id === 2 ? 'Chủ xe' : 'Khách hàng']: user.value?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name,
+                'Đơn giá (VNĐ)': item.trip.car?.unit_price || 0,
+                'Cọc giữ chỗ (VNĐ)': item.prepay || 0,
+                'Lý do / Nội dung hủy': item.trip?.cancel_by_name || (Number(item.trip?.status) === TripStatus.UserCancel ? 'Người thuê hủy' : 'Chủ xe hủy'),
+                'Thay đổi số dư (VNĐ)': item.amount || 0
+            }))
+            const wsCancelled = XLSXModule.utils.json_to_sheet(cancelledData.length > 0 ? cancelledData : [{ 'Thông báo': 'Không có dữ liệu chuyến đi hủy' }])
+            XLSXModule.utils.book_append_sheet(wb, wsCancelled, 'Chuyến đi hủy')
+
+            // 4. Sheet Tổng hợp
+            const summaryData = [
+                { 'Chỉ tiêu': 'Họ và tên người dùng', 'Giá trị': userName.value },
+                { 'Chỉ tiêu': 'Mã định danh', 'Giá trị': userCode.value },
+                { 'Chỉ tiêu': 'Kỳ sao kê', 'Giá trị': `Tháng ${selectedMonth.value}/${selectedYear.value}` },
+                { 'Chỉ tiêu': 'Tổng tiền chuyến đi hoàn thành', 'Giá trị': summary.value.completed_trips_change },
+                { 'Chỉ tiêu': `Thuế kinh doanh (${summary.value.tax_rate || 25}%)`, 'Giá trị': summary.value.tax_deducted },
+                { 'Chỉ tiêu': `Tiền giữ phạt nguội (${summary.value.penalty_rate || 2}%)`, 'Giá trị': summary.value.penalty_deducted },
+                { 'Chỉ tiêu': 'THU NHẬP THỰC NHẬN CHỦ XE', 'Giá trị': summary.value.owner_income }
+            ]
+            const wsSummary = XLSXModule.utils.json_to_sheet(summaryData)
+            XLSXModule.utils.book_append_sheet(wb, wsSummary, 'Tổng kết tài chính')
+
+            XLSXModule.writeFile(wb, fileName)
+        } else {
+            // Fallback HTML Excel table with UTF-8 BOM
+            let html = `
+            <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+            <head><meta charset="utf-8"><style>table { border-collapse: collapse; width: 100%; } td, th { border: 1px solid #ccc; padding: 6px 10px; text-align: left; } th { background-color: #f1f5f9; }</style></head>
+            <body>
+            <h2>SAO KÊ CHI TIẾT GIAO DỊCH THÁNG ${selectedMonth.value}/${selectedYear.value}</h2>
+            <p><strong>Khách hàng/Chủ xe:</strong> ${userName.value} (${userCode.value})</p>
+
+            <h3>1. Chuyến đi hoàn thành</h3>
+            <table>
+                <tr>
+                    <th>STT</th><th>Mã chuyến</th><th>Biển số xe</th><th>Tên xe</th><th>Ngày đi</th><th>Ngày về</th>
+                    <th>Ngày đặt</th><th>Đối tác</th><th>Đơn giá</th><th>Cọc</th><th>Thanh toán xe</th><th>Thay đổi số dư</th>
+                </tr>`
+            completedTrips.value.forEach((item: any, idx: number) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${item.trip.trip_code || ('TRIP' + item.trip.id)}</td>
+                    <td>${item.trip.car?.license_plate || 'N/A'}</td>
+                    <td>${item.trip.car?.name || 'N/A'}</td>
+                    <td>${item.trip.start_at}</td>
+                    <td>${item.trip.end_at}</td>
+                    <td>${item.trip.created_at}</td>
+                    <td>${user.value?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name}</td>
+                    <td>${item.trip.car?.unit_price || 0}</td>
+                    <td>${item.prepay || 0}</td>
+                    <td>${item.trip.cost || 0}</td>
+                    <td>${item.amount || 0}</td>
+                </tr>`
+            })
+            html += `</table>
+
+            <h3>2. Giao dịch rút/nộp tiền</h3>
+            <table>
+                <tr><th>STT</th><th>Ngày giao dịch</th><th>Loại</th><th>Nội dung</th><th>Thay đổi số dư</th></tr>`
+            depositWithdrawals.value.forEach((item: any, idx: number) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${item.created_at}</td>
+                    <td>${item.amount > 0 ? 'Nạp tiền' : 'Rút tiền'}</td>
+                    <td>${item.description || ''}</td>
+                    <td>${item.amount || 0}</td>
+                </tr>`
+            })
+            html += `</table>
+
+            <h3>3. Giao dịch hủy chuyến</h3>
+            <table>
+                <tr><th>STT</th><th>Biển số xe</th><th>Tên xe</th><th>Ngày đi</th><th>Ngày về</th><th>Ngày hủy</th><th>Đối tác</th><th>Nội dung hủy</th><th>Thay đổi số dư</th></tr>`
+            cancelledTrips.value.forEach((item: any, idx: number) => {
+                html += `<tr>
+                    <td>${idx + 1}</td>
+                    <td>${item.trip.car?.license_plate || 'N/A'}</td>
+                    <td>${item.trip.car?.name || 'N/A'}</td>
+                    <td>${item.trip.start_at}</td>
+                    <td>${item.trip.end_at}</td>
+                    <td>${item.trip?.updated_at || item.created_at}</td>
+                    <td>${user.value?.role_id === 2 ? (item.trip.owner_name || 'N/A') : item.trip.customer_name}</td>
+                    <td>${item.trip?.cancel_by_name || ''}</td>
+                    <td>${item.amount || 0}</td>
+                </tr>`
+            })
+            html += `</table>
+            </body></html>`
+
+            const blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' })
+            const url = URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = fileName.replace('.xlsx', '.xls')
+            document.body.appendChild(a)
+            a.click()
+            document.body.removeChild(a)
+            URL.revokeObjectURL(url)
+        }
+    } catch (err) {
+        console.error('Lỗi xuất file Excel:', err)
+        alert('Có lỗi xảy ra khi xuất file Excel. Vui lòng thử lại!')
+    } finally {
+        isExporting.value = false
+    }
+}
+
+// 6. Tự động gọi API khi component được Mounted vào DOM
 onMounted(() => {
     fetchReportData()
 })
@@ -554,6 +820,6 @@ table {
 
 th,
 td {
-    word-break: break-all;
+    word-break: normal;
 }
 </style>
