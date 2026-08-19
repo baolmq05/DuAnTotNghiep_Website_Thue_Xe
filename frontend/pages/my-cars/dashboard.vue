@@ -1,4 +1,5 @@
 <template>
+    <CommonLoadingOverlay :loading="loading" text="Đang tải dữ liệu..." />
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
 
         <div class="bg-white rounded-xl shadow p-5">

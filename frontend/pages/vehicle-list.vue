@@ -1,5 +1,6 @@
 <template>
     <div class="min-h-screen bg-slate-50">
+        <CommonLoadingOverlay :loading="isLoading" text="Đang tải danh sách xe..." />
         <section class="bg-gradient-to-r from-[#1e4e57] to-[#286874] text-white">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 md:pt-28 md:pb-20 text-center">
                 <h1 class="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight">

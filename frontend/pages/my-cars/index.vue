@@ -1,4 +1,5 @@
 <template>
+  <CommonLoadingOverlay :loading="loading" text="Đang tải dữ liệu..." />
   <div class="space-y-8">
     <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
       <div class="flex gap-3 shrink-0">

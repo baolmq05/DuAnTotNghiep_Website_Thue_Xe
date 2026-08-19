@@ -1,4 +1,5 @@
 <template>
+  <CommonLoadingOverlay :loading="loading" text="Đang tải dữ liệu..." />
   <div class="space-y-6">
     <!-- Header Page Description -->
     <div class="flex flex-col gap-1.5 bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
