@@ -186,9 +186,12 @@
 
                 <!-- Nhập số tiền rút -->
                 <div class="space-y-1.5">
-                    <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Số tiền muốn rút (đ)</label>
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Số tiền muốn rút (đ)</label>
+                        <span class="text-[11px] text-slate-400 font-medium">Tối đa 10.000.000đ/lần</span>
+                    </div>
                     <div class="relative">
-                        <input v-model="withdrawForm.amount" type="number" required placeholder="Nhập số tiền muốn rút"
+                        <input :value="displayWithdrawAmount" @input="handleWithdrawAmountInput" type="text" inputmode="numeric" required placeholder="Nhập số tiền muốn rút"
                             class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold outline-none focus:border-[#286874] focus:bg-white transition-all" />
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">đ</span>
                     </div>
@@ -276,7 +279,7 @@
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-gray-700 uppercase tracking-wider block">Số tiền muốn chuyển (đ)</label>
                     <div class="relative">
-                        <input v-model="withdrawHoldForm.amount" type="number" required placeholder="Nhập số tiền muốn chuyển"
+                        <input :value="displayWithdrawHoldAmount" @input="handleWithdrawHoldAmountInput" type="text" inputmode="numeric" required placeholder="Nhập số tiền muốn chuyển"
                             class="w-full pl-4 pr-12 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg font-bold outline-none focus:border-[#286874] focus:bg-white transition-all" />
                         <span class="absolute right-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">đ</span>
                     </div>
@@ -316,7 +319,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { walletService } from '~/services/wallet.service'
 import { useRouter } from 'vue-router'
 
@@ -349,6 +352,11 @@ const summary = ref({
 
 const formatCurrency = (value) => {
     return new Intl.NumberFormat('vi-VN').format(value) + 'đ'
+}
+
+const formatInputNumber = (val) => {
+    if (val === null || val === undefined || val === '') return ''
+    return new Intl.NumberFormat('vi-VN').format(val)
 }
 
 const loadWalletDetails = async () => {
@@ -395,6 +403,17 @@ const withdrawForm = reactive({
     description: ''
 })
 
+const displayWithdrawAmount = computed(() => {
+    return formatInputNumber(withdrawForm.amount)
+})
+
+const handleWithdrawAmountInput = (e) => {
+    const raw = e.target.value.replace(/\D/g, '')
+    const num = raw ? parseInt(raw, 10) : null
+    withdrawForm.amount = num
+    e.target.value = num !== null ? new Intl.NumberFormat('vi-VN').format(num) : ''
+}
+
 const openWithdrawModal = () => {
     withdrawForm.amount = null
     withdrawForm.description = ''
@@ -410,7 +429,7 @@ const setAmount = (val) => {
 }
 
 const setAllAmount = () => {
-    withdrawForm.amount = balance.value
+    withdrawForm.amount = Math.min(balance.value, 10000000)
 }
 
 const goToLinkBank = () => {
@@ -425,6 +444,10 @@ const handleWithdraw = async () => {
     }
     if (withdrawForm.amount < 20000) {
         showToast('Số tiền rút tối thiểu là 20.000đ.', 'error')
+        return
+    }
+    if (withdrawForm.amount > 10000000) {
+        showToast('Số tiền rút tối đa cho một lần là 10.000.000đ.', 'error')
         return
     }
     if (withdrawForm.amount > balance.value) {
@@ -460,6 +483,17 @@ const submittingWithdrawHold = ref(false)
 const withdrawHoldForm = reactive({
     amount: null
 })
+
+const displayWithdrawHoldAmount = computed(() => {
+    return formatInputNumber(withdrawHoldForm.amount)
+})
+
+const handleWithdrawHoldAmountInput = (e) => {
+    const raw = e.target.value.replace(/\D/g, '')
+    const num = raw ? parseInt(raw, 10) : null
+    withdrawHoldForm.amount = num
+    e.target.value = num !== null ? new Intl.NumberFormat('vi-VN').format(num) : ''
+}
 
 const openWithdrawHoldModal = () => {
     if (holdBalance.value < 20000) {

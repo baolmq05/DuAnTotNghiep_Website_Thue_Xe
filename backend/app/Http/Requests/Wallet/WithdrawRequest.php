@@ -16,7 +16,7 @@ class WithdrawRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'amount' => 'required|integer|min:20000',
+            'amount' => 'required|integer|min:20000|max:10000000',
         ];
     }
 
@@ -26,6 +26,7 @@ class WithdrawRequest extends FormRequest
             'amount.required' => 'Số tiền cần rút không được bỏ trống.',
             'amount.integer'  => 'Số tiền cần rút phải là số nguyên.',
             'amount.min'      => 'Số tiền rút tối thiểu là 20.000đ.',
+            'amount.max'      => 'Số tiền rút tối đa cho một lần là 10.000.000đ.',
         ];
     }
 
