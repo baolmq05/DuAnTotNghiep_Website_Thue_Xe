@@ -93,6 +93,12 @@ class Trip extends Model
         return $this->hasMany(Review::class);
     }
 
+    public function reports(): HasMany
+    {
+        return $this->hasMany(Report::class);
+    }
+
+
     public function extensions(): HasMany
     {
         return $this->hasMany(TripExtension::class);
