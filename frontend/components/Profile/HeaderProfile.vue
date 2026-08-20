@@ -40,6 +40,8 @@
                 class="text-white/80 hover:text-white transition-colors relative focus:outline-none animate-fade-in"
                 aria-label="Tin nhắn">
                 <Icon name="heroicons:chat-bubble-left-ellipsis" class="w-6 h-6" />
+                <span v-if="unreadChatsCount > 0"
+                  class="absolute top-0 right-0 w-2 h-2 bg-rose-500 rounded-full animate-pulse"></span>
               </NuxtLink>
             </div>
 
@@ -129,6 +131,12 @@
 
 <script lang="ts" setup>
 import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
+import { ChatService } from '~/services/chat.service'
+
+const chatService = new ChatService()
+const unreadChatsCount = useState<number>('globalUnreadChatsCount', () => 0)
+const activeChannels = ref<string[]>([])
+const { $echo } = useNuxtApp() as any
 
 const { openLogin, openRegister } = useAuthModal()
 const { user, isLoggedIn } = useAuth()
@@ -165,9 +173,41 @@ const bottomNavItems = computed(() => [
 const showNotificationModal = ref(false);
 const route = useRoute();
 
+const fetchUnreadChatsCount = async () => {
+  if (!isLoggedIn.value) return
+  try {
+    const res = await chatService.getConversations()
+    if (res && res.conversations) {
+      unreadChatsCount.value = res.conversations.reduce((sum: number, c: any) => sum + (c.unread_count || 0), 0)
+
+      if ($echo) {
+        activeChannels.value.forEach(channel => $echo.leave(channel))
+        activeChannels.value = []
+
+        res.conversations.forEach((conv: any) => {
+          const channelName = `chat.${conv.id}`
+          activeChannels.value.push(channelName)
+          $echo.private(channelName)
+            .listen('.message.sent', (e: any) => {
+              if (e.message.sender_id !== user.value?.id) {
+                unreadChatsCount.value++
+              }
+            })
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching unread chats count:', error)
+  }
+}
+
 watch(() => route.path, (newPath) => {
   if (newPath === '/notifications') {
     showNotificationModal.value = false;
+  }
+
+  if (isLoggedIn.value) {
+    fetchUnreadChatsCount()
   }
 });
 
@@ -195,12 +235,26 @@ const handleBottomNavClick = (item: any, idx: number) => {
 onMounted(() => {
   if (isLoggedIn.value) {
     fetchNotifications()
+    fetchUnreadChatsCount()
   }
 })
 
 watch(isLoggedIn, (newVal) => {
   if (newVal) {
     fetchNotifications()
+    fetchUnreadChatsCount()
+  } else {
+    unreadChatsCount.value = 0
+    if ($echo) {
+      activeChannels.value.forEach(channel => $echo.leave(channel))
+    }
+    activeChannels.value = []
+  }
+})
+
+onUnmounted(() => {
+  if ($echo) {
+    activeChannels.value.forEach(channel => $echo.leave(channel))
   }
 })
 </script>
