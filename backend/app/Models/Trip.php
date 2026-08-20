@@ -51,7 +51,7 @@ class Trip extends Model
 
         static::creating(function ($trip) {
             if (empty($trip->trip_code)) {
-                $trip->trip_code = 'TRIP-' . now()->format('Ymd') . '-' . strtoupper(Str::random(6));
+                $trip->trip_code = self::generateUniqueTripCode();
             }
         });
 
@@ -153,4 +153,25 @@ class Trip extends Model
             'status' => '3',
         ]);
     }
+
+    /**
+     * Tạo mã chuyến đi ngắn gọn (VD: TR-8K9M2P), loại bỏ ký tự dễ nhầm lẫn (0, O, 1, I)
+     * và đảm bảo 100% không trùng lặp trong cơ sở dữ liệu.
+     */
+    public static function generateUniqueTripCode(): string
+    {
+        $characters = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $length = 6;
+
+        do {
+            $randomPart = '';
+            for ($i = 0; $i < $length; $i++) {
+                $randomPart .= $characters[random_int(0, strlen($characters) - 1)];
+            }
+            $code = 'TR-' . $randomPart;
+        } while (self::where('trip_code', $code)->exists());
+
+        return $code;
+    }
 }
+
