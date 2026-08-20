@@ -464,13 +464,21 @@
               </div>
             </div>
 
-            <!-- Cancel Trip Button -->
-            <button @click="handleCancelTrip" :disabled="processingAction"
-              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
-              <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
-              <Icon v-else name="lucide:ban" class="w-4 h-4" />
-              <span>Hủy chuyến đi</span>
-            </button>
+            <!-- Actions: Cancel Trip & Send Complaint -->
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button @click="handleCancelTrip" :disabled="processingAction"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10">
+                <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                <Icon v-else name="lucide:ban" class="w-4 h-4" />
+                <span>Hủy chuyến đi</span>
+              </button>
+
+              <button @click="openComplaintModal"
+                class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-amber-600/10">
+                <Icon name="lucide:alert-triangle" class="w-4 h-4" />
+                <span>Gửi khiếu nại</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1173,6 +1181,82 @@
       </Transition>
     </Teleport>
 
+    <!-- Complaint Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showComplaintModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+          <div @click="showComplaintModal = false" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative w-full max-w-2xl bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 animate-scale-up max-h-[90vh] overflow-y-auto"
+            @click.stop>
+
+            <!-- Header -->
+            <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <Icon name="lucide:alert-octagon" class="w-5 h-5 text-rose-500" />
+                Gửi yêu cầu khiếu nại chuyến đi
+              </h3>
+              <button @click="showComplaintModal = false"
+                class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer">
+                <Icon name="lucide:x" class="w-4 h-4" />
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-5 text-xs">
+              <p class="text-slate-500 font-medium">
+                Vui lòng cung cấp đầy đủ thông tin khiếu nại và bằng chứng hình ảnh kèm theo. Hệ thống sẽ tiếp nhận và xử lý yêu cầu của bạn.
+              </p>
+
+              <!-- Report Type Selection -->
+              <div class="space-y-2">
+                <label class="block font-bold text-slate-700">Loại báo cáo / khiếu nại:</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label v-for="option in reportOptions" :key="option.value"
+                    class="flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all"
+                    :class="complaintType === option.value
+                      ? 'border-amber-600 bg-amber-50/50 font-bold text-amber-900 shadow-sm'
+                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-slate-50/30'">
+                    <input type="radio" :value="option.value" v-model="complaintType" name="complaint_type" class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300" />
+                    <span>{{ option.label }}</span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Detail Description -->
+              <div class="space-y-2">
+                <label class="block font-bold text-slate-700">Mô tả chi tiết sự việc:</label>
+                <textarea v-model="complaintDescription" rows="4"
+                  placeholder="Vui lòng cung cấp chi tiết thông tin, thời gian, sự việc để bộ phận hỗ trợ dễ dàng xác minh..."
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-amber-600 focus:bg-white focus:ring-4 focus:ring-amber-600/10 placeholder:text-slate-400"></textarea>
+              </div>
+
+              <!-- Evidence Upload Component (using existing ImageUpload) -->
+              <div class="space-y-2">
+                <label class="block font-bold text-slate-700">Hình ảnh bằng chứng:</label>
+                <ImageUpload ref="complaintImageUploadRef" v-model="complaintImages" :max-files="5" />
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex gap-3 pt-4 border-t border-slate-100">
+                <button @click="showComplaintModal = false" :disabled="submittingComplaint"
+                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
+                  Hủy
+                </button>
+                <button @click="submitComplaint" :disabled="submittingComplaint"
+                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
+                  <Icon v-if="submittingComplaint" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                  <Icon v-else name="lucide:send" class="w-4 h-4" />
+                  <span>Gửi khiếu nại</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -1327,6 +1411,67 @@ const cancelModalFeeAmount = ref(0)
 const cancelModalRefundAmount = ref(0)
 const cancelModalCompensationAmount = ref(0)
 const cancelModalIsOwner = ref(false)
+
+// Complaint Modal state
+const showComplaintModal = ref(false)
+const complaintType = ref<number | null>(null)
+const complaintDescription = ref('')
+const complaintImages = ref<string[]>([])
+const complaintImageUploadRef = ref<any>(null)
+const submittingComplaint = ref(false)
+
+const reportOptions = [
+  { value: 0, label: 'Giao sai xe' },
+  { value: 1, label: 'Không đến giao/nhận xe' },
+  { value: 2, label: 'Gian lận' },
+  { value: 3, label: 'Khác' }
+]
+
+const openComplaintModal = () => {
+  complaintType.value = null
+  complaintDescription.value = ''
+  complaintImages.value = []
+  showComplaintModal.value = true
+}
+
+const submitComplaint = async () => {
+  if (complaintType.value === null) {
+    showToast('Vui lòng chọn loại khiếu nại.', 'error')
+    return
+  }
+  if (!complaintDescription.value.trim()) {
+    showToast('Vui lòng nhập mô tả chi tiết sự việc.', 'error')
+    return
+  }
+  
+  submittingComplaint.value = true
+  try {
+    let uploadedUrls: string[] = []
+    if (complaintImages.value.length > 0 && complaintImageUploadRef.value) {
+      uploadedUrls = await complaintImageUploadRef.value.upload()
+    }
+    
+    const payload = {
+      trip_id: trip.value.id,
+      report_type: complaintType.value,
+      description: complaintDescription.value.trim(),
+      images: uploadedUrls
+    }
+    
+    console.log('Submit Complaint Payload:', payload)
+    
+    // Simulate API call
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    
+    showToast('Gửi khiếu nại thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.', 'success')
+    showComplaintModal.value = false
+  } catch (err: any) {
+    console.error('Lỗi khi gửi khiếu nại:', err)
+    showToast(err.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error')
+  } finally {
+    submittingComplaint.value = false
+  }
+}
 
 const handleCancelTrip = () => {
   if (!trip.value) return
