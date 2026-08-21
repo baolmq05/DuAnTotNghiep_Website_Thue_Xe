@@ -17,7 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id')->comment('Chủ xe bị phạt');
             $table->unsignedBigInteger('trip_id')->nullable()->comment('Chuyến đi liên quan');
             $table->unsignedBigInteger('report_id')->nullable()->comment('Báo cáo liên quan');
-            $table->tinyInteger('penalty_type')->comment('Loại hình phạt: 0 - Cảnh cáo (Warning), 1 - Khóa xe (Car Suspension), 2 - Khóa tài khoản (Account Suspension)');
+            $table->tinyInteger('penalty_type')->comment('Loại hình phạt: 0 - Cảnh cáo lần 1 (Warning 1), 1 - Cảnh báo lần 2 (Warning 2), 2 - Khóa tài khoản (Account Suspension)');
             $table->timestamp('start_at')->nullable()->comment('Thời gian bắt đầu phạt');
             $table->timestamp('end_at')->nullable()->comment('Thời gian kết thúc phạt');
             $table->text('reason')->comment('Lý do xử phạt');

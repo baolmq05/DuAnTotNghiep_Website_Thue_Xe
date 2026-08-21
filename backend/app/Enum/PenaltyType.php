@@ -10,24 +10,24 @@ use Illuminate\Contracts\Support\Htmlable;
 
 enum PenaltyType: int implements HasLabel, HasColor, HasIcon
 {
-    case Warning = 0;
-    case CarSuspension = 1;
+    case Warning1 = 0;
+    case Warning2 = 1;
     case AccountSuspension = 2;
 
     public function getLabel(): string|Htmlable|null
     {
         return match ($this) {
-            self::Warning => 'Cảnh cáo (Warning)',
-            self::CarSuspension => 'Khóa xe (Car Suspension)',
-            self::AccountSuspension => 'Khóa tài khoản (Account Suspension)',
+            self::Warning1 => 'Cảnh cáo lần 1',
+            self::Warning2 => 'Cảnh cáo lần 2',
+            self::AccountSuspension => 'Khóa tài khoản',
         };
     }
 
     public function getColor(): array|string|null
     {
         return match ($this) {
-            self::Warning => 'warning',
-            self::CarSuspension => 'orange',
+            self::Warning1 => 'warning',
+            self::Warning2 => 'orange',
             self::AccountSuspension => 'danger',
         };
     }
@@ -35,8 +35,8 @@ enum PenaltyType: int implements HasLabel, HasColor, HasIcon
     public function getIcon(): string|BackedEnum|Htmlable|null
     {
         return match ($this) {
-            self::Warning => 'heroicon-o-exclamation-triangle',
-            self::CarSuspension => 'heroicon-o-no-symbol',
+            self::Warning1 => 'heroicon-o-exclamation-triangle',
+            self::Warning2 => 'heroicon-o-no-symbol',
             self::AccountSuspension => 'heroicon-o-x-circle',
         };
     }
