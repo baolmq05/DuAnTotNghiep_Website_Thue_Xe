@@ -24,6 +24,7 @@ use App\Http\Controllers\Api\SeePayController;
 use App\Http\Controllers\Api\ExtensionTripController;
 use App\Http\Controllers\Api\DrivingLicenseController;
 use App\Http\Controllers\Api\ViewHistoryController;
+use App\Http\Controllers\Api\ReportController;
 
 // ===================================================================
 // PUBLIC ROUTES - No authentication required
@@ -145,6 +146,9 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('trips/{id}/reviews', [TripController::class, 'storeReview']);
     Route::post('trips/{id}/extension-pay', [ExtensionTripController::class, 'payExtension']);
     Route::get('my-trips', [MyTripController::class, 'index']);
+
+    // Reports
+    Route::post('reports', [ReportController::class, 'store']);
 
     // Promotions management
     Route::post('promotions/check', [PromotionController::class, 'check']);

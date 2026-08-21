@@ -114,7 +114,8 @@ class TripController extends Controller
             'transactions',
             'pendingBalances',
             'images',
-            'conversation'
+            'conversation',
+            'reports.images'
         ])->find($id);
 
         if (!$trip) {

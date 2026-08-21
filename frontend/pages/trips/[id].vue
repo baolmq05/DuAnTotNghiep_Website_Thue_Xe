@@ -475,8 +475,8 @@
 
               <button @click="openComplaintModal"
                 class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-amber-600/10">
-                <Icon name="lucide:alert-triangle" class="w-4 h-4" />
-                <span>Gửi khiếu nại</span>
+                <Icon :name="existingReport ? 'lucide:eye' : 'lucide:alert-triangle'" class="w-4 h-4" />
+                <span>{{ existingReport ? 'Xem khiếu nại' : 'Gửi khiếu nại' }}</span>
               </button>
             </div>
           </div>
@@ -1195,7 +1195,8 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
               <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <Icon name="lucide:alert-octagon" class="w-5 h-5 text-rose-500" />
-                Gửi yêu cầu khiếu nại chuyến đi
+                <span v-if="existingReport">Chi tiết yêu cầu khiếu nại chuyến đi</span>
+                <span v-else>Gửi yêu cầu khiếu nại chuyến đi</span>
               </h3>
               <button @click="showComplaintModal = false"
                 class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer">
@@ -1205,7 +1206,23 @@
 
             <!-- Content -->
             <div class="space-y-5 text-xs">
-              <p class="text-slate-500 font-medium">
+              <p v-if="existingReport" class="text-slate-600 font-medium bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1.5 animate-fade-in">
+                <span class="font-bold text-slate-700 flex items-center gap-1.5">Trạng thái: 
+                  <span :class="{
+                    'text-amber-600 font-extrabold': existingReport.status === 0,
+                    'text-emerald-600 font-extrabold': existingReport.status === 1,
+                    'text-rose-600 font-extrabold': existingReport.status === 2,
+                  }">
+                    {{ existingReport.status === 0 ? 'Chờ xử lý' : 
+                       existingReport.status === 1 ? 'Đã giải quyết' : 'Từ chối' }}
+                  </span>
+                </span>
+                <span v-if="existingReport.admin_note" class="font-medium text-slate-650 block animate-fade-in">
+                  <strong class="text-slate-700">Phản hồi từ Admin:</strong> {{ existingReport.admin_note }}
+                </span>
+                <span v-else class="opacity-80">Khiếu nại của bạn đang được ban quản trị xem xét. Mọi thông tin cập nhật sẽ được thông báo đến bạn sớm nhất.</span>
+              </p>
+              <p v-else class="text-slate-500 font-medium">
                 Vui lòng cung cấp đầy đủ thông tin khiếu nại và bằng chứng hình ảnh kèm theo. Hệ thống sẽ tiếp nhận và xử lý yêu cầu của bạn.
               </p>
 
@@ -1215,10 +1232,13 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <label v-for="option in reportOptions" :key="option.value"
                     class="flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all"
-                    :class="complaintType === option.value
-                      ? 'border-amber-600 bg-amber-50/50 font-bold text-amber-900 shadow-sm'
-                      : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-slate-50/30'">
-                    <input type="radio" :value="option.value" v-model="complaintType" name="complaint_type" class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300" />
+                    :class="[
+                      complaintType === option.value
+                        ? 'border-amber-600 bg-amber-50/50 font-bold text-amber-900 shadow-sm'
+                        : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-slate-50/30',
+                      existingReport ? 'pointer-events-none opacity-80' : ''
+                    ]">
+                    <input type="radio" :value="option.value" v-model="complaintType" :disabled="!!existingReport" name="complaint_type" class="w-4 h-4 text-amber-600 focus:ring-amber-500 border-slate-300" />
                     <span>{{ option.label }}</span>
                   </label>
                 </div>
@@ -1227,29 +1247,46 @@
               <!-- Detail Description -->
               <div class="space-y-2">
                 <label class="block font-bold text-slate-700">Mô tả chi tiết sự việc:</label>
-                <textarea v-model="complaintDescription" rows="4"
+                <textarea v-model="complaintDescription" rows="4" :readonly="!!existingReport"
                   placeholder="Vui lòng cung cấp chi tiết thông tin, thời gian, sự việc để bộ phận hỗ trợ dễ dàng xác minh..."
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-amber-600 focus:bg-white focus:ring-4 focus:ring-amber-600/10 placeholder:text-slate-400"></textarea>
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-amber-600 focus:bg-white focus:ring-4 focus:ring-amber-600/10 placeholder:text-slate-400"
+                  :class="{ 'bg-slate-100/50 cursor-not-allowed': !!existingReport }"></textarea>
               </div>
 
               <!-- Evidence Upload Component (using existing ImageUpload) -->
               <div class="space-y-2">
                 <label class="block font-bold text-slate-700">Hình ảnh bằng chứng:</label>
-                <ImageUpload ref="complaintImageUploadRef" v-model="complaintImages" :max-files="5" />
+                <div v-if="existingReport" class="grid grid-cols-2 gap-4 sm:grid-cols-3">
+                  <div v-for="(imgUrl, index) in complaintImages" :key="index"
+                    class="rounded-2xl overflow-hidden border border-slate-200 shadow-sm aspect-video bg-slate-50 group relative cursor-pointer"
+                    @click="openImageModal(imgUrl)">
+                    <img :src="imgUrl" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Bằng chứng khiếu nại" />
+                  </div>
+                  <div v-if="complaintImages.length === 0" class="text-slate-450 italic text-xs py-2">
+                    Không có hình ảnh bằng chứng kèm theo.
+                  </div>
+                </div>
+                <ImageUpload v-else ref="complaintImageUploadRef" v-model="complaintImages" :max-files="5" />
               </div>
 
               <!-- Action buttons -->
               <div class="flex gap-3 pt-4 border-t border-slate-100">
-                <button @click="showComplaintModal = false" :disabled="submittingComplaint"
+                <button v-if="existingReport" @click="showComplaintModal = false"
                   class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
-                  Hủy
+                  Đóng
                 </button>
-                <button @click="submitComplaint" :disabled="submittingComplaint"
-                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
-                  <Icon v-if="submittingComplaint" name="lucide:loader-2" class="animate-spin w-4 h-4" />
-                  <Icon v-else name="lucide:send" class="w-4 h-4" />
-                  <span>Gửi khiếu nại</span>
-                </button>
+                <template v-else>
+                  <button @click="showComplaintModal = false" :disabled="submittingComplaint"
+                    class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
+                    Hủy
+                  </button>
+                  <button @click="submitComplaint" :disabled="submittingComplaint"
+                    class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
+                    <Icon v-if="submittingComplaint" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                    <Icon v-else name="lucide:send" class="w-4 h-4" />
+                    <span>Gửi khiếu nại</span>
+                  </button>
+                </template>
               </div>
             </div>
           </div>
@@ -1270,6 +1307,7 @@ import { useAuth } from '~/composables/useAuth'
 import ImageUpload from '~/components/ImageUpload/ImageUpload.vue'
 import { useVNPay } from '~/composables/useVNPay'
 import { useZaloPay } from '~/composables/useZaloPay'
+import { reportService } from '~/services/report.service'
 
 definePageMeta({
   layout: 'profile-no-sidebar'
@@ -1420,6 +1458,13 @@ const complaintImages = ref<string[]>([])
 const complaintImageUploadRef = ref<any>(null)
 const submittingComplaint = ref(false)
 
+const existingReport = computed(() => {
+  if (trip.value && trip.value.reports && trip.value.reports.length > 0) {
+    return trip.value.reports[0]
+  }
+  return null
+})
+
 const reportOptions = [
   { value: 0, label: 'Giao sai xe' },
   { value: 1, label: 'Không đến giao/nhận xe' },
@@ -1428,9 +1473,17 @@ const reportOptions = [
 ]
 
 const openComplaintModal = () => {
-  complaintType.value = null
-  complaintDescription.value = ''
-  complaintImages.value = []
+  if (existingReport.value) {
+    complaintType.value = Number(existingReport.value.report_type)
+    complaintDescription.value = existingReport.value.description
+    complaintImages.value = existingReport.value.images 
+      ? existingReport.value.images.map((img: any) => img.image_url) 
+      : []
+  } else {
+    complaintType.value = null
+    complaintDescription.value = ''
+    complaintImages.value = []
+  }
   showComplaintModal.value = true
 }
 
@@ -1452,7 +1505,7 @@ const submitComplaint = async () => {
     }
     
     const payload = {
-      trip_id: trip.value.id,
+      trip_id: Number(trip.value.id),
       report_type: complaintType.value,
       description: complaintDescription.value.trim(),
       images: uploadedUrls
@@ -1460,14 +1513,17 @@ const submitComplaint = async () => {
     
     console.log('Submit Complaint Payload:', payload)
     
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    
-    showToast('Gửi khiếu nại thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.', 'success')
-    showComplaintModal.value = false
+    const res = await reportService.createReport(payload)
+    if (res && res.success) {
+      showToast(res.message || 'Gửi khiếu nại thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.', 'success')
+      showComplaintModal.value = false
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error')
+    }
   } catch (err: any) {
     console.error('Lỗi khi gửi khiếu nại:', err)
-    showToast(err.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error')
+    showToast(err.response?._data?.message || err.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error')
   } finally {
     submittingComplaint.value = false
   }
