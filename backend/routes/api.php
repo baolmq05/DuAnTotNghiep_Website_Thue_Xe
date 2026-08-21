@@ -25,6 +25,7 @@ use App\Http\Controllers\Api\ExtensionTripController;
 use App\Http\Controllers\Api\DrivingLicenseController;
 use App\Http\Controllers\Api\ViewHistoryController;
 use App\Http\Controllers\Api\ReportController;
+use App\Http\Controllers\Api\OwnerReportController;
 
 // ===================================================================
 // PUBLIC ROUTES - No authentication required
@@ -166,6 +167,11 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::get('messages/{id}', [ChatController::class, 'getMessages']);
     Route::post('messages', [ChatController::class, 'storeMessage']);
     Route::put('conversations/{id}/read', [ChatController::class, 'markAsRead']);
+
+    // Owner Reports & Strikes
+    Route::get('owner/reports/summary', [OwnerReportController::class, 'summary']);
+    Route::get('owner/reports', [OwnerReportController::class, 'index']);
+    Route::get('owner/reports/{id}', [OwnerReportController::class, 'show']);
 
     // Broadcasting
     Broadcast::routes(['middleware' => ['api', 'auth:api']]);
