@@ -282,6 +282,84 @@
 
             </div>
           </div>
+
+          <!-- Violation Reports for Owner -->
+          <div v-if="isOwner && trip.reports && trip.reports.length > 0" class="bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm space-y-6 animate-fade-in">
+            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
+              <Icon name="lucide:alert-triangle" class="text-rose-500 w-5 h-5" />
+              Báo cáo vi phạm
+            </h2>
+
+            <div v-for="report in trip.reports" :key="report.id" class="space-y-5 border border-slate-100 rounded-2xl p-5 bg-slate-50/30">
+              <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-slate-400">Loại báo cáo:</span>
+                  <span class="text-xs font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-1 rounded-lg">
+                    {{ reportTypeLabel(report.report_type) }}
+                  </span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-slate-400">Trạng thái:</span>
+                  <span class="px-2.5 py-1 rounded-lg text-xs font-bold border" :class="reportStatusClass(report.status)">
+                    {{ reportStatusLabel(report.status) }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="space-y-1.5">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Tiêu đề & Mô tả sự việc</h4>
+                <p class="text-sm font-bold text-slate-850">{{ report.title }}</p>
+                <p class="text-xs text-slate-650 leading-relaxed font-medium mt-1 whitespace-pre-line bg-white border border-slate-100 rounded-xl p-3.5 shadow-2xs">
+                  {{ report.description }}
+                </p>
+              </div>
+
+              <!-- Evidence Images -->
+              <div v-if="report.images && report.images.length > 0" class="space-y-2">
+                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ảnh minh chứng</h4>
+                <div class="flex flex-wrap gap-3">
+                  <div v-for="(img, idx) in report.images" :key="idx" 
+                       @click="openImageModal(img.image_url)"
+                       class="relative w-24 h-24 rounded-xl overflow-hidden border border-slate-200 cursor-zoom-in hover:opacity-90 transition-opacity bg-slate-100 shadow-2xs">
+                    <img :src="img.image_url" class="w-full h-full object-cover" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Admin note / feedback -->
+              <div v-if="report.admin_note" class="bg-blue-50 border border-blue-100 rounded-2xl p-4 space-y-1">
+                <h4 class="text-xs font-bold text-[#1e4e57] uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="lucide:shield-alert" class="w-4.5 h-4.5 text-[#1e4e57]" />
+                  Phản hồi từ Admin
+                </h4>
+                <p class="text-xs text-slate-700 leading-relaxed font-medium mt-1">
+                  {{ report.admin_note }}
+                </p>
+                <p v-if="report.resolved_at" class="text-[10px] text-slate-400 mt-1 font-semibold">
+                  Giải quyết lúc: {{ formatDate(report.resolved_at) }}
+                </p>
+              </div>
+
+              <!-- Strike received (only when report is approved / resolved) -->
+              <div v-if="report.status === 1 && report.penalty" 
+                   class="border border-rose-200 bg-rose-50/50 rounded-2xl p-4 space-y-2.5 animate-fade-in">
+                <h4 class="text-xs font-extrabold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="lucide:ban" class="w-4 h-4 text-rose-600" />
+                  Strike đã nhận (Hình phạt)
+                </h4>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="text-xs font-semibold text-slate-500">Mức phạt:</span>
+                  <span class="px-2.5 py-1 rounded-lg text-xs font-bold border shadow-3xs" :class="penaltyTypeClass(report.penalty.penalty_type)">
+                    {{ penaltyTypeLabel(report.penalty.penalty_type) }}
+                  </span>
+                </div>
+                <div class="text-xs font-medium text-slate-700 space-y-1">
+                  <p v-if="report.penalty.reason"><span class="font-bold text-slate-500">Lý do:</span> {{ report.penalty.reason }}</p>
+                  <p v-if="report.penalty.start_at"><span class="font-bold text-slate-500">Thời gian áp dụng:</span> {{ formatDate(report.penalty.start_at) }} <span class="text-slate-400">đến</span> {{ report.penalty.end_at ? formatDate(report.penalty.end_at) : 'Không thời hạn' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Right 1 column: Car Details & Action Control -->
@@ -1854,6 +1932,47 @@ onMounted(() => {
 })
 
 // Helper functions
+function reportStatusLabel(status: number) {
+  switch (status) {
+    case 0: return 'Chờ xử lý'
+    case 1: return 'Đã giải quyết'
+    case 2: return 'Từ chối'
+    default: return 'Không xác định'
+  }
+}
+
+function reportStatusClass(status: number) {
+  switch (status) {
+    case 0: return 'bg-slate-50 border-slate-200 text-slate-500'
+    case 1: return 'bg-emerald-50 border-emerald-250 text-emerald-600'
+    case 2: return 'bg-rose-50 border-rose-250 text-rose-600'
+    default: return 'bg-slate-50 border-slate-200 text-slate-500'
+  }
+}
+
+function reportTypeLabel(type: number) {
+  const found = reportOptions.find(opt => opt.value === type)
+  return found ? found.label : 'Khác'
+}
+
+function penaltyTypeLabel(type: number) {
+  switch (type) {
+    case 0: return 'Cảnh cáo (Warning)'
+    case 1: return 'Khóa xe (Car Suspension)'
+    case 2: return 'Khóa tài khoản (Account Suspension)'
+    default: return 'Hình phạt khác'
+  }
+}
+
+function penaltyTypeClass(type: number) {
+  switch (type) {
+    case 0: return 'bg-amber-50 border-amber-250 text-amber-700'
+    case 1: return 'bg-orange-50 border-orange-250 text-orange-700'
+    case 2: return 'bg-rose-50 border-rose-250 text-rose-700'
+    default: return 'bg-slate-50 border-slate-200 text-slate-650'
+  }
+}
+
 function statusLabel(status: number) {
   return (TripStatusLabel as any)[status] ?? 'Không xác định'
 }

@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             PostCategorySeeder::class,
             PostSeeder::class,
             SystemSettingSeeder::class,
+            ReportSeeder::class,
         ]);
     }
 }

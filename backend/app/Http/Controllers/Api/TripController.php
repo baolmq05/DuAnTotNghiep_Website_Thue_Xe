@@ -115,7 +115,8 @@ class TripController extends Controller
             'pendingBalances',
             'images',
             'conversation',
-            'reports.images'
+            'reports.images',
+            'reports.penalty'
         ])->find($id);
 
         if (!$trip) {
@@ -153,7 +154,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $trip = $action->execute((int)$id, $user);
+            $trip = $action->execute((int) $id, $user);
 
             return response()->json([
                 'success' => true,
@@ -184,7 +185,7 @@ class TripController extends Controller
 
         try {
             $reason = $request->input('reason');
-            $trip = $action->execute((int)$id, $user, $reason);
+            $trip = $action->execute((int) $id, $user, $reason);
 
             return response()->json([
                 'success' => true,
@@ -214,7 +215,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $trip = $action->execute((int)$id, $user, $request->input('images', []));
+            $trip = $action->execute((int) $id, $user, $request->input('images', []));
 
             return response()->json([
                 'success' => true,
@@ -244,7 +245,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $trip = $action->execute((int)$id, $user);
+            $trip = $action->execute((int) $id, $user);
 
             return response()->json([
                 'success' => true,
@@ -274,7 +275,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $trip = $action->execute((int)$id, $user, $request->input('images', []));
+            $trip = $action->execute((int) $id, $user, $request->input('images', []));
 
             return response()->json([
                 'success' => true,
@@ -304,7 +305,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $review = $action->execute((int)$id, $user, $request->validated());
+            $review = $action->execute((int) $id, $user, $request->validated());
 
             return response()->json([
                 'success' => true,
@@ -334,7 +335,7 @@ class TripController extends Controller
         $user = auth('api')->user();
 
         try {
-            $result = $action->execute((int)$id, $user);
+            $result = $action->execute((int) $id, $user);
 
             return response()->json([
                 'success' => true,
@@ -368,7 +369,7 @@ class TripController extends Controller
 
         try {
             $reason = $request->input('reason');
-            $result = $action->execute((int)$id, $user, $reason);
+            $result = $action->execute((int) $id, $user, $reason);
 
             return response()->json([
                 'success' => true,

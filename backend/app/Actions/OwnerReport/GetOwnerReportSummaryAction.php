@@ -43,8 +43,11 @@ class GetOwnerReportSummaryAction
         $activeStrikes = (clone $activePenaltiesQuery)->count();
 
         // Phân loại số lượng theo từng loại hình phạt
-        $warningsCount = (clone $penaltiesQuery)->where('penalty_type', PenaltyType::Warning->value)->count();
-        $carSuspensionsCount = (clone $penaltiesQuery)->where('penalty_type', PenaltyType::CarSuspension->value)->count();
+        $warningsCount = (clone $penaltiesQuery)->whereIn('penalty_type', [
+            PenaltyType::Warning1->value,
+            PenaltyType::Warning2->value,
+        ])->count();
+        $carSuspensionsCount = 0;
         $accountSuspensionsCount = (clone $penaltiesQuery)->where('penalty_type', PenaltyType::AccountSuspension->value)->count();
 
         // Danh sách các án phạt đang có hiệu lực
@@ -52,7 +55,7 @@ class GetOwnerReportSummaryAction
             ->with(['trip', 'report'])
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(fn ($penalty) => OwnerReportFormatter::formatPenalty($penalty));
+            ->map(fn($penalty) => OwnerReportFormatter::formatPenalty($penalty));
 
         // 3. Trạng thái tài khoản (ACTIVE / SUSPENDED)
         $hasActiveAccountSuspension = (clone $activePenaltiesQuery)
@@ -68,7 +71,7 @@ class GetOwnerReportSummaryAction
             ->orderBy('created_at', 'desc')
             ->limit(5)
             ->get()
-            ->map(fn ($report) => OwnerReportFormatter::formatReportListItem($report));
+            ->map(fn($report) => OwnerReportFormatter::formatReportListItem($report));
 
         return [
             'account_status' => $accountStatus,
