@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('car_delivery_options', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->float('max_distance', 10, 2)->comment('khoảng cách tối đa')->unsigned();
-            $table->float('fee_distance', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa')->unsigned();
-            $table->float('free_distance', 10, 2)->comment('khoảng cách miễn phí')->unsigned();
+            $table->float('max_distance', 10, 2)->comment('khoảng cách tối đa');
+            $table->float('fee_distance', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa');
+            $table->float('free_distance', 10, 2)->comment('khoảng cách miễn phí');
             $table->tinyInteger('status')->comment('trạng thái giao xe: 0 - không áp dụng, 1 - áp dụng')->default(0);
             $table->timestamps();
         });

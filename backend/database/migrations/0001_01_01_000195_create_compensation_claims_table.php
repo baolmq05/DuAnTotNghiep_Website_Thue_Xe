@@ -19,9 +19,9 @@ return new class extends Migration
             $table->unsignedBigInteger('renter_id');
             $table->string('title', 255);
             $table->text('description');
-            $table->decimal('requested_amount', 12, 2)->unsigned()->comment('Số tiền chủ xe yêu cầu');
-            $table->decimal('counter_amount', 12, 2)->unsigned()->nullable()->comment('Người thuê đề xuất lại');
-            $table->decimal('final_amount', 12, 2)->unsigned()->nullable()->comment('Số tiền cuối cùng sau thương lượng/Admin');
+            $table->decimal('requested_amount', 12, 2)->comment('Số tiền chủ xe yêu cầu');
+            $table->decimal('counter_amount', 12, 2)->nullable()->comment('Người thuê đề xuất lại');
+            $table->decimal('final_amount', 12, 2)->nullable()->comment('Số tiền cuối cùng sau thương lượng/Admin');
             $table->unsignedTinyInteger('status')->default(0)->comment('0: Chờ người thuê phản hồi, 1: Đang thương lượng, 2: Người thuê đồng ý, 3: Người thuê từ chối, 4: Chờ Admin xử lý, 5: Đã giải quyết');
             $table->text('owner_note')->nullable();
             $table->text('renter_note')->nullable();

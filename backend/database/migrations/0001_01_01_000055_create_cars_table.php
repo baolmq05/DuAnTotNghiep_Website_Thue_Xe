@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('license_plate', 12)->comment('biển số xe')->unique();
             $table->string('VIN', 17)->comment('số khung gồm 17 kí tự')->unique();
             $table->string('engine_number',255)->comment('số máy')->unique();
-            $table->float('fuel_consumption', 10, 2)->comment('mức tiêu thụ nhiên liệu')->unsigned();
+            $table->float('fuel_consumption', 10, 2)->comment('mức tiêu thụ nhiên liệu');
             $table->bigInteger('unit_price')->comment('đơn giá thuê xe')->unsigned();
             $table->bigInteger('discount_value')->comment('giá trị giảm giá')->unsigned()->default(0);
             $table->text('description')->comment('mô tả chi tiết về xe')->nullable();
@@ -26,7 +26,7 @@ return new class extends Migration
             $table->unsignedBigInteger('car_location_id')->comment('mã vị trí xe');
             $table->unsignedBigInteger('car_brand_id')->comment('mã thương hiệu xe');
             $table->unsignedBigInteger('car_type_id')->comment('mã loại xe');
-            $table->decimal('seat_count', 2, 0)->comment('số chỗ ngồi')->unsigned();
+            $table->decimal('seat_count', 2, 0)->comment('số chỗ ngồi');
             $table->date('manufacture_year')->comment('năm sản xuất');
             $table->string('fuel_type', 255)->comment('loại nhiên liệu');
             $table->string('transmission', 255)->comment('loại hộp số');

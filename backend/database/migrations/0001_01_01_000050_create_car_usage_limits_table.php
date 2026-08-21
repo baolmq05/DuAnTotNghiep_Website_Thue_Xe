@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('car_usage_limits', function (Blueprint $table) {
             $table->engine = 'InnoDB';
             $table->id();
-            $table->float('max_daily_distance', 10, 2)->comment('khoảng cách tối đa')->unsigned();
-            $table->decimal('extra_distance_fee', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa')->unsigned();
+            $table->float('max_daily_distance', 10, 2)->comment('khoảng cách tối đa');
+            $table->decimal('extra_distance_fee', 10, 2)->comment('phí cho mỗi km vượt quá khoảng cách tối đa');
             $table->tinyInteger('status')->comment('trạng thái giới hạn sử dụng: 0 - không áp dụng, 1 - áp dụng')->default(0);
             $table->timestamps();
         });
