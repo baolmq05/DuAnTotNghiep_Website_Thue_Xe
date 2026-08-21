@@ -11,6 +11,7 @@ use App\Enum\ReportStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
+use App\Http\Requests\Report\StoreReportRequest;
 
 class ReportController extends Controller
 {
@@ -18,7 +19,7 @@ class ReportController extends Controller
      * Store a newly created report in storage.
      * POST /api/reports
      */
-    public function store(Request $request)
+    public function store(StoreReportRequest $request)
     {
         $user = auth('api')->user();
         if (!$user) {
@@ -26,30 +27,6 @@ class ReportController extends Controller
                 'success' => false,
                 'message' => 'Bạn cần đăng nhập để thực hiện hành động này.'
             ], 401);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'trip_id' => 'required|integer|exists:trips,id',
-            'report_type' => 'required|integer|in:0,1,2,3',
-            'description' => 'required|string',
-            'images' => 'nullable|array',
-            'images.*' => 'required|string|url',
-        ], [
-            'trip_id.required' => 'Vui lòng cung cấp mã chuyến đi.',
-            'trip_id.exists' => 'Không tìm thấy chuyến đi tương ứng.',
-            'report_type.required' => 'Vui lòng chọn loại khiếu nại.',
-            'report_type.in' => 'Loại khiếu nại không hợp lệ.',
-            'description.required' => 'Vui lòng nhập mô tả chi tiết sự việc.',
-            'images.array' => 'Định dạng hình ảnh không hợp lệ.',
-            'images.*.url' => 'Đường dẫn hình ảnh không hợp lệ.'
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Dữ liệu không hợp lệ.',
-                'errors' => $validator->errors()
-            ], 422);
         }
 
         try {
@@ -64,7 +41,7 @@ class ReportController extends Controller
             }
 
             // Generate report title
-            $reportTypeEnum = ReportType::tryFrom((int)$request->report_type);
+            $reportTypeEnum = ReportType::tryFrom((int) $request->report_type);
             $reportTypeLabel = $reportTypeEnum ? $reportTypeEnum->getLabel() : 'Khiếu nại';
             $title = "Khiếu nại chuyến đi #" . $trip->id . " - " . $reportTypeLabel;
 
