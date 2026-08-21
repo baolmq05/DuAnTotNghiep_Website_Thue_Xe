@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Enum\ReportStatus;
 use App\Enum\ReportType;
 
@@ -58,5 +59,13 @@ class Report extends Model
     public function images(): HasMany
     {
         return $this->hasMany(ReportImage::class);
+    }
+
+    /**
+     * Get the penalty associated with this report, if any.
+     */
+    public function penalty(): HasOne
+    {
+        return $this->hasOne(OwnerPenalty::class, 'report_id');
     }
 }

@@ -155,4 +155,20 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
     {
         return $this->hasMany(Car::class, 'user_id');
     }
+
+    /**
+     * Get the penalties received by this user (as owner).
+     */
+    public function penalties(): HasMany
+    {
+        return $this->hasMany(OwnerPenalty::class, 'user_id');
+    }
+
+    /**
+     * Get the penalties resolved/issued by this user (as admin).
+     */
+    public function resolvedPenalties(): HasMany
+    {
+        return $this->hasMany(OwnerPenalty::class, 'resolved_by');
+    }
 }

@@ -173,5 +173,21 @@ class Trip extends Model
 
         return $code;
     }
+
+    /**
+     * Get the penalties associated with this trip.
+     */
+    public function penalties(): HasMany
+    {
+        return $this->hasMany(OwnerPenalty::class, 'trip_id');
+    }
+
+    /**
+     * Get the single active penalty associated with this trip, if any.
+     */
+    public function penalty(): HasOne
+    {
+        return $this->hasOne(OwnerPenalty::class, 'trip_id');
+    }
 }
 
