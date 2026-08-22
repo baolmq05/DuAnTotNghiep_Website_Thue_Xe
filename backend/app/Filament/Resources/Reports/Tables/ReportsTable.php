@@ -81,6 +81,7 @@ class ReportsTable
                         ReportStatus::Pending->value => 'Chờ xử lý',
                         ReportStatus::Resolved->value => 'Đã giải quyết',
                         ReportStatus::Rejected->value => 'Từ chối',
+                        ReportStatus::Cancelled->value => 'Thu hồi',
                     ]),
             ])
             ->recordActions([

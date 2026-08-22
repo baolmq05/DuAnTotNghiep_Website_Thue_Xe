@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
 use App\Http\Requests\Report\StoreReportRequest;
+use App\Models\Notification;
 
 class ReportController extends Controller
 {
@@ -77,6 +78,79 @@ class ReportController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Có lỗi xảy ra khi gửi khiếu nại.',
+                'errors' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Revoke an existing report.
+     * POST /api/reports/{id}/revoke
+     */
+    public function revoke($id)
+    {
+        $user = auth('api')->user();
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần đăng nhập để thực hiện hành động này.'
+            ], 401);
+        }
+
+        try {
+            $report = Report::with('trip.car')->find($id);
+
+            if (!$report) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Không tìm thấy khiếu nại này.'
+                ], 404);
+            }
+
+            // Only the reporter can revoke the report
+            if ($report->reporter_id !== $user->id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Bạn không có quyền thu hồi khiếu nại này.'
+                ], 403);
+            }
+
+            // Check if report status is Pending
+            if ($report->status !== ReportStatus::Pending) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Khiếu nại này không ở trạng thái chờ xử lý nên không thể thu hồi.'
+                ], 400);
+            }
+
+            // Update status to Cancelled
+            $report->update([
+                'status' => ReportStatus::Cancelled,
+            ]);
+
+            // Create notification for the car owner
+            $trip = $report->trip;
+            if ($trip && $trip->car) {
+                $ownerId = $trip->car->user_id;
+                if ($ownerId) {
+                    Notification::create([
+                        'user_id' => $ownerId,
+                        'message' => "Khách hàng đã thu hồi khiếu nại đối với chuyến đi #{$trip->id}.",
+                        'is_read' => '0',
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Thu hồi khiếu nại thành công.',
+                'data' => $report->fresh('images')
+            ], 200);
+
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Có lỗi xảy ra khi thu hồi khiếu nại.',
                 'errors' => $e->getMessage()
             ], 500);
         }

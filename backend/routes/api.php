@@ -150,6 +150,7 @@ Route::group(['middleware' => 'auth:api'], function () {
 
     // Reports
     Route::post('reports', [ReportController::class, 'store']);
+    Route::post('reports/{id}/revoke', [ReportController::class, 'revoke']);
 
     // Promotions management
     Route::post('promotions/check', [PromotionController::class, 'check']);

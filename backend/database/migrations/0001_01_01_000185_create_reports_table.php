@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->tinyInteger('report_type')->unsigned()->comment('Loại báo cáo: 0 - Giao sai xe, 1 - Không đến giao/nhận xe, 2 - Gian lận, 3 - Khác');
             $table->string('title', 255)->comment('tiêu đề báo cáo');
             $table->text('description')->comment('chi tiết báo cáo');
-            $table->tinyInteger('status')->unsigned()->comment('trạng thái: 0 - Chờ xử lý, 1 - Đang xử lý, 2 - Đã giải quyết, 3 - Từ chối')->default(0);
+            $table->tinyInteger('status')->unsigned()->comment('trạng thái: 0 - Chờ xử lý, 1 - Đã giải quyết, 2 - Từ chối, 3 - Thu hồi')->default(0);
             $table->text('admin_note')->nullable()->comment('ghi chú của admin');
             $table->timestamp('resolved_at')->nullable()->comment('thời gian xử lý');
             

@@ -27,6 +27,7 @@ class GetOwnerReportSummaryAction
         $pendingReports = (clone $reportsQuery)->where('status', ReportStatus::Pending->value)->count();
         $resolvedReports = (clone $reportsQuery)->where('status', ReportStatus::Resolved->value)->count();
         $rejectedReports = (clone $reportsQuery)->where('status', ReportStatus::Rejected->value)->count();
+        $cancelledReports = (clone $reportsQuery)->where('status', ReportStatus::Cancelled->value)->count();
 
         // 2. Thống kê Án phạt / Gậy (Strikes / Penalties)
         $penaltiesQuery = OwnerPenalty::where('user_id', $user->id);
@@ -83,6 +84,7 @@ class GetOwnerReportSummaryAction
                 'pending' => $pendingReports,
                 'resolved' => $resolvedReports,
                 'rejected' => $rejectedReports,
+                'cancelled' => $cancelledReports,
             ],
             'penalties_breakdown' => [
                 'warnings' => $warningsCount,

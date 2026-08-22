@@ -53,7 +53,7 @@ class ReportSeeder extends Seeder
             'user_id' => $trip->car->user_id, // Owner's user_id
             'trip_id' => $trip->id,
             'report_id' => $report1->id,
-            'penalty_type' => PenaltyType::Warning,
+            'penalty_type' => PenaltyType::Warning1,
             'start_at' => now(),
             'end_at' => now()->addDays(30),
             'reason' => 'Cảnh cáo chủ xe vì hành vi bàn giao sai phương tiện đăng ký.',

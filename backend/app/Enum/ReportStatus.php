@@ -13,6 +13,7 @@ enum ReportStatus: int implements HasLabel, HasColor, HasIcon
     case Pending = 0;
     case Resolved = 1;
     case Rejected = 2;
+    case Cancelled = 3;
 
     public function getLabel(): string|Htmlable|null
     {
@@ -20,6 +21,7 @@ enum ReportStatus: int implements HasLabel, HasColor, HasIcon
             self::Pending => 'Chờ xử lý',
             self::Resolved => 'Đã giải quyết',
             self::Rejected => 'Từ chối',
+            self::Cancelled => 'Thu hồi',
         };
     }
 
@@ -29,6 +31,7 @@ enum ReportStatus: int implements HasLabel, HasColor, HasIcon
             self::Pending => 'gray',
             self::Resolved => 'success',
             self::Rejected => 'danger',
+            self::Cancelled => 'gray',
         };
     }
 
@@ -38,6 +41,7 @@ enum ReportStatus: int implements HasLabel, HasColor, HasIcon
             self::Pending => 'heroicon-o-clock',
             self::Resolved => 'heroicon-o-check-circle',
             self::Rejected => 'heroicon-o-x-circle',
+            self::Cancelled => 'heroicon-o-minus-circle',
         };
     }
 }
