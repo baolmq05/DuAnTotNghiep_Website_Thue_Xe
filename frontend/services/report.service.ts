@@ -42,6 +42,13 @@ export class ReportService extends BaseService {
             useAuth: true,
         });
     }
+
+    async revokeReport(id: number): Promise<ApiResponse<ReportResponse>> {
+        return this.request<ApiResponse<ReportResponse>>(`${this.endpoint}/${id}/revoke`, {
+            method: "POST",
+            useAuth: true,
+        });
+    }
 }
 
 export const reportService = new ReportService();

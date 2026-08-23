@@ -284,13 +284,13 @@
           </div>
 
           <!-- Violation Reports for Owner -->
-          <div v-if="isOwner && trip.reports && trip.reports.length > 0" class="bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm space-y-6 animate-fade-in">
+          <div v-if="isOwner && activeReports && activeReports.length > 0" class="bg-white rounded-3xl border border-slate-200/60 p-6 shadow-sm space-y-6 animate-fade-in">
             <h2 class="text-base font-bold text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
               <Icon name="lucide:alert-triangle" class="text-rose-500 w-5 h-5" />
               Báo cáo vi phạm
             </h2>
 
-            <div v-for="report in trip.reports" :key="report.id" class="space-y-5 border border-slate-100 rounded-2xl p-5 bg-slate-50/30">
+            <div v-for="report in activeReports" :key="report.id" class="space-y-5 border border-slate-100 rounded-2xl p-5 bg-slate-50/30">
               <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
                 <div class="flex items-center gap-2">
                   <span class="text-xs font-bold text-slate-400">Loại báo cáo:</span>
@@ -1209,6 +1209,12 @@
       confirm-text="Đồng ý trả xe" cancel-text="Hủy" type="warning" @confirm="executeReturnRequest"
       @close="showReturnConfirm = false" />
 
+    <!-- Modal confirm revoke report -->
+    <CommonConfirmModal :show="showRevokeConfirm" title="Xác nhận thu hồi khiếu nại"
+      message="Bạn có chắc chắn muốn thu hồi yêu cầu khiếu nại này không? Hành động này không thể hoàn tác."
+      confirm-text="Đồng ý thu hồi" cancel-text="Hủy" type="danger" @confirm="executeRevokeComplaint"
+      @close="showRevokeConfirm = false" />
+
     <!-- Beautiful Tailwind Reject Dialog Modal -->
     <Teleport to="body">
       <Transition name="fade">
@@ -1349,10 +1355,18 @@
 
               <!-- Action buttons -->
               <div class="flex gap-3 pt-4 border-t border-slate-100">
-                <button v-if="existingReport" @click="showComplaintModal = false"
-                  class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
-                  Đóng
-                </button>
+                <template v-if="existingReport">
+                  <button @click="showComplaintModal = false"
+                    class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
+                    Đóng
+                  </button>
+                  <button v-if="existingReport.status === 0" @click="handleRevokeComplaint" :disabled="submittingComplaint"
+                    class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
+                    <Icon v-if="submittingComplaint" name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                    <Icon v-else name="lucide:rotate-ccw" class="w-4 h-4" />
+                    <span>Thu hồi khiếu nại</span>
+                  </button>
+                </template>
                 <template v-else>
                   <button @click="showComplaintModal = false" :disabled="submittingComplaint"
                     class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
@@ -1535,10 +1549,18 @@ const complaintDescription = ref('')
 const complaintImages = ref<string[]>([])
 const complaintImageUploadRef = ref<any>(null)
 const submittingComplaint = ref(false)
+const showRevokeConfirm = ref(false)
+
+const activeReports = computed(() => {
+  if (trip.value && trip.value.reports) {
+    return trip.value.reports.filter((report: any) => report.status !== 3)
+  }
+  return []
+})
 
 const existingReport = computed(() => {
-  if (trip.value && trip.value.reports && trip.value.reports.length > 0) {
-    return trip.value.reports[0]
+  if (activeReports.value.length > 0) {
+    return activeReports.value[0]
   }
   return null
 })
@@ -1602,6 +1624,31 @@ const submitComplaint = async () => {
   } catch (err: any) {
     console.error('Lỗi khi gửi khiếu nại:', err)
     showToast(err.response?._data?.message || err.message || 'Có lỗi xảy ra khi gửi khiếu nại.', 'error')
+  } finally {
+    submittingComplaint.value = false
+  }
+}
+
+const handleRevokeComplaint = () => {
+  showRevokeConfirm.value = true
+}
+
+const executeRevokeComplaint = async () => {
+  if (!existingReport.value) return
+  
+  submittingComplaint.value = true
+  try {
+    const res = await reportService.revokeReport(Number(existingReport.value.id))
+    if (res && res.success) {
+      showToast('Thu hồi khiếu nại thành công.', 'success')
+      showComplaintModal.value = false
+      await fetchTripDetails()
+    } else {
+      showToast(res.message || 'Có lỗi xảy ra khi thu hồi khiếu nại.', 'error')
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi thu hồi khiếu nại:', err)
+    showToast(err.response?._data?.message || 'Có lỗi xảy ra khi thu hồi khiếu nại.', 'error')
   } finally {
     submittingComplaint.value = false
   }
@@ -1937,6 +1984,7 @@ function reportStatusLabel(status: number) {
     case 0: return 'Chờ xử lý'
     case 1: return 'Đã giải quyết'
     case 2: return 'Từ chối'
+    case 3: return 'Thu hồi'
     default: return 'Không xác định'
   }
 }
@@ -1946,6 +1994,7 @@ function reportStatusClass(status: number) {
     case 0: return 'bg-slate-50 border-slate-200 text-slate-500'
     case 1: return 'bg-emerald-50 border-emerald-250 text-emerald-600'
     case 2: return 'bg-rose-50 border-rose-250 text-rose-600'
+    case 3: return 'bg-slate-50 border-slate-200 text-slate-500'
     default: return 'bg-slate-50 border-slate-200 text-slate-500'
   }
 }
