@@ -150,7 +150,7 @@
 
             <div class="warning-note">
                 <strong>📌 Lưu ý quy định xử phạt:</strong><br>
-                Quy định hệ thống tính lũy tiến vi phạm trong vòng 90 ngày. Nếu tài khoản chủ xe tích lũy <strong>đủ 3 lần vi phạm</strong> trong 90 ngày, tài khoản của bạn sẽ tự động bị <strong>khóa vĩnh viễn hoặc tạm khóa</strong> truy cập hệ thống.
+                Quy định hệ thống tính lũy <strong>đủ 3 lần vi phạm</strong> trong 90 ngày, tài khoản của bạn sẽ tự động bị <strong>khóa vĩnh viễn</strong> truy cập hệ thống.
             </div>
 
             <p style="margin-top: 24px;">

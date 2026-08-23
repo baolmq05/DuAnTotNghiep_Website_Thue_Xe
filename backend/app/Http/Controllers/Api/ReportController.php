@@ -44,7 +44,7 @@ class ReportController extends Controller
             // Generate report title
             $reportTypeEnum = ReportType::tryFrom((int) $request->report_type);
             $reportTypeLabel = $reportTypeEnum ? $reportTypeEnum->getLabel() : 'Khiếu nại';
-            $title = "Khiếu nại chuyến đi #" . $trip->id . " - " . $reportTypeLabel;
+            $title = "Khiếu nại chuyến đi #" . $trip->trip_code . " - " . $reportTypeLabel;
 
             // Create Report
             $report = Report::create([
