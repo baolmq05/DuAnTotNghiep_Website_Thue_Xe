@@ -25,6 +25,10 @@ class ConfirmTripAction
             throw new InvalidArgumentException('Chuyến đi không ở trạng thái Chờ xác nhận.');
         }
 
+        if ($trip->end_at && \Carbon\Carbon::parse($trip->end_at)->timezone('Asia/Ho_Chi_Minh')->isPast()) {
+            throw new InvalidArgumentException('Không thể duyệt: Chuyến đi đã quá hạn thời gian trả xe (' . \Carbon\Carbon::parse($trip->end_at)->timezone('Asia/Ho_Chi_Minh')->format('H:i d/m/Y') . ').');
+        }
+
         $trip->update(['status' => TripStatus::WaitingPayment->value]);
 
         Notification::create([

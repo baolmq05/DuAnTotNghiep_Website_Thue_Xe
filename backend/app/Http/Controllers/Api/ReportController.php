@@ -8,6 +8,7 @@ use App\Models\ReportImage;
 use App\Models\Trip;
 use App\Enum\ReportType;
 use App\Enum\ReportStatus;
+use App\Enum\TripStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Exception;
@@ -39,6 +40,21 @@ class ReportController extends Controller
                     'success' => false,
                     'message' => 'Bạn không có quyền báo cáo/khiếu nại chuyến đi này.'
                 ], 403);
+            }
+
+            // Only allow reports on confirmed, ongoing, waiting return, or completed trips
+            $allowedStatuses = [
+                TripStatus::Confirmed->value,
+                TripStatus::Ongoing->value,
+                TripStatus::WaitingReturn->value,
+                TripStatus::WaitingExtension->value,
+                TripStatus::Complete->value,
+            ];
+            if (!in_array((int) $trip->status, $allowedStatuses)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Chỉ có thể khiếu nại đối với các chuyến đi đã thanh toán, đang diễn ra hoặc đã hoàn thành.'
+                ], 400);
             }
 
             // Generate report title

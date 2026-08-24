@@ -395,8 +395,14 @@ class TripController extends Controller
 
     private function autoUpdateExpiredTrips()
     {
+        $now = now('Asia/Ho_Chi_Minh')->toDateTimeString();
+
         Trip::where('status', TripStatus::Ongoing->value)
-            ->where('end_at', '<', now('Asia/Ho_Chi_Minh')->toDateTimeString())
+            ->where('end_at', '<', $now)
             ->update(['status' => TripStatus::WaitingReturn->value]);
+
+        Trip::where('status', TripStatus::Pending->value)
+            ->where('end_at', '<', $now)
+            ->update(['status' => TripStatus::OwnerCancel->value]);
     }
 }

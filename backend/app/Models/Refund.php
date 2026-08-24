@@ -116,7 +116,7 @@ class Refund extends Model
                     }
                 }
 
-                // Handle Transaction creation when entering Completed state
+                // Handle Transaction and Notification creation when entering Completed state
                 if ($newStatus == RefundStatus::Completed && $oldStatus != RefundStatus::Completed) {
                     $user = $refund->user;
                     if ($user) {
@@ -125,6 +125,24 @@ class Refund extends Model
                             'transaction_code' => 'WD' . ($refund->transaction_id ?: $refund->id),
                             'amount' => -$refund->amount,
                             'prepay' => 0,
+                        ]);
+
+                        \App\Models\Notification::create([
+                            'user_id' => $user->id,
+                            'message' => 'Yêu cầu rút tiền ' . number_format($refund->amount) . ' VNĐ của bạn đã được phê duyệt thành công và đang được chuyển vào tài khoản.',
+                            'is_read' => '0',
+                        ]);
+                    }
+                }
+
+                // Handle Notification when withdrawal is Canceled or Failed
+                if (in_array($newStatus, [RefundStatus::Canceled, RefundStatus::Failed]) && !in_array($oldStatus, [RefundStatus::Canceled, RefundStatus::Failed])) {
+                    $user = $refund->user;
+                    if ($user) {
+                        \App\Models\Notification::create([
+                            'user_id' => $user->id,
+                            'message' => 'Yêu cầu rút tiền ' . number_format($refund->amount) . ' VNĐ của bạn đã bị từ chối/hủy. Số tiền đã được hoàn lại về ví của bạn.',
+                            'is_read' => '0',
                         ]);
                     }
                 }
