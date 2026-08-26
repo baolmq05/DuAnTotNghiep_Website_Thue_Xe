@@ -453,26 +453,28 @@ class ZaloPayService
                         $meta["owner_id"]
                     );
 
+                    // 1. Create the Transaction record (Số tiền thực khách đã thanh toán)
                     $transaction = Transaction::create([
-
                         "user_id" => $trip->user_id,
-
                         "transaction_code" => $zpTransactionId,
-
                         "amount" => $amount,
-
                         "prepay" => $amount,
-
                         "trip_id" => $trip->id
-
                     ]);
 
+                    // 2. Doanh thu tính cho chủ xe (không bị trừ voucher do Admin/Sàn tài trợ)
+                    $ownerGrossAmount = $trip->owner_gross_revenue;
+                    if ($ownerGrossAmount <= 0) {
+                        $ownerGrossAmount = $amount;
+                    }
+
+                    // 3. Create PendingBalance holding record
                     PendingBalance::create([
                         'transaction_id' => $transaction->id,
                         'trip_id' => $trip->id,
                         'payer_id' => $trip->user_id,
                         'receiver_id' => $owner->id ?? ($trip->car->user_id ?? 0),
-                        'amount' => $amount,
+                        'amount' => $ownerGrossAmount,
                         'status' => '1',
                         'expired_at' => \Carbon\Carbon::parse($trip->end_at)->addDays(3),
                         'released_at' => null

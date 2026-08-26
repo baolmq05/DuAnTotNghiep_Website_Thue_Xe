@@ -56,13 +56,6 @@
                 </span>
             </button>
 
-            <button @click="noDeposit = !noDeposit" type="button"
-                :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0', noDeposit ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
-                <span class="flex items-center gap-2">
-                    <Icon name="lucide:shield" class="w-4 h-4" /> Miễn thế chấp
-                </span>
-            </button>
-
             <button @click="hasDiscount = !hasDiscount" type="button"
                 :class="['px-4 py-2 text-xs font-semibold rounded-xl border transition-all flex items-center gap-1 flex-shrink-0 mr-2', hasDiscount ? 'border-brand-primary bg-brand-primary/5 text-brand-primary shadow-sm font-bold' : 'border-slate-200 text-slate-700 bg-slate-50/50 hover:bg-slate-50']">
                 <span class="flex items-center gap-2">

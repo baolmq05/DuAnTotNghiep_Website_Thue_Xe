@@ -35,7 +35,7 @@ class CancelTripByRenterAction
         }
 
         $totalPaid = (float)$trip->transactions()->sum('amount');
-        $tripValue = $trip->cost - $trip->discount_amount;
+        $tripValue = $trip->owner_gross_revenue > 0 ? $trip->owner_gross_revenue : ($trip->cost - $trip->discount_amount);
         $bookingTime = $trip->created_at->timezone('Asia/Ho_Chi_Minh');
         $startTime = Carbon::parse($trip->start_at, 'Asia/Ho_Chi_Minh');
         $now = now()->timezone('Asia/Ho_Chi_Minh');

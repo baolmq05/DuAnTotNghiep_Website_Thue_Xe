@@ -187,8 +187,7 @@ string,
 }
 >();
 
-const GOONG_MAP_KEY = "8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex";
-const GOONG_API_KEY = "xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V";
+import { GOONG_API_KEY, GOONG_MAP_KEY } from '~/constants/goong';
 
 const geocodeAddress = async (address: string) => {
     if (!address || address === "Chưa cập nhật")

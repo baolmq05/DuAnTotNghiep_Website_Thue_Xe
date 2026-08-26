@@ -52,7 +52,7 @@ class ReviewController extends Controller
                 'data' => [
                     'id'          => $user->id,
                     'name'        => $user->name,
-                    'avatar'      => $user->avatar ? url($user->avatar) : null,
+                    'avatar'      => $this->formatAvatarUrl($user->avatar),
                     'joinDate'    => $user->created_at ? $user->created_at->format('m/Y') : date('m/Y'),
                     'rating'      => (float) $averageProfileRating,
                     'tripsCount'  => $tripsCount,
@@ -87,7 +87,7 @@ class ReviewController extends Controller
                     'id'              => $review->id,
                     'reviewer_id'     => $review->reviewer_id,
                     'reviewer_name'   => $review->reviewer->name ?? 'Người dùng ẩn danh',
-                    'reviewer_avatar' => $review->reviewer->avatar ? url($review->reviewer->avatar) : null,
+                    'reviewer_avatar' => $this->formatAvatarUrl($review->reviewer->avatar ?? null),
                     'rating'          => (float) $review->rating,
                     'comment'         => $review->comment,
                     'created_at'      => $review->created_at->format('d/m/Y'),
@@ -146,10 +146,24 @@ class ReviewController extends Controller
                 'owner'              => [
                     'id'     => $user->id,
                     'name'   => $user->name,
-                    'avatar' => $user->avatar ? url($user->avatar) : null,
+                    'avatar' => $this->formatAvatarUrl($user->avatar),
                 ],
             ];
         })->toArray();
+    }
+
+    /**
+     * Format avatar url to prevent breaking external URLs like Google / Cloudinary.
+     */
+    private function formatAvatarUrl(?string $avatar): ?string
+    {
+        if (empty($avatar)) {
+            return null;
+        }
+        if (str_starts_with($avatar, 'http://') || str_starts_with($avatar, 'https://')) {
+            return $avatar;
+        }
+        return url($avatar);
     }
 
     /**

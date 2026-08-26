@@ -71,6 +71,8 @@ class CreateTripAction
 
             $trip = Trip::create([
                 'cost' => $calculatedCost,
+                'car_discount_amount' => $carDiscountTotal,
+                'promo_discount_amount' => $promoDiscount,
                 'discount_amount' => $calculatedDiscountAmount,
                 'status' => TripStatus::Pending->value,
                 'trip_type' => $data['trip_type'] ?? 0,

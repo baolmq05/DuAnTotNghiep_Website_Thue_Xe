@@ -41,6 +41,7 @@ export interface Car {
   }>;
   reviews_avg_rating?: string | number | null;
   trips_count?: number;
+  has_ongoing_trip?: boolean;
 }
 
 export interface ApiResponse<T> {

@@ -615,8 +615,7 @@ const carId = route.params.id as string
 let maplibregl: any = null
 
 // Goong Map Keys
-const MAP_KEY = '8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex'
-const API_KEY = 'xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V'
+import { GOONG_API_KEY as API_KEY, GOONG_MAP_KEY as MAP_KEY } from '~/constants/goong'
 
 const suggestions = ref<any[]>([])
 const mapRef = ref<any>(null)

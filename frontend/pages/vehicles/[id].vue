@@ -69,13 +69,8 @@
                     <span class="text-sm font-medium">{{ car?.car_location?.address || 'Chưa cập nhật' }}</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 mt-3 flex-wrap">
+                <div v-if="car?.delivery_option_id" class="flex items-center gap-2 mt-3 flex-wrap">
                   <span
-                    class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-xs font-bold px-3 py-1.5 rounded-full border border-emerald-100">
-                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    Miễn thế chấp
-                  </span>
-                  <span v-if="car?.delivery_option_id"
                     class="inline-flex items-center gap-1.5 bg-brand-secondary text-brand-primary text-xs font-bold px-3 py-1.5 rounded-full border border-brand-primary/10">
                     Giao xe tận nơi
                   </span>
@@ -237,6 +232,7 @@
                   {{ car?.owner?.name?.charAt(0).toUpperCase() || 'M' }}
                 </div>
                 <img v-else :src="car.owner.avatar" alt="Owner Avatar"
+                  referrerpolicy="no-referrer"
                   class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10" />
                 <div class="flex-1">
                   <p class="font-extrabold text-brand-dark group-hover:text-brand-primary transition-colors">
@@ -282,7 +278,7 @@
                       :style="{ backgroundColor: review.color }">
                       {{ review.name.charAt(0) }}
                     </div>
-                    <img v-else :src="review.avatar" class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="Reviewer Avatar" />
+                    <img v-else :src="review.avatar" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="Reviewer Avatar" />
                     <div>
                       <p class="text-sm font-bold text-brand-dark group-hover:text-brand-primary transition-colors">
                         {{ review.name }}
@@ -355,8 +351,7 @@
                 <div class="flex items-center gap-2 mt-1.5 text-white">
                   <Icon name="heroicons:star-solid" class="w-3.5 h-3.5 text-yellow-400" />
                   <span class="text-xs text-white/70 font-semibold">{{ car?.reviews_avg_rating ?
-                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến • Miễn
-                    thế chấp</span>
+                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến</span>
                 </div>
               </div>
 
@@ -434,11 +429,33 @@
                     </span>
                   </div>
 
-                  <!-- 2. Delivery Search Autocomplete -->
+                  <!-- 2. Delivery Search Autocomplete & Saved Addresses Quick Select -->
                   <div v-else-if="receiveMethod === 'delivery'" class="space-y-3">
+                    <!-- Danh sách địa chỉ đã lưu chọn nhanh -->
+                    <div v-if="user && userSavedAddresses.length > 0" class="space-y-1.5">
+                      <div class="flex items-center justify-between text-xs text-slate-600 font-semibold">
+                        <span>Địa chỉ đã lưu của bạn:</span>
+                        <NuxtLink to="/profile/address" target="_blank" class="text-brand-primary hover:underline text-[11px]">
+                          Quản lý
+                        </NuxtLink>
+                      </div>
+                      <div class="flex flex-wrap gap-1.5">
+                        <button
+                          v-for="addr in userSavedAddresses"
+                          :key="addr.id"
+                          type="button"
+                          @click="selectSavedAddress(addr)"
+                          class="px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer max-w-full text-left"
+                          :class="deliveryAddress === addr.address_name ? 'bg-[#1e4e57] text-white border-[#1e4e57] shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'"
+                        >
+                          <span class="truncate max-w-[220px] block">{{ addr.address_name }}</span>
+                        </button>
+                      </div>
+                    </div>
+
                     <div class="relative">
                       <input type="text" v-model="deliveryAddress" @input="searchDeliveryPlace"
-                        placeholder="Nhập địa chỉ nhận xe..."
+                        placeholder="Nhập địa chỉ giao xe..."
                         class="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 pr-10 outline-none transition text-xs font-semibold text-slate-700 focus:border-[#1e4e57] focus:ring-2 focus:ring-[#1e4e57]/10">
                       <div class="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400">
                         <Icon name="lucide:map-pin" class="w-4 h-4" />
@@ -453,6 +470,19 @@
                           {{ item.description }}
                         </div>
                       </div>
+                    </div>
+
+                    <!-- Checkbox lưu địa chỉ mới vào sổ địa chỉ -->
+                    <div v-if="user && deliveryAddress" class="flex items-center gap-2 pl-0.5">
+                      <input
+                        type="checkbox"
+                        id="saveAddressCheckbox"
+                        v-model="saveAddressToBook"
+                        class="w-3.5 h-3.5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary/20 accent-[#1e4e57] cursor-pointer"
+                      />
+                      <label for="saveAddressCheckbox" class="text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
+                        Lưu địa chỉ này vào Sổ địa chỉ để dùng cho lần sau
+                      </label>
                     </div>
 
                     <!-- Distance & Fee details -->
@@ -593,47 +623,38 @@
     </div>
 
     <!-- XE TƯƠNG TỰ -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6">
-      <h2 class="text-xl font-black text-brand-dark mb-6 flex items-center gap-2">
-        <span class="w-1.5 h-6 bg-brand-primary rounded-full"></span>
-        Xe tương tự (cùng hãng {{ car?.car_brand?.name }})
-      </h2>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <NuxtLink v-for="simCar in similarCars" :key="simCar.id" :to="`/vehicles/${simCar.id}`"
-          class="bg-white rounded-2xl overflow-hidden border border-slate-100/60 shadow-sm hover:shadow-md hover:border-brand-primary/10 transition-all duration-300 cursor-pointer group block">
-          <div class="relative h-36 overflow-hidden">
-            <img :src="simCar.image" :alt="simCar.name"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-            <span v-if="simCar.badge"
-              class="absolute top-2 left-2 bg-brand-accent text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full shadow-sm">{{
-                simCar.badge }}</span>
-          </div>
-          <div class="p-3.5">
-            <p class="text-xs font-black text-brand-dark truncate">
-              {{ simCar.name }}
-            </p>
-            <div class="flex items-center gap-1 mt-1">
-              <Icon name="heroicons:star-solid" class="w-3 h-3 text-yellow-400" />
-              <span class="text-[10px] font-bold text-gray-500">{{ simCar.rating }} • {{ simCar.trips }} chuyến</span>
-            </div>
-            <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-50">
-              <div class="flex flex-col">
-                <span v-if="simCar.discountPct > 0" class="text-[10px] text-gray-400 line-through leading-none mb-0.5">
-                  {{ simCar.price.toLocaleString('vi-VN') }}đ
-                </span>
-                <span class="text-sm font-black text-brand-primary">
-                  {{ simCar.discountedPrice.toLocaleString('vi-VN') }}đ<span class="text-[10px] font-semibold text-gray-400">/ngày</span>
-                </span>
-              </div>
-              <div class="flex items-center gap-1 text-[10px] text-gray-400 font-bold">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-3 h-3 text-gray-300" viewBox="0 0 24 24">
-                  <path fill="currentColor"
-                    d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7m0 9.5a2.5 2.5 0 0 1 0-5a2.5 2.5 0 0 1 0 5" />
-                </svg>
-                <span class="truncate">{{ simCar.location }}</span>
-              </div>
-            </div>
-          </div>
+    <div v-if="similarCars.length > 0" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h2 class="text-xl font-black text-brand-dark flex items-center gap-2">
+            <span class="w-1.5 h-6 bg-brand-primary rounded-full"></span>
+            Xe tương tự (cùng hãng {{ car?.car_brand?.brand_name || car?.car_brand?.name }})
+          </h2>
+          <p class="text-xs text-slate-400 font-medium mt-1">Các mẫu xe cùng thương hiệu được yêu thích tại DRIVIO</p>
+        </div>
+        <NuxtLink v-if="car?.car_brand_id" :to="`/vehicle-list?brand_id=${car.car_brand_id}`" class="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1">
+          <span>Xem thêm</span>
+          <Icon name="lucide:arrow-right" class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <NuxtLink v-for="simCar in similarCars" :key="simCar.id" :to="`/vehicles/${simCar.id}`" class="block h-full">
+          <VehicleCard
+            :name="simCar.name"
+            :image="simCar.image"
+            :price="simCar.price"
+            :location="simCar.location"
+            :seats="Number(simCar.seats)"
+            :transmission="simCar.transmission"
+            :fuel="simCar.fuel"
+            :rating="Number(simCar.rating)"
+            :trips="Number(simCar.trips)"
+            :discount="simCar.discount"
+            :ownerName="simCar.ownerName"
+            :ownerAvatar="simCar.ownerAvatar"
+            :isDelivery="simCar.isDelivery"
+          />
         </NuxtLink>
       </div>
     </div>
@@ -645,120 +666,174 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════════
-         MODAL CẬP NHẬT THÔNG TIN NHANH (TÍCH HỢP LOGIC UPLOAD CỦA PROFILE)
+         MODAL CẬP NHẬT THÔNG TIN NHANH (SĐT + GIẤY PHÉP LÁI XE)
          ════════════════════════════════════════════════════════════ -->
-  <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4">
-    <!-- Màn đen mờ phía sau (Overlay) -->
-    <div class="absolute inset-0 bg-slate-950/40 backdrop-blur-sm" @click="isUpdateModalOpen = false"></div>
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <!-- Màn đen mờ phía sau (Overlay) -->
+        <div class="absolute inset-0 cursor-pointer" @click="isUpdateModalOpen = false"></div>
 
-    <!-- Khung nội dung Modal -->
-    <div
-      class="relative bg-white rounded-3xl w-full max-w-md p-6 md:p-8 shadow-2xl border border-slate-100/80 z-10 flex flex-col max-h-[90vh] overflow-y-auto transform transition-all duration-300 animate-in fade-in zoom-in-95 no-scrollbar">
+        <!-- Khung nội dung Modal -->
+        <div
+          class="relative bg-white rounded-3xl w-full max-w-lg p-6 md:p-7 shadow-2xl border border-slate-100 z-10 flex flex-col max-h-[90vh] animate-scale-up"
+          @click.stop>
 
-      <!-- Nút đóng nhanh -->
-      <button @click="isUpdateModalOpen = false"
-        class="absolute top-5 right-5 text-slate-400 hover:text-slate-600 transition-colors focus:outline-none">
-        <Icon name="ic:outline-close" size="20" />
-      </button>
-
-      <!-- Tiêu đề Modal -->
-      <div class="mb-5">
-        <h3 class="text-xl font-black text-brand-dark flex items-center gap-2">
-          <Icon name="ic:outline-stars" class="text-brand-primary" size="24" />
-          Xác thực thông tin thuê xe
-        </h3>
-        <p class="text-xs text-slate-500 mt-1 font-medium">
-          Vui lòng hoàn thiện các thông tin còn thiếu bên dưới để tiếp tục chuyến đi của bạn.
-        </p>
-      </div>
-
-      <!-- Form Xử lý cập nhật -->
-      <form @submit.prevent="submitQuickUpdate" class="space-y-5">
-
-        <!-- KHU VỰC 1: SỐ ĐIỆN THOẠI (Chỉ hiển thị nếu tài khoản chưa có) -->
-        <div v-if="missingFields.phone" class="space-y-1.5">
-          <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-            Số điện thoại <span class="text-rose-500">*</span>
-          </label>
-          <input type="text" v-model="quickUpdateForm.phone" placeholder="Nhập số điện thoại của bạn"
-            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white focus:ring-2 focus:ring-brand-primary/5 transition-all" />
-        </div>
-
-        <!-- KHU VỰC 2: GIẤY PHÉP LÁI XE (Chỉ hiển thị nếu chưa có hoặc bị từ chối) -->
-        <div v-if="missingFields.drivingLicense" class="space-y-4 pt-1">
-          <div class="border-t border-dashed border-slate-200 my-2"></div>
-
-          <h4 class="text-xs font-extrabold text-brand-dark uppercase tracking-widest flex items-center gap-1.5">
-            <Icon name="ic:outline-credit-card" class="text-emerald-500" size="18" />
-            Thông tin Giấy phép lái xe
-          </h4>
-
-          <!-- Trường Số GPLX -->
-          <div class="space-y-1.5">
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Số GPLX</label>
-            <input type="text" v-model="quickUpdateForm.driving_license_number" placeholder="Nhập số GPLX ghi trên thẻ"
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
+          <!-- Header -->
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+            <div class="flex items-center gap-3">
+              <span class="p-2 bg-[#1e4e57]/10 text-[#1e4e57] rounded-xl shrink-0">
+                <Icon name="solar:card-2-bold" class="w-5 h-5" />
+              </span>
+              <div>
+                <h3 class="text-base font-bold text-slate-800">
+                  Xác thực thông tin thuê xe
+                </h3>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">
+                  Vui lòng bổ sung thông tin để tiếp tục hoàn tất đặt xe
+                </p>
+              </div>
+            </div>
+            <button @click="isUpdateModalOpen = false"
+              class="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 cursor-pointer">
+              <Icon name="ic:outline-close" class="w-5 h-5" />
+            </button>
           </div>
 
-          <!-- Trường Họ và Tên -->
-          <div class="space-y-1.5">
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Họ và tên</label>
-            <input type="text" v-model="quickUpdateForm.full_name" placeholder="Nhập họ và tên đầy đủ viết hoa"
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
-          </div>
+          <!-- Form Xử lý cập nhật -->
+          <form @submit.prevent="submitQuickUpdate" class="space-y-4 overflow-y-auto pr-1 my-2 flex-1 text-slate-700">
 
-          <!-- Trường Ngày Sinh -->
-          <div class="space-y-1.5">
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ngày sinh</label>
-            <input type="date" v-model="quickUpdateForm.DOB"
-              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-700 focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
-          </div>
+            <!-- KHU VỰC 1: SỐ ĐIỆN THOẠI (Chỉ hiển thị nếu tài khoản chưa có) -->
+            <div v-if="missingFields.phone" class="space-y-1.5">
+              <label class="block text-xs font-bold text-slate-700">
+                Số điện thoại liên hệ <span class="text-rose-500">*</span>
+              </label>
+              <div class="relative">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                  <Icon name="solar:phone-calling-rounded-linear" class="w-4 h-4" />
+                </div>
+                <input type="text" v-model="quickUpdateForm.phone" placeholder="Nhập số điện thoại của bạn (VD: 0912345678)"
+                  class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
+              </div>
+            </div>
 
-          <!-- Vùng Kéo thả & Upload ảnh bằng lái (Bê nguyên cấu trúc mượt mà từ Profile sang) -->
-          <div class="space-y-1.5">
-            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wider">Ảnh mặt trước GPLX</label>
+            <!-- KHU VỰC 2: GIẤY PHÉP LÁI XE (Chỉ hiển thị nếu chưa có hoặc bị từ chối) -->
+            <div v-if="missingFields.drivingLicense" class="space-y-3.5">
+              <div v-if="missingFields.phone" class="border-t border-dashed border-slate-200 pt-2"></div>
 
-            <div @click="triggerLicenseFileInput" @dragover.prevent="isLicenseDragging = true"
-              @dragleave.prevent="isLicenseDragging = false" @drop.prevent="onLicenseDrop"
-              class="h-[160px] border-2 border-dashed rounded-xl flex flex-col items-center justify-center cursor-pointer relative overflow-hidden transition-all bg-slate-50/50"
-              :class="isLicenseDragging ? 'border-brand-primary bg-brand-primary/5 shadow-inner' : (licenseImagePreview ? 'border-solid border-slate-200 bg-white' : 'border-slate-300 hover:border-brand-primary')">
-              <!-- Hiển thị Preview ảnh khi người dùng chọn file -->
-              <img v-if="licenseImagePreview" :src="licenseImagePreview"
-                class="w-full h-full object-contain absolute inset-0 p-1" alt="Preview GPLX" />
-
-              <!-- Giao diện mặc định khi chưa chọn file -->
-              <div v-else class="flex flex-col items-center p-4 text-center">
-                <Icon name="ic:outline-cloud-upload" size="36" class="text-green-500 mb-1.5" />
-                <p class="text-xs text-slate-600 font-bold">Kéo thả ảnh vào đây hoặc nhấp để chọn file</p>
-                <p class="text-[10px] text-slate-400 mt-1 font-medium">Chấp nhận JPG, PNG dung lượng tối đa 5MB</p>
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-bold text-[#1e4e57] uppercase tracking-wider flex items-center gap-1.5">
+                  <Icon name="solar:shield-check-bold" class="w-4 h-4 text-emerald-600" />
+                  Thông tin Giấy phép lái xe (GPLX)
+                </h4>
+                <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                  Bắt buộc
+                </span>
               </div>
 
-              <!-- Input file bị ẩn chạy ngầm dưới nền -->
-              <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*"
-                class="hidden" />
+              <!-- Trường Họ và Tên -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">
+                  Họ và tên <span class="text-rose-500">*</span>
+                </label>
+                <input type="text" v-model="quickUpdateForm.full_name" placeholder="Họ và tên đầy đủ trên GPLX (VD: NGUYEN VAN A)"
+                  class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
+              </div>
+
+              <!-- Grid 2 cột: Số GPLX & Ngày Sinh -->
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold text-slate-700">
+                    Số GPLX <span class="text-rose-500">*</span>
+                  </label>
+                  <input type="text" v-model="quickUpdateForm.driving_license_number" placeholder="Số GPLX (9-12 chữ số)"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
+                </div>
+
+                <div class="space-y-1.5">
+                  <label class="block text-xs font-bold text-slate-700">
+                    Ngày sinh <span class="text-rose-500">*</span>
+                  </label>
+                  <input type="date" v-model="quickUpdateForm.DOB"
+                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
+                </div>
+              </div>
+
+              <!-- Vùng Kéo thả & Upload ảnh bằng lái -->
+              <div class="space-y-1.5">
+                <label class="block text-xs font-bold text-slate-700">
+                  Ảnh mặt trước GPLX <span class="text-rose-500">*</span>
+                </label>
+
+                <!-- Trường hợp đã chọn ảnh preview -->
+                <div v-if="licenseImagePreview"
+                  class="relative rounded-2xl overflow-hidden border border-slate-200 bg-slate-50 p-2.5 flex items-center gap-3.5 group">
+                  <div class="w-20 h-14 rounded-xl overflow-hidden bg-white border border-slate-200 shrink-0">
+                    <img :src="licenseImagePreview" class="w-full h-full object-cover" alt="Preview GPLX" />
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-xs font-bold text-slate-800 truncate">
+                      {{ licenseImageFile ? licenseImageFile.name : 'Ảnh GPLX đã tải lên' }}
+                    </p>
+                    <p class="text-[11px] text-emerald-600 font-semibold mt-0.5 flex items-center gap-1">
+                      <Icon name="solar:check-circle-bold" class="w-3.5 h-3.5" />
+                      Ảnh đã sẵn sàng
+                    </p>
+                  </div>
+                  <div class="flex items-center gap-1.5 shrink-0">
+                    <button type="button" @click="triggerLicenseFileInput"
+                      class="px-2.5 py-1.5 text-xs font-bold text-[#1e4e57] hover:bg-[#1e4e57]/10 rounded-lg transition-colors cursor-pointer">
+                      Đổi ảnh
+                    </button>
+                    <button type="button" @click="removeLicenseImage"
+                      class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                      title="Xóa ảnh">
+                      <Icon name="solar:trash-bin-trash-linear" class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Trường hợp chưa chọn ảnh -->
+                <div v-else @click="triggerLicenseFileInput" @dragover.prevent="isLicenseDragging = true"
+                  @dragleave.prevent="isLicenseDragging = false" @drop.prevent="onLicenseDrop"
+                  class="border-2 border-dashed rounded-2xl p-4 flex items-center justify-center gap-3 cursor-pointer transition-all bg-slate-50/60"
+                  :class="isLicenseDragging ? 'border-[#1e4e57] bg-[#1e4e57]/5' : 'border-slate-300 hover:border-[#1e4e57] hover:bg-slate-50'">
+                  <div class="h-10 w-10 rounded-xl bg-[#1e4e57]/10 flex items-center justify-center shrink-0 text-[#1e4e57]">
+                    <Icon name="solar:cloud-upload-bold" class="w-5 h-5" />
+                  </div>
+                  <div class="text-left">
+                    <p class="text-xs font-bold text-slate-800">
+                      Nhấn để chọn ảnh hoặc kéo thả vào đây
+                    </p>
+                    <p class="text-[11px] text-slate-400 font-medium">
+                      Chấp nhận JPG, PNG, WEBP tối đa 5MB
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Input file ẩn -->
+                <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*" class="hidden" />
+              </div>
             </div>
-          </div>
+
+            <!-- NÚT THAO TÁC -->
+            <div class="flex gap-3 pt-3 border-t border-slate-100 shrink-0">
+              <button type="button" @click="isUpdateModalOpen = false"
+                class="flex-1 py-2.5 border border-slate-200 text-slate-600 font-bold rounded-xl hover:bg-slate-50 active:scale-[0.98] transition-all text-xs cursor-pointer">
+                Hủy bỏ
+              </button>
+              <button type="submit" :disabled="isUpdating"
+                class="flex-1 py-2.5 bg-[#1e4e57] hover:bg-[#286874] text-white font-bold rounded-xl transition-all active:scale-[0.98] text-xs shadow-sm shadow-[#1e4e57]/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                <Icon v-if="isUpdating" name="svg-spinners:ring-resize" class="w-4 h-4" />
+                <span>{{ isUpdating ? 'Đang lưu...' : 'Xác nhận & Thuê xe' }}</span>
+              </button>
+            </div>
+
+          </form>
         </div>
-
-        <!-- NÚT THAO TÁC (ACTIONS BUTTON) -->
-        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-slate-100">
-          <!-- Nút Hủy -->
-          <button type="button" @click="isUpdateModalOpen = false"
-            class="py-3 px-4 border border-slate-200 text-slate-500 font-bold rounded-xl hover:bg-slate-50 hover:text-slate-700 transition-colors focus:outline-none text-xs tracking-wider uppercase">
-            Hủy bỏ
-          </button>
-
-          <!-- Nút Xác nhận & Lưu đơn -->
-          <button type="submit" :disabled="isUpdating"
-            class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-xs tracking-wider uppercase shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <Icon v-if="isUpdating" name="svg-spinners:ring-resize" class="w-4 h-4" />
-            <span>{{ isUpdating ? 'Đang lưu...' : 'Xác nhận & Thuê xe' }}</span>
-          </button>
-        </div>
-
-      </form>
-    </div>
-  </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script lang="ts" setup>
@@ -770,7 +845,9 @@ import { favoriteService } from "~/services/favorite.service";
 import { notificationService } from "~/services/notification.service";
 import { promotionService } from "~/services/promotion.service";
 import { viewHistoryService } from "~/services/view-history.service";
+import { addressService } from "~/services/address.service";
 import DatePickerModal from "~/components/Shared/DatePickerModal.vue";
+import VehicleCard from "~/components/Vehicle/VehicleCard.vue";
 
 definePageMeta({ layout: "vehicle-detail" });
 
@@ -820,7 +897,6 @@ useSeoMeta({
   ogTitle: seoTitle,
   ogDescription: seoDescription,
   ogImage: seoImage,
-  ogType: 'product',
   twitterCard: 'summary_large_image',
 })
 
@@ -834,8 +910,7 @@ useHead({
 })
 
 // Goong Map for Delivery Location
-const MAP_KEY = '8Gh3kHiOvTsc6QHzNT4Aq0aFjH2I69PNiFyzk5Ex'
-const API_KEY = 'xEcFmnV3loWHnfqa9ZsEENH7Wu6lehK4QmabQk7V'
+import { GOONG_API_KEY as API_KEY, GOONG_MAP_KEY as MAP_KEY } from '~/constants/goong';
 
 let maplibregl: any = null
 const receiveMethod = ref<'pickup' | 'delivery'>('pickup')
@@ -845,6 +920,95 @@ const deliveryCoords = ref<{ lat: number; lng: number } | null>(null)
 const deliveryDistance = ref<number | null>(null)
 const deliveryFee = ref<number>(0)
 const isDistanceTooFar = ref(false)
+
+// User Saved Addresses
+const userSavedAddresses = ref<any[]>([])
+const isLoadingSavedAddresses = ref(false)
+const saveAddressToBook = ref(false)
+
+const loadUserSavedAddresses = async () => {
+  if (!user.value) {
+    userSavedAddresses.value = []
+    return
+  }
+  isLoadingSavedAddresses.value = true
+  try {
+    const res = await addressService.getAddresses()
+    if (res?.success) {
+      userSavedAddresses.value = res.data || []
+    }
+  } catch (e) {
+    console.error('Lỗi khi tải sổ địa chỉ đã lưu:', e)
+  } finally {
+    isLoadingSavedAddresses.value = false
+  }
+}
+
+const selectSavedAddress = async (savedAddr: any) => {
+  if (!savedAddr || !savedAddr.address_name) return
+  deliveryAddress.value = savedAddr.address_name
+  deliverySuggestions.value = []
+
+  try {
+    // 1. Thử geocode địa chỉ đã lưu qua Goong API
+    const geoRes = await fetch(
+      `https://rsapi.goong.io/Geocode?address=${encodeURIComponent(savedAddr.address_name)}&api_key=${API_KEY}`
+    )
+    const geoData = await geoRes.json()
+
+    if (geoData.results && geoData.results.length > 0 && geoData.results[0].geometry) {
+      const loc = geoData.results[0].geometry.location
+      deliveryCoords.value = { lat: loc.lat, lng: loc.lng }
+
+      if (car.value && car.value.car_location) {
+        const carLocStr = car.value.car_location.location || ''
+        const [carLat, carLng] = carLocStr.split(',').map(Number)
+
+        if (carLat && carLng) {
+          const rawDist = await calculateDistance(carLat, carLng, loc.lat, loc.lng)
+          const dist = Math.round(rawDist * 10) / 10
+          deliveryDistance.value = dist
+
+          const deliveryOpt = car.value.delivery_option
+          if (deliveryOpt) {
+            const maxDist = deliveryOpt.max_distance || 0
+            const freeDist = deliveryOpt.free_distance || 0
+            const feeDistance = deliveryOpt.fee_distance || 0
+
+            if (dist > maxDist) {
+              isDistanceTooFar.value = true
+              deliveryFee.value = 0
+              showToast(`Địa điểm vượt quá khoảng cách giao xe tối đa của chủ xe (${maxDist} km)`, 'error')
+            } else {
+              isDistanceTooFar.value = false
+              if (dist <= freeDist) {
+                deliveryFee.value = 0
+              } else {
+                const extraKm = Math.round((dist - freeDist) * 10) / 10
+                deliveryFee.value = Math.round(extraKm * feeDistance)
+              }
+            }
+          }
+
+          nextTick(() => {
+            drawDeliveryMap(carLat, carLng, loc.lat, loc.lng)
+          })
+        }
+      }
+    } else {
+      // Fallback sang Autocomplete để lấy place_id rồi Detail
+      const autoRes = await fetch(
+        `https://rsapi.goong.io/Place/AutoComplete?api_key=${API_KEY}&input=${encodeURIComponent(savedAddr.address_name)}`
+      )
+      const autoData = await autoRes.json()
+      if (autoData.predictions && autoData.predictions.length > 0) {
+        await selectDeliveryPlace(autoData.predictions[0])
+      }
+    }
+  } catch (err) {
+    console.error('Lỗi xử lý địa chỉ đã lưu:', err)
+  }
+}
 
 const detailMapRef = ref<any>(null)
 const carMarker = ref<any>(null)
@@ -1142,6 +1306,23 @@ const handleBooking = async () => {
     const tripRes = await carService.createTrip(tripPayload)
 
     if (tripRes && tripRes.success) {
+      // Tự động lưu địa chỉ mới vào sổ địa chỉ nếu người dùng chọn lưu
+      if (saveAddressToBook.value && user.value && deliveryAddress.value) {
+        try {
+          const isExisting = userSavedAddresses.value.some(
+            (a: any) => a.address_name.trim().toLowerCase() === deliveryAddress.value.trim().toLowerCase()
+          )
+          if (!isExisting) {
+            await addressService.createAddress({
+              address_name: deliveryAddress.value.trim(),
+              user_id: user.value.id
+            })
+          }
+        } catch (e) {
+          console.error('Lỗi khi tự động lưu địa chỉ:', e)
+        }
+      }
+
       // 2. Gửi thông báo đến chủ xe
       const message = `Khách hàng ${user.value.name} (${user.value.phone || 'Chưa cập nhật SĐT'}) gửi yêu cầu thuê xe ${car.value.name} (${car.value.license_plate}) từ ${startStr} đến ${endStr}. Tổng tiền: ${totalPrice.value.toLocaleString('vi-VN')}đ. Trạng thái: Đang chờ duyệt.`
 
@@ -1169,6 +1350,8 @@ watch(receiveMethod, (newMethod) => {
     deliveryCoords.value = null
     isDistanceTooFar.value = false
     deliveryFee.value = 0
+  } else if (newMethod === 'delivery') {
+    loadUserSavedAddresses()
   }
 })
 
@@ -1498,6 +1681,7 @@ const loadCarDetails = async (id: string) => {
 
 onMounted(async () => {
   loadCarDetails(carId);
+  loadUserSavedAddresses();
   if (process.client) {
     try {
       const module = await import('maplibre-gl');
@@ -1579,7 +1763,6 @@ const amenities = computed(() => {
 
 const descItems = [
   "Giao xe tận nơi",
-  "Miễn thế chấp",
   "Hỗ trợ 24/7",
   "Thủ tục nhanh gọn",
   "Xe sạch sẽ, bảo dưỡng định kỳ",
@@ -1695,6 +1878,7 @@ const similarCars = computed(() => {
   return rawSimilarCars.value.map((c: any) => {
     const thumbnailImg = c.images?.find((img: any) => img.is_thumbnail === 1)?.image_url
       || c.images?.[0]?.image_url
+      || (c.image ? (c.image.startsWith('http') ? c.image : `https://testbackend.teamfpoly.vn/${c.image}`) : '')
       || 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=600';
 
     const discountPct = c.unit_price > 0 && c.discount_value > 0
@@ -1703,15 +1887,19 @@ const similarCars = computed(() => {
 
     return {
       id: c.id,
-      name: c.name,
+      name: c.name || c.car_name || 'Xe tự lái',
       image: thumbnailImg,
-      price: c.unit_price,
-      discountedPrice: c.unit_price - (c.discount_value || 0),
-      discountPct: discountPct,
-      location: c.car_location?.address || 'Chưa cập nhật',
-      rating: c.reviews_avg_rating ? parseFloat(c.reviews_avg_rating).toFixed(1) : '5.0',
+      price: c.unit_price || c.price || 0,
+      discount: discountPct,
+      location: c.car_location?.address || c.car_location?.location || 'Chưa cập nhật',
+      seats: c.seat_count || c.seats || 4,
+      transmission: normalizeTransmission(c.transmission),
+      fuel: normalizeFuel(c.fuel_type),
+      rating: c.reviews_avg_rating ? parseFloat(c.reviews_avg_rating) : 5.0,
       trips: c.trips_count || 0,
-      badge: discountPct > 0 ? `-${discountPct}%` : null
+      ownerName: c.owner?.name || 'Chủ xe',
+      ownerAvatar: c.owner?.avatar || '',
+      isDelivery: !!c.delivery_option_id,
     };
   });
 });
@@ -1772,6 +1960,14 @@ const setLicenseFile = (file: File) => {
   }
   licenseImageFile.value = file;
   licenseImagePreview.value = URL.createObjectURL(file);
+};
+
+const removeLicenseImage = () => {
+  if (licenseImagePreview.value.startsWith('blob:')) {
+    URL.revokeObjectURL(licenseImagePreview.value);
+  }
+  licenseImageFile.value = null;
+  licenseImagePreview.value = '';
 };
 
 // Hàm xử lý lưu Form từ Modal lên Database
@@ -1906,6 +2102,31 @@ const submitQuickUpdate = async () => {
 </script>
 
 <style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.25s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Ẩn thanh cuộn cho Chrome, Safari, Opera và các trình duyệt dùng Webkit */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

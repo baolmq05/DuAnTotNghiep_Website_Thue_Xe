@@ -57,6 +57,7 @@
               class="flex items-center space-x-3 text-white focus:outline-none group animate-fade-in">
               <img :src="user.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'"
                 alt="User Avatar"
+                referrerpolicy="no-referrer"
                 class="w-8 h-8 rounded-full border border-white/20 object-cover shadow-sm group-hover:scale-105 transition-transform duration-200" />
               <span class="text-sm font-medium hover:text-brand-light transition-colors">{{ user.name }}</span>
             </NuxtLink>

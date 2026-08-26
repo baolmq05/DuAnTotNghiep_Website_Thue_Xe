@@ -13,9 +13,30 @@ use Illuminate\Support\Str;
 
 class Trip extends Model
 {
-    protected $fillable = ['cost', 'discount_amount', 'status', 'trip_type', 'start_at', 'end_at', 'car_id', 'user_id', 'delivery_address', 'delivery_location', 'trip_code'];
+    protected $fillable = [
+        'cost',
+        'car_discount_amount',
+        'promo_discount_amount',
+        'discount_amount',
+        'status',
+        'trip_type',
+        'start_at',
+        'end_at',
+        'car_id',
+        'user_id',
+        'delivery_address',
+        'delivery_location',
+        'trip_code'
+    ];
 
-    protected $appends = ['payment_held', 'owner_payment_note'];
+    protected $appends = ['payment_held', 'owner_payment_note', 'owner_gross_revenue'];
+
+    public function getOwnerGrossRevenueAttribute(): float
+    {
+        $cost = (float) $this->cost;
+        $carDiscount = (float) ($this->car_discount_amount ?? 0);
+        return max(0, $cost - $carDiscount);
+    }
 
     public function getPaymentHeldAttribute(): bool
     {
@@ -117,6 +138,11 @@ class Trip extends Model
     public function conversation(): HasOne
     {
         return $this->hasOne(ChatConversation::class, 'trip_id');
+    }
+
+    public function promotionUsage(): HasOne
+    {
+        return $this->hasOne(PromotionUsage::class, 'trip_id');
     }
 
     public function releasePendingBalances()

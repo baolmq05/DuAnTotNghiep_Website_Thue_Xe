@@ -21,8 +21,6 @@ use Illuminate\Support\Facades\Log;
 use App\Models\Review;
 use Exception;
 
-#[Fillable(['name', 'email', 'password', 'bank_name', 'bank_account_number'])]
-#[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements JWTSubject, FilamentUser
 {
     /**
@@ -109,6 +107,11 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
         'driving_license_id',
         'bank_name',
         'bank_account_number'
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     public function role(): BelongsTo

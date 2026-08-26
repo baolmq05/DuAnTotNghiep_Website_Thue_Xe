@@ -23,6 +23,7 @@
           </div>
           <img v-else :src="profileData.avatar"
             class="w-24 h-24 md:w-32 md:h-32 rounded-full object-cover border border-slate-100 shadow-md shadow-brand-primary/10"
+            referrerpolicy="no-referrer"
             alt="User Avatar" />
         </div>
 

@@ -40,14 +40,9 @@
         <div class="p-3.5 flex flex-col flex-grow justify-between">
             <div class="flex flex-col flex-grow justify-start">
 
-                <!-- PHÍA TRÊN TÊN XE: Thêm 2 nhãn Miễn thế chấp & Giao xe tận nơi -->
                 <!-- PHÍA TRÊN TÊN XE: Các trường dữ liệu tính năng -->
-                <div class="flex flex-wrap gap-1.5 mb-1.5 min-h-[20px]">
-                    <span v-if="noDeposit"
-                        class="inline-flex items-center text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">
-                        Miễn thế chấp
-                    </span>
-                    <span v-if="isDelivery"
+                <div v-if="isDelivery" class="flex flex-wrap gap-1.5 mb-1.5 min-h-[20px]">
+                    <span
                         class="inline-flex items-center text-[10px] font-semibold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                         Giao xe tận nơi
                     </span>

@@ -10,6 +10,9 @@ export default defineNuxtConfig({
   css: ['~/assets/css/tailwind.css'],
   app: {
     head: {
+      meta: [
+        { name: 'referrer', content: 'no-referrer' }
+      ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/logo.png' }
       ],

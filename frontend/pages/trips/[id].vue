@@ -341,7 +341,7 @@
               </div>
 
               <!-- Strike received (only when report is approved / resolved) -->
-              <div v-if="report.status === 1 && report.penalty" 
+              <div v-if="report.status == 1 && report.penalty" 
                    class="border border-rose-200 bg-rose-50/50 rounded-2xl p-4 space-y-2.5 animate-fade-in">
                 <h4 class="text-xs font-extrabold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
                   <Icon name="lucide:ban" class="w-4 h-4 text-rose-600" />
@@ -440,6 +440,7 @@
                 class="flex items-center gap-3 w-full group">
                 <img
                   :src="(isOwner ? trip.user?.avatar : trip.car?.owner?.avatar) || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=150'"
+                  referrerpolicy="no-referrer"
                   alt="Avatar" class="w-12 h-12 rounded-2xl object-cover border border-slate-100 shadow-sm shrink-0" />
                 <div class="min-w-0 flex-1">
                   <p class="text-sm font-bold text-slate-800 truncate group-hover:text-brand-primary transition-colors">
@@ -467,9 +468,9 @@
               </p>
             </div>
 
-            <!-- Chat Button with Nuxt Icon (Chỉ hiển thị khi chuyến đi ĐÃ ĐƯỢC XÁC NHẬN trở lên: status !== 0 - Pending, !== 5,6 - Cancelled) -->
+            <!-- Chat Button with Nuxt Icon (Chỉ hiển thị khi chuyến đi ĐÃ ĐƯỢC XÁC NHẬN trở lên: status != 0 - Pending, != 5,6 - Cancelled) -->
             <NuxtLink
-              v-if="trip.status !== 0 && trip.status !== 5 && trip.status !== 6"
+              v-if="trip.status != 0 && trip.status != 5 && trip.status != 6"
               :to="'/chats?trip_id=' + trip.id + '&partner_id=' + (isOwner ? trip.user?.id : trip.car?.owner?.id)"
               class="mt-3 flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-2xl text-xs font-bold text-[#1e4e57] bg-[#1e4e57]/10 hover:bg-[#1e4e57] hover:text-white transition-all duration-200 shadow-xs border border-[#1e4e57]/20 group/chatbtn"
               title="Tạo cuộc trò chuyện"
@@ -491,7 +492,7 @@
         </h3>
 
         <!-- CASE 1: Trip is Confirmed (status = 2) - Allow uploading and starting (Owner only) or show message (Renter) -->
-        <div v-if="trip.status === 2" class="space-y-4">
+        <div v-if="trip.status == 2" class="space-y-4">
           <!-- If owner of the car -->
           <div v-if="isOwner" class="space-y-4 animate-fade-in">
             <p class="text-xs text-slate-500 leading-relaxed font-medium">
@@ -500,7 +501,7 @@
             </p>
 
             <!-- Premium Cloud ImageUpload Component -->
-            <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
+            <ImageUpload compact ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
 
             <div class="flex flex-col gap-3">
               <!-- Start Trip Button -->
@@ -561,7 +562,7 @@
         </div>
 
         <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4), Waiting Extension (status = 7) or Waiting Return (status = 8) - Display uploaded photos -->
-        <div v-else-if="trip.status === 3 || trip.status === 4 || trip.status === 7 || trip.status === 8"
+        <div v-else-if="trip.status == 3 || trip.status == 4 || trip.status == 7 || trip.status == 8"
           class="space-y-4">
           <p class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
             <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
@@ -588,7 +589,7 @@
           </div>
 
           <!-- Display after trip photos if completed or available -->
-          <div v-if="trip.status === 4 || afterTripImages.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
+          <div v-if="trip.status == 4 || afterTripImages.length > 0" class="space-y-4 pt-4 border-t border-slate-100">
             <p
               class="text-xs text-slate-500 font-semibold uppercase tracking-wider text-[10px] flex items-center gap-1">
               <Icon name="lucide:check-circle" class="text-emerald-500 w-4 h-4" />
@@ -616,7 +617,7 @@
           </div>
 
           <!-- Trip is ongoing (status = 3) -->
-          <div v-if="trip.status === 3" class="space-y-3">
+          <div v-if="trip.status == 3" class="space-y-3">
             <!-- Box thông tin chuyến đi đang diễn ra -->
             <div
               class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5">
@@ -632,13 +633,13 @@
 
             <div v-if="!isOwner" class="flex flex-col sm:flex-row gap-3">
               <!-- Nếu có yêu cầu gia hạn chờ thanh toán -->
-              <button v-if="trip.latest_extension && trip.latest_extension.status === 2" @click="openPayExtensionModal"
+              <button v-if="trip.latest_extension && trip.latest_extension.status == 2" @click="openPayExtensionModal"
                 class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-amber-500 hover:bg-amber-600 active:scale-[0.98] cursor-pointer shadow-md shadow-amber-500/10 flex items-center justify-center gap-1.5">
                 <Icon name="lucide:credit-card" class="w-4 h-4" />
                 Thanh toán phí gia hạn
               </button>
 
-              <button v-else-if="!trip.latest_extension || trip.latest_extension.status === 0"
+              <button v-else-if="!trip.latest_extension || trip.latest_extension.status == 0"
                 @click="openExtensionModal"
                 class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] active:scale-[0.98] cursor-pointer shadow-md shadow-[#1e4e57]/10 flex items-center justify-center gap-1.5">
                 <Icon name="lucide:calendar-plus" class="w-4 h-4" />
@@ -659,7 +660,7 @@
             </div>
 
             <!-- Thông báo yêu cầu gia hạn đã được duyệt và cần thanh toán -->
-            <div v-if="!isOwner && trip.latest_extension && trip.latest_extension.status === 2"
+            <div v-if="!isOwner && trip.latest_extension && trip.latest_extension.status == 2"
               class="bg-amber-50 border border-amber-100 rounded-2xl p-4 text-xs text-amber-800 flex items-start gap-2.5 mt-3 animate-fade-in">
               <Icon name="lucide:info" class="mt-0.5 w-4 h-4 shrink-0 text-amber-650" />
               <div class="leading-relaxed">
@@ -671,7 +672,7 @@
             </div>
 
             <!-- Yêu cầu gia hạn đang chờ duyệt (Hiển thị cho chủ xe) -->
-            <div v-if="isOwner && trip.latest_extension && trip.latest_extension.status === 1"
+            <div v-if="isOwner && trip.latest_extension && trip.latest_extension.status == 1"
               class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 space-y-3 mt-3 animate-fade-in">
               <div class="flex items-start gap-2.5">
                 <Icon name="lucide:calendar-clock" class="mt-0.5 w-4.5 h-4.5 shrink-0 text-indigo-650" />
@@ -711,7 +712,7 @@
           </div>
 
           <!-- Trip is completed (status = 4) -->
-          <div v-else-if="trip.status === 4"
+          <div v-else-if="trip.status == 4"
             class="bg-emerald-50 border border-emerald-100 rounded-2xl p-4 text-xs text-emerald-800 flex flex-col gap-3 w-full">
             <div class="flex items-start gap-2.5">
               <Icon name="lucide:check-circle" class="mt-0.5 w-4 h-4 shrink-0 text-emerald-600" />
@@ -777,7 +778,7 @@
           </div>
 
           <!-- Trip is waiting for extension approval (status = 7) -->
-          <div v-else-if="trip.status === 7"
+          <div v-else-if="trip.status == 7"
             class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 text-xs text-indigo-900 flex flex-col gap-3">
             <div class="flex items-start gap-2.5">
               <Icon name="lucide:clock" class="mt-0.5 w-4 h-4 shrink-0 text-indigo-650" />
@@ -817,7 +818,7 @@
           </div>
 
           <!-- Trip is waiting for return (status = 8) -->
-          <div v-else-if="trip.status === 8" class="space-y-4">
+          <div v-else-if="trip.status == 8" class="space-y-4">
             <!-- If owner of the car -->
             <div v-if="isOwner" class="space-y-4">
               <div
@@ -833,21 +834,17 @@
               </div>
 
               <!-- Premium Cloud ImageUpload Component for Post-trip -->
-              <ImageUpload ref="postTripImageUploadRef" v-model="postTripUploadedImages" :max-files="5" />
+              <ImageUpload compact ref="postTripImageUploadRef" v-model="postTripUploadedImages" :max-files="5" />
 
               <!-- Complete Trip Button -->
-              <button @click="handleCompleteTrip" :disabled="postTripUploadedImages.length === 0 || completingTrip"
+              <button @click="openCompleteConfirmModal" :disabled="postTripUploadedImages.length === 0 || completingTrip"
                 class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all flex items-center justify-center gap-2 shadow-md transform"
                 :class="postTripUploadedImages.length > 0 && !completingTrip
                   ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] shadow-emerald-600/10 cursor-pointer'
                   : 'bg-slate-300 shadow-none cursor-not-allowed'">
-                <span v-if="completingTrip" class="flex items-center gap-1.5">
-                  <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
-                  Đang xử lý hoàn thành...
-                </span>
-                <span v-else class="flex items-center gap-1.5">
-                  <Icon name="lucide:check" class="w-4 h-4" />
-                  Xác nhận hoàn thành chuyến xe
+                <span class="flex items-center gap-1.5">
+                  <Icon name="lucide:check-circle-2" class="w-4 h-4" />
+                  Kiểm tra & Xác nhận hoàn thành chuyến xe
                 </span>
               </button>
             </div>
@@ -870,7 +867,7 @@
         <!-- CASE 3: Trip is pending, waiting payment or cancelled -->
         <div v-else
           class="text-center py-6 text-xs text-slate-400 border border-dashed rounded-2xl bg-slate-50 font-semibold p-4">
-          <template v-if="trip.status === 0">
+          <template v-if="trip.status == 0">
             <Icon name="lucide:hourglass" class="text-amber-500 mb-2 mx-auto block w-6 h-6" />
             <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ chủ xe duyệt.</p>
             <div v-if="isOwner" class="flex flex-col sm:flex-row gap-3 max-w-md mx-auto pt-2">
@@ -893,7 +890,7 @@
               </button>
             </div>
           </template>
-          <template v-else-if="trip.status === 1">
+          <template v-else-if="trip.status == 1">
             <Icon name="lucide:credit-card" class="text-sky-500 mb-2 mx-auto block w-6 h-6" />
             <p class="mb-3 text-slate-600 font-medium">Chuyến đi đang chờ thanh toán đặt cọc.</p>
             <div class="flex flex-col sm:flex-row justify-center gap-3 max-w-md mx-auto pt-1">
@@ -910,7 +907,7 @@
               </button>
             </div>
           </template>
-          <template v-else-if="trip.status === 5 || trip.status === 6">
+          <template v-else-if="trip.status == 5 || trip.status == 6">
             <Icon name="lucide:ban" class="text-rose-500 mb-2 mx-auto block w-6 h-6" />
             Chuyến đi đã bị hủy.
           </template>
@@ -1229,7 +1226,7 @@
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
                 <Icon name="lucide:x-circle" class="w-5 h-5 text-rose-500" />
-                {{ rejectType === 'trip' ? 'Từ chối cho thuê' : 'Từ chối gia hạn' }}
+                {{ rejectType == 'trip' ? 'Từ chối cho thuê' : 'Từ chối gia hạn' }}
               </h3>
               <button @click="showRejectModal = false"
                 class="p-1.5 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition cursor-pointer">
@@ -1240,7 +1237,7 @@
             <!-- Body Description & Input -->
             <div class="space-y-3 text-xs">
               <p class="text-slate-500 font-medium leading-relaxed">
-                Vui lòng nhập lý do từ chối {{ rejectType === 'trip' ? 'yêu cầu thuê xe này' : 'yêu cầu gia hạn chuyến đi này' }}:
+                Vui lòng nhập lý do từ chối {{ rejectType == 'trip' ? 'yêu cầu thuê xe này' : 'yêu cầu gia hạn chuyến đi này' }}:
               </p>
 
               <textarea v-model="rejectReason" rows="3"
@@ -1293,12 +1290,12 @@
               <p v-if="existingReport" class="text-slate-600 font-medium bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col gap-1.5 animate-fade-in">
                 <span class="font-bold text-slate-700 flex items-center gap-1.5">Trạng thái: 
                   <span :class="{
-                    'text-amber-600 font-extrabold': existingReport.status === 0,
-                    'text-emerald-600 font-extrabold': existingReport.status === 1,
-                    'text-rose-600 font-extrabold': existingReport.status === 2,
+                    'text-amber-600 font-extrabold': existingReport.status == 0,
+                    'text-emerald-600 font-extrabold': existingReport.status == 1,
+                    'text-rose-600 font-extrabold': existingReport.status == 2,
                   }">
-                    {{ existingReport.status === 0 ? 'Chờ xử lý' : 
-                       existingReport.status === 1 ? 'Đã giải quyết' : 'Từ chối' }}
+                    {{ existingReport.status == 0 ? 'Chờ xử lý' : 
+                       existingReport.status == 1 ? 'Đã giải quyết' : 'Từ chối' }}
                   </span>
                 </span>
                 <span v-if="existingReport.admin_note" class="font-medium text-slate-650 block animate-fade-in">
@@ -1317,7 +1314,7 @@
                   <label v-for="option in reportOptions" :key="option.value"
                     class="flex items-center gap-3 p-3.5 rounded-2xl border cursor-pointer transition-all"
                     :class="[
-                      complaintType === option.value
+                      complaintType == option.value
                         ? 'border-amber-600 bg-amber-50/50 font-bold text-amber-900 shadow-sm'
                         : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-slate-50/30',
                       existingReport ? 'pointer-events-none opacity-80' : ''
@@ -1346,11 +1343,11 @@
                     @click="openImageModal(imgUrl)">
                     <img :src="imgUrl" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" alt="Bằng chứng khiếu nại" />
                   </div>
-                  <div v-if="complaintImages.length === 0" class="text-slate-450 italic text-xs py-2">
+                  <div v-if="complaintImages.length == 0" class="text-slate-450 italic text-xs py-2">
                     Không có hình ảnh bằng chứng kèm theo.
                   </div>
                 </div>
-                <ImageUpload v-else ref="complaintImageUploadRef" v-model="complaintImages" :max-files="5" />
+                <ImageUpload compact v-else ref="complaintImageUploadRef" v-model="complaintImages" :max-files="5" />
               </div>
 
               <!-- Action buttons -->
@@ -1360,7 +1357,7 @@
                     class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-slate-600 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all cursor-pointer text-center">
                     Đóng
                   </button>
-                  <button v-if="existingReport.status === 0" @click="handleRevokeComplaint" :disabled="submittingComplaint"
+                  <button v-if="existingReport.status == 0" @click="handleRevokeComplaint" :disabled="submittingComplaint"
                     class="flex-1 py-3 px-4 rounded-xl text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-rose-600/10 disabled:opacity-50">
                     <Icon v-if="submittingComplaint" name="lucide:loader-2" class="animate-spin w-4 h-4" />
                     <Icon v-else name="lucide:rotate-ccw" class="w-4 h-4" />
@@ -1380,6 +1377,138 @@
                   </button>
                 </template>
               </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- Complete Trip Confirmation Modal -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showCompleteConfirmModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div
+            class="bg-white rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4 max-h-[92vh] flex flex-col">
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+              <div>
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <span class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg">
+                    <Icon name="lucide:check-circle-2" class="w-5 h-5" />
+                  </span>
+                  Xác nhận Kiểm tra & Nhận lại xe
+                </h3>
+                <p class="text-xs text-slate-500 mt-1 font-medium">
+                  Chuyến đi #{{ trip?.trip_code || trip?.id }} • Xe <span class="font-semibold text-slate-700">{{ trip?.car?.name }}</span>
+                </p>
+              </div>
+              <button @click="closeCompleteConfirmModal" class="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600">
+                <Icon name="lucide:x" class="w-5 h-5" />
+              </button>
+            </div>
+
+            <!-- Body -->
+            <div class="space-y-4 overflow-y-auto pr-1 text-slate-700">
+              <!-- Short Description -->
+              <div class="bg-emerald-50/70 border border-emerald-100/80 rounded-2xl p-3.5 text-xs text-emerald-900 leading-relaxed font-medium">
+                Vui lòng kiểm tra kỹ lưỡng hiện trạng xe cùng khách thuê <span class="font-bold">{{ trip?.renter?.name }}</span> trước khi kết thúc chuyến đi nhằm đảm bảo quyền lợi của bạn.
+              </div>
+
+              <!-- Checklist -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-bold text-slate-700">
+                    Danh mục kiểm tra bắt buộc <span class="text-rose-500">*</span>
+                  </label>
+                  <button type="button" @click="toggleCheckAll" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer">
+                    {{ isAllChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+                  </button>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.exterior ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.exterior" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Ngoại thất xe:</strong> Thân vỏ, gương chiếu hậu, kính xe và hệ thống đèn không phát sinh trầy xước, nứt vỡ mới so với lúc bàn giao.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.interior ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.interior" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Nội thất & Vệ sinh:</strong> Ghế da, thảm lót sàn, trần xe sạch sẽ; không bị rách, ố bẩn nặng hoặc lưu lại mùi lạ/khói thuốc.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.documents ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.documents" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Giấy tờ & Phụ kiện:</strong> Đã nhận lại đủ chìa khóa, giấy đăng kiểm, bảo hiểm xe, bánh dự phòng và bộ dụng cụ cứu hộ.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.fuelOdo ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.fuelOdo" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Mức nhiên liệu & Số km (Odo):</strong> Mức xăng/pin và số km di chuyển phù hợp với thỏa thuận ban đầu.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.operation ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.operation" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Tình trạng vận hành:</strong> Động cơ, hệ thống phanh, điều hòa và lốp xe hoạt động bình thường, không có đèn báo lỗi.
+                    </span>
+                  </label>
+
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.dateTime ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.dateTime" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Thời gian & Địa điểm:</strong> Đã nhận lại xe đúng thời gian và địa điểm theo thỏa thuận với khách thuê.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Warning Box -->
+              <div class="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 space-y-1 text-xs">
+                <div class="flex items-center gap-1.5 text-amber-800 font-bold">
+                  <Icon name="lucide:alert-triangle" class="w-4 h-4 text-amber-600" />
+                  LƯU Ý QUAN TRỌNG DÀNH CHO CHỦ XE
+                </div>
+                <p class="text-amber-900 leading-relaxed font-medium">
+                  Sau khi bấm <strong>"Xác nhận hoàn tất"</strong>, chuyến thuê sẽ chính thức kết thúc và hệ thống sẽ tiến hành giải phóng số dư thanh toán. Bạn sẽ <strong>KHÔNG THỂ</strong> khiếu nại hoặc yêu cầu bồi thường đối với các hư hại, thiếu sót phát sinh sau thời điểm xác nhận này.
+                </p>
+                <div class="pt-1">
+                  <NuxtLink to="/policy/inspection-completion" target="_blank" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:text-amber-950">
+                    Xem chi tiết Chính sách kiểm tra xe & hoàn thành chuyến đi ↗
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex gap-3 pt-3 border-t border-slate-100 shrink-0">
+              <button @click="closeCompleteConfirmModal"
+                class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl cursor-pointer">
+                Kiểm tra lại
+              </button>
+              <button @click="handleCompleteTrip"
+                :disabled="!isAllChecked || completingTrip"
+                class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
+                <span v-if="completingTrip" class="flex items-center gap-1.5">
+                  <Icon name="lucide:loader-2" class="animate-spin w-4 h-4" />
+                  Đang xử lý...
+                </span>
+                <span v-else>Xác nhận hoàn tất</span>
+              </button>
             </div>
           </div>
         </div>
@@ -1553,7 +1682,7 @@ const showRevokeConfirm = ref(false)
 
 const activeReports = computed(() => {
   if (trip.value && trip.value.reports) {
-    return trip.value.reports.filter((report: any) => report.status !== 3)
+    return trip.value.reports.filter((report: any) => report.status != 3)
   }
   return []
 })
@@ -1770,7 +1899,7 @@ const totalPaid = computed(() => {
 const totalExtensionPaid = computed(() => {
   if (!trip.value || !trip.value.extensions) return 0
   return trip.value.extensions
-    .filter((ext: any) => ext.status === 3)
+    .filter((ext: any) => ext.status == 3)
     .reduce((sum: number, ext: any) => sum + Number(ext.extension_amount || 0), 0)
 })
 
@@ -2107,12 +2236,12 @@ const handleStartTrip = async () => {
 
 const renterReview = computed(() => {
   if (!trip.value || !trip.value.reviews) return null;
-  return trip.value.reviews.find((r: any) => Number(r.review_type) === 1);
+  return trip.value.reviews.find((r: any) => r.review_type == 1);
 })
 
 const ownerReview = computed(() => {
   if (!trip.value || !trip.value.reviews) return null;
-  return trip.value.reviews.find((r: any) => Number(r.review_type) === 0);
+  return trip.value.reviews.find((r: any) => r.review_type == 0);
 })
 
 const myReview = computed(() => {
@@ -2196,8 +2325,69 @@ const handleReturnRequest = () => {
   showReturnConfirm.value = true
 }
 
+// Complete Trip Confirmation Modal & Checklist State
+const showCompleteConfirmModal = ref(false)
+const returnChecklist = ref({
+  exterior: false,
+  interior: false,
+  documents: false,
+  fuelOdo: false,
+  operation: false,
+  dateTime: false,
+})
+
+const isAllChecked = computed(() => {
+  return (
+    returnChecklist.value.exterior &&
+    returnChecklist.value.interior &&
+    returnChecklist.value.documents &&
+    returnChecklist.value.fuelOdo &&
+    returnChecklist.value.operation &&
+    returnChecklist.value.dateTime
+  )
+})
+
+const toggleCheckAll = () => {
+  const target = !isAllChecked.value
+  returnChecklist.value.exterior = target
+  returnChecklist.value.interior = target
+  returnChecklist.value.documents = target
+  returnChecklist.value.fuelOdo = target
+  returnChecklist.value.operation = target
+  returnChecklist.value.dateTime = target
+}
+
+const resetChecklist = () => {
+  returnChecklist.value = {
+    exterior: false,
+    interior: false,
+    documents: false,
+    fuelOdo: false,
+    operation: false,
+    dateTime: false,
+  }
+}
+
+const openCompleteConfirmModal = () => {
+  if (postTripUploadedImages.value.length === 0) {
+    showToast('Vui lòng tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.', 'error')
+    return
+  }
+  resetChecklist()
+  showCompleteConfirmModal.value = true
+}
+
+const closeCompleteConfirmModal = () => {
+  showCompleteConfirmModal.value = false
+  resetChecklist()
+}
+
 // Owner Confirms Complete Trip
 const handleCompleteTrip = async () => {
+  if (!isAllChecked.value) {
+    showToast('Vui lòng kiểm tra và tích chọn đủ tất cả các mục xác nhận.', 'error')
+    return
+  }
   if (postTripUploadedImages.value.length === 0) {
     showToast('Vui lòng tải lên ít nhất 1 ảnh xe sau chuyến đi để hoàn thành.', 'error')
     return
@@ -2217,6 +2407,7 @@ const handleCompleteTrip = async () => {
     const res = await carService.completeTrip(tripId, { images: urls })
     if (res && res.success) {
       showToast('Đã hoàn thành chuyến đi thành công!', 'success')
+      closeCompleteConfirmModal()
       postTripUploadedImages.value = []
       await fetchTripDetails()
     } else {

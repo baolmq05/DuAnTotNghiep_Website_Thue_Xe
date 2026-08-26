@@ -38,7 +38,7 @@ export abstract class BaseService {
     protected async request<T>(
         url: string,
         options: {
-            method?: "GET" | "POST" | "PUT" | "DELETE";
+            method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
             body?: any;
             params?: Record<string, any>;
             useAuth?: boolean;

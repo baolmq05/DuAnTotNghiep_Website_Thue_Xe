@@ -50,6 +50,15 @@
             Giải quyết khiếu nại
           </NuxtLink>
         </li>
+        <li>
+          <NuxtLink 
+            to="/policy/inspection-completion" 
+            class="flex items-center text-xs sm:text-sm text-slate-600 hover:text-brand-primary hover:bg-slate-50/50 px-3.5 py-2.5 rounded-xl transition-all duration-200"
+            exact-active-class="text-brand-primary bg-brand-secondary font-bold border-l-4 border-brand-primary pl-3.5 rounded-l-none rounded-r-xl shadow-2xs"
+          >
+            Kiểm tra xe & Hoàn thành
+          </NuxtLink>
+        </li>
       </ul>
     </div>
   </aside>

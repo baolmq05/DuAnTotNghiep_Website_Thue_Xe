@@ -180,7 +180,7 @@
             </div>
 
             <!-- Extension Info Block -->
-            <div v-if="trip.status === TripStatus.WaitingExtension || (trip.latest_extension && (trip.latest_extension.status === 1 || trip.latest_extension.status === 2))" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 mt-3 text-xs text-indigo-900 space-y-2">
+            <div v-if="trip.status == TripStatus.WaitingExtension || (trip.latest_extension && (trip.latest_extension.status == 1 || trip.latest_extension.status == 2))" class="bg-indigo-50 border border-indigo-100 rounded-2xl p-3.5 mt-3 text-xs text-indigo-900 space-y-2">
               <p class="font-bold flex items-center gap-1.5 text-indigo-700">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-indigo-650 shrink-0">
                   <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
@@ -190,7 +190,7 @@
                   <line x1="12" y1="14" x2="12" y2="20"></line>
                   <line x1="9" y1="17" x2="15" y2="17"></line>
                 </svg>
-                <span v-if="trip.latest_extension?.status === 2">Đã đồng ý - Chờ khách thanh toán phí gia hạn</span>
+                <span v-if="trip.latest_extension?.status == 2">Đã đồng ý - Chờ khách thanh toán phí gia hạn</span>
                 <span v-else>Yêu cầu gia hạn thêm ngày:</span>
               </p>
                <div class="flex flex-col gap-1.5 mt-1 font-medium">
@@ -209,11 +209,11 @@
             </div>
 
             <!-- Previous Extension status -->
-            <div v-if="trip.latest_extension?.status === 3" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-3 text-emerald-900 flex items-center gap-2 text-xs font-medium">
+            <div v-if="trip.latest_extension?.status == 3" class="bg-emerald-50 border border-emerald-200 rounded-xl p-3 mt-3 text-emerald-900 flex items-center gap-2 text-xs font-medium">
               <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
               <span>Khách đã gia hạn thành công tới <strong>{{ formatDate(trip.end_at) }}</strong></span>
             </div>
-            <div v-if="trip.latest_extension?.status === 4" class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3 text-rose-900 flex items-center gap-2 text-xs font-medium">
+            <div v-if="trip.latest_extension?.status == 4" class="bg-rose-50 border border-rose-200 rounded-xl p-3 mt-3 text-rose-900 flex items-center gap-2 text-xs font-medium">
               <span class="w-2 h-2 rounded-full bg-rose-500 shrink-0"></span>
               <span>Yêu cầu gia hạn trước đó đã bị từ chối/hủy</span>
             </div>
@@ -221,7 +221,7 @@
         </div>
 
         <!-- Confirm / Reject Action buttons (ONLY for Pending) -->
-        <div v-if="trip.status === TripStatus.Pending" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+        <div v-if="trip.status == TripStatus.Pending" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
           <button @click="openRejectDialog(trip)"
             class="flex-1 py-3 px-4 border border-rose-200 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] transition-all text-xs font-bold text-rose-600 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -243,7 +243,7 @@
         </div>
 
         <!-- Confirm / Reject Action buttons for Extension -->
-        <div v-else-if="trip.latest_extension?.status === 1 || (trip.status === TripStatus.WaitingExtension && (!trip.latest_extension || trip.latest_extension.status === 1))" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
+        <div v-else-if="trip.latest_extension?.status == 1 || (trip.status == TripStatus.WaitingExtension && (!trip.latest_extension || trip.latest_extension.status == 1))" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20">
           <button @click="openRejectExtensionDialog(trip)"
             class="flex-1 py-3 px-4 border border-rose-200 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] transition-all text-xs font-bold text-rose-600 rounded-xl flex items-center justify-center gap-1.5 shadow-sm transform">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -264,12 +264,12 @@
           </button>
         </div>
         
-        <div v-else-if="trip.latest_extension?.status === 2 || (trip.status === TripStatus.WaitingExtension && trip.latest_extension?.status === 2)" class="p-4 border-t border-slate-100 bg-amber-50/60 text-center text-xs font-bold text-amber-800">
+        <div v-else-if="trip.latest_extension?.status == 2 || (trip.status == TripStatus.WaitingExtension && trip.latest_extension?.status == 2)" class="p-4 border-t border-slate-100 bg-amber-50/60 text-center text-xs font-bold text-amber-800">
           Chủ xe đã đồng ý gia hạn - Đang chờ khách hàng thanh toán
         </div>
 
         <!-- Complete Action button for WaitingReturn trips -->
-        <div v-else-if="trip.status === TripStatus.WaitingReturn" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
+        <div v-else-if="trip.status == TripStatus.WaitingReturn" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
           <button @click="openCompleteTripModal(trip)"
             class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/15 transform cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -282,7 +282,7 @@
         </div>
 
         <!-- Review / Completed State actions for Completed trips -->
-        <div v-else-if="trip.status === TripStatus.Complete" class="p-5 pt-0 border-t border-slate-100 bg-slate-50/20 pt-4">
+        <div v-else-if="trip.status == TripStatus.Complete" class="p-5 pt-0 border-t border-slate-100 bg-slate-50/20 pt-4">
           <div v-if="getOwnerReview(trip)" class="bg-emerald-50/60 border border-emerald-100 rounded-2xl p-3 text-xs text-emerald-800 space-y-1 w-full">
             <div class="flex items-center gap-1.5 font-bold">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
@@ -308,7 +308,7 @@
         </div>
 
         <!-- Start Trip Action button for Confirmed trips -->
-        <div v-else-if="trip.status === TripStatus.Confirmed" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
+        <div v-else-if="trip.status == TripStatus.Confirmed" class="p-5 pt-0 flex gap-3 border-t border-slate-100 bg-slate-50/20 pt-4">
           <button @click="openStartTripModal(trip)"
             class="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/15 transform cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
@@ -353,249 +353,364 @@
     </div>
 
     <!-- Reject Reason Dialog Modal -->
-    <Transition name="fade">
-      <div v-if="showRejectModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4">
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-              Lý do từ chối
-            </h3>
-            <button @click="closeRejectDialog" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="text-slate-400">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showRejectModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div @click="closeRejectDialog" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative max-w-md w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 transform transition-all space-y-4 animate-scale-up"
+            @click.stop>
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                Lý do từ chối
+              </h3>
+              <button @click="closeRejectDialog" class="p-1 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="text-slate-400">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
 
-          <!-- Body Description -->
-          <div v-if="selectedTripForReject" class="space-y-2">
-            <p class="text-xs text-slate-500 font-medium">
-              Vui lòng nhập lý do từ chối yêu cầu thuê xe <span class="font-bold text-slate-800">{{
-                selectedTripForReject.car.name }}</span> của khách hàng <span class="font-bold text-slate-800">{{
-                  selectedTripForReject.renter.name }}</span>.
-            </p>
+            <!-- Body Description -->
+            <div v-if="selectedTripForReject" class="space-y-2">
+              <p class="text-xs text-slate-500 font-medium">
+                Vui lòng nhập lý do từ chối yêu cầu thuê xe <span class="font-bold text-slate-800">{{
+                  selectedTripForReject.car.name }}</span> của khách hàng <span class="font-bold text-slate-800">{{
+                    selectedTripForReject.renter.name }}</span>.
+              </p>
 
-            <textarea v-model="rejectReason" rows="4"
-              placeholder="Nhập lý do chi tiết (ví dụ: Xe đang bảo dưỡng, bận lịch đột xuất...)"
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-rose-500 focus:bg-white focus:ring-4 focus:ring-rose-500/10 placeholder:text-slate-400"></textarea>
-          </div>
+              <textarea v-model="rejectReason" rows="4"
+                placeholder="Nhập lý do chi tiết (ví dụ: Xe đang bảo dưỡng, bận lịch đột xuất...)"
+                class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-rose-500 focus:bg-white focus:ring-4 focus:ring-rose-500/10 placeholder:text-slate-400"></textarea>
+            </div>
 
-          <!-- Footer Actions -->
-          <div class="flex gap-3 pt-2">
-            <button @click="closeRejectDialog"
-              class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl">
-              Hủy
-            </button>
-            <button @click="submitRejection"
-              class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-rose-500/20">
-              Xác nhận từ chối
-            </button>
+            <!-- Footer Actions -->
+            <div class="flex gap-3 pt-2">
+              <button @click="closeRejectDialog"
+                class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl cursor-pointer">
+                Hủy
+              </button>
+              <button @click="submitRejection"
+                class="flex-1 py-2.5 bg-rose-500 hover:bg-rose-600 active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-rose-500/20 cursor-pointer">
+                Xác nhận từ chối
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
 
     <!-- Start Trip Modal -->
-    <Transition name="fade">
-      <div v-if="showStartModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
-                <polygon points="5 3 19 12 5 21 5 3"></polygon>
-              </svg>
-              Bắt đầu chuyến đi
-            </h3>
-            <button @click="closeStartModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="text-slate-400">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Body Description -->
-          <div v-if="selectedTripForStart" class="space-y-3">
-            <p class="text-xs text-slate-500 leading-relaxed font-medium">
-              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe <span class="font-bold text-slate-800">{{ selectedTripForStart.car.name }}</span> trước khi bàn giao cho khách hàng <span class="font-bold text-slate-800">{{ selectedTripForStart.renter.name }}</span>. Đây là cơ sở đối chiếu tình trạng xe khi hoàn thành chuyến đi.
-            </p>
-
-            <!-- ImageUpload component -->
-            <ImageUpload ref="startTripImageUploadRef" v-model="startTripUploadedImages" :max-files="5" />
-          </div>
-
-          <!-- Footer Actions -->
-          <div class="flex gap-3 pt-2">
-            <button @click="closeStartModal"
-              class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl">
-              Hủy
-            </button>
-            <button @click="submitStartTrip"
-              :disabled="startTripUploadedImages.length === 0 || starting"
-              class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-350 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
-              <span v-if="starting" class="flex items-center gap-1.5">
-                <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showStartModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div @click="closeStartModal" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative max-w-lg w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 transform transition-all max-h-[90vh] flex flex-col animate-scale-up"
+            @click.stop>
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
+                  <polygon points="5 3 19 12 5 21 5 3"></polygon>
                 </svg>
-                Đang xử lý...
-              </span>
-              <span v-else>Xác nhận bắt đầu</span>
-            </button>
+                Bắt đầu chuyến đi
+              </h3>
+              <button @click="closeStartModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="text-slate-400">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Body Description (Scrollable) -->
+            <div v-if="selectedTripForStart" class="space-y-4 overflow-y-auto pr-1 my-2 flex-1 text-slate-700">
+              <p class="text-xs text-slate-500 leading-relaxed font-medium">
+                Vui lòng chụp và tải lên hình ảnh hiện trạng của xe <span class="font-bold text-slate-800">{{ selectedTripForStart.car.name }}</span> trước khi bàn giao cho khách hàng <span class="font-bold text-slate-800">{{ selectedTripForStart.renter.name }}</span>. Đây là cơ sở đối chiếu tình trạng xe khi hoàn thành chuyến đi.
+              </p>
+
+              <!-- ImageUpload component (Compact) -->
+              <ImageUpload compact ref="startTripImageUploadRef" v-model="startTripUploadedImages" :max-files="5" />
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex gap-3 pt-3 border-t border-slate-100 shrink-0">
+              <button @click="closeStartModal"
+                class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl cursor-pointer">
+                Hủy
+              </button>
+              <button @click="submitStartTrip"
+                :disabled="startTripUploadedImages.length === 0 || starting"
+                class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-350 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
+                <span v-if="starting" class="flex items-center gap-1.5">
+                  <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Đang xử lý...
+                </span>
+                <span v-else>Xác nhận bắt đầu</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
 
     <!-- Complete Trip Modal -->
-    <Transition name="fade">
-      <div v-if="showCompleteModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          class="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-emerald-600">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-              </svg>
-              Hoàn thành chuyến đi
-            </h3>
-            <button @click="closeCompleteModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="text-slate-400">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Body Description -->
-          <div v-if="selectedTripForComplete" class="space-y-3">
-            <p class="text-xs text-slate-500 leading-relaxed font-medium">
-              Vui lòng chụp và tải lên hình ảnh hiện trạng của xe <span class="font-bold text-slate-800">{{ selectedTripForComplete.car.name }}</span> khi khách hàng <span class="font-bold text-slate-800">{{ selectedTripForComplete.renter.name }}</span> hoàn trả xe. Đây là cơ sở đối chiếu tình trạng xe sau khi sử dụng.
-            </p>
-
-            <!-- ImageUpload component -->
-            <ImageUpload ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
-          </div>
-
-          <!-- Footer Actions -->
-          <div class="flex gap-3 pt-2">
-            <button @click="closeCompleteModal"
-              class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl">
-              Hủy
-            </button>
-            <button @click="submitCompletion"
-              :disabled="uploadedImages.length === 0 || completing"
-              class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-350 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
-              <span v-if="completing" class="flex items-center gap-1.5">
-                <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showCompleteModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div @click="closeCompleteModal" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative max-w-xl w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 transform transition-all max-h-[92vh] flex flex-col animate-scale-up"
+            @click.stop>
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100 shrink-0">
+              <div>
+                <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                  <span class="p-1.5 bg-emerald-100 text-emerald-600 rounded-lg">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                      <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                    </svg>
+                  </span>
+                  Xác nhận Kiểm tra & Nhận lại xe
+                </h3>
+                <p v-if="selectedTripForComplete" class="text-xs text-slate-500 mt-1 font-medium">
+                  Chuyến đi #{{ selectedTripForComplete.trip_code || selectedTripForComplete.id }} • Xe <span class="font-semibold text-slate-700">{{ selectedTripForComplete.car.name }}</span>
+                </p>
+              </div>
+              <button @click="closeCompleteModal" class="p-1.5 hover:bg-slate-100 rounded-full transition-colors text-slate-400 hover:text-slate-600 cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
-                Đang xử lý...
-              </span>
-              <span v-else>Xác nhận hoàn thành</span>
-            </button>
+              </button>
+            </div>
+
+            <!-- Modal Body (Scrollable) -->
+            <div v-if="selectedTripForComplete" class="space-y-4 overflow-y-auto pr-1 my-2 flex-1 text-slate-700">
+              <!-- Short Description -->
+              <div class="bg-emerald-50/70 border border-emerald-100/80 rounded-2xl p-3.5 text-xs text-emerald-900 leading-relaxed font-medium">
+                Vui lòng kiểm tra kỹ lưỡng hiện trạng xe cùng khách thuê <span class="font-bold">{{ selectedTripForComplete.renter.name }}</span> trước khi kết thúc chuyến đi nhằm đảm bảo quyền lợi của bạn.
+              </div>
+
+              <!-- Upload Post-Trip Images (Compact) -->
+              <div class="space-y-2">
+                <label class="block text-xs font-bold text-slate-700">
+                  1. Hình ảnh hiện trạng xe sau chuyến đi <span class="text-rose-500">*</span>
+                </label>
+                <ImageUpload compact ref="imageUploadRef" v-model="uploadedImages" :max-files="5" />
+              </div>
+
+              <!-- Checklist section -->
+              <div class="space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="block text-xs font-bold text-slate-700">
+                    2. Danh mục kiểm tra bắt buộc <span class="text-rose-500">*</span>
+                  </label>
+                  <button type="button" @click="toggleCheckAll" class="text-xs font-semibold text-emerald-600 hover:text-emerald-700 hover:underline cursor-pointer">
+                    {{ isAllChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả' }}
+                  </button>
+                </div>
+
+                <div class="space-y-2 text-xs">
+                  <!-- Checkbox 1 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.exterior ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.exterior" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Ngoại thất xe:</strong> Thân vỏ, gương chiếu hậu, kính xe và hệ thống đèn không phát sinh trầy xước, nứt vỡ mới so với lúc bàn giao.
+                    </span>
+                  </label>
+
+                  <!-- Checkbox 2 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.interior ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.interior" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Nội thất & Vệ sinh:</strong> Ghế da, thảm lót sàn, trần xe sạch sẽ; không bị rách, ố bẩn nặng hoặc lưu lại mùi lạ/khói thuốc.
+                    </span>
+                  </label>
+
+                  <!-- Checkbox 3 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.documents ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.documents" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Giấy tờ & Phụ kiện:</strong> Đã nhận lại đủ chìa khóa, giấy đăng kiểm, bảo hiểm xe, bánh dự phòng và bộ dụng cụ cứu hộ.
+                    </span>
+                  </label>
+
+                  <!-- Checkbox 4 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.fuelOdo ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.fuelOdo" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Mức nhiên liệu & Số km (Odo):</strong> Mức xăng/pin và số km di chuyển phù hợp với thỏa thuận ban đầu.
+                    </span>
+                  </label>
+
+                  <!-- Checkbox 5 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.operation ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.operation" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Tình trạng vận hành:</strong> Động cơ, hệ thống phanh, điều hòa và lốp xe hoạt động bình thường, không có đèn báo lỗi.
+                    </span>
+                  </label>
+
+                  <!-- Checkbox 6 -->
+                  <label class="flex items-start gap-2.5 p-2.5 rounded-xl border transition-all cursor-pointer select-none"
+                    :class="returnChecklist.dateTime ? 'border-emerald-300 bg-emerald-50/40' : 'border-slate-200 bg-white hover:bg-slate-50/70'">
+                    <input type="checkbox" v-model="returnChecklist.dateTime" class="mt-0.5 w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500" />
+                    <span class="leading-relaxed">
+                      <strong class="text-slate-800">Thời gian & Địa điểm:</strong> Đã nhận lại xe đúng thời gian và địa điểm theo thỏa thuận với khách thuê.
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Warning Callout Box -->
+              <div class="bg-amber-50 border border-amber-200/90 rounded-2xl p-3.5 space-y-1 text-xs">
+                <div class="flex items-center gap-1.5 text-amber-800 font-bold">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                  </svg>
+                  LƯU Ý QUAN TRỌNG DÀNH CHO CHỦ XE
+                </div>
+                <p class="text-amber-900 leading-relaxed font-medium">
+                  Sau khi bấm <strong>"Xác nhận hoàn tất"</strong>, chuyến thuê sẽ chính thức kết thúc và hệ thống sẽ tiến hành giải phóng số dư thanh toán. Bạn sẽ <strong>KHÔNG THỂ</strong> khiếu nại hoặc yêu cầu bồi thường đối với các hư hại, thiếu sót phát sinh sau thời điểm xác nhận này.
+                </p>
+                <div class="pt-1">
+                  <NuxtLink to="/policy/inspection-completion" target="_blank" class="inline-flex items-center gap-1 font-semibold text-amber-900 underline hover:text-amber-950">
+                    Xem chi tiết Chính sách kiểm tra xe & hoàn thành chuyến đi ↗
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="flex gap-3 pt-3 border-t border-slate-100 shrink-0">
+              <button @click="closeCompleteModal"
+                class="flex-1 py-2.5 border border-slate-200 bg-white hover:bg-slate-50 active:scale-[0.98] transition-all text-xs font-bold text-slate-600 rounded-xl cursor-pointer">
+                Kiểm tra lại
+              </button>
+              <button @click="submitCompletion"
+                :disabled="!isAllChecked || uploadedImages.length === 0 || completing"
+                class="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 disabled:text-slate-500 disabled:cursor-not-allowed active:scale-[0.98] transition-all text-xs font-bold text-white rounded-xl shadow-sm shadow-emerald-500/20 flex items-center justify-center gap-1.5 cursor-pointer">
+                <span v-if="completing" class="flex items-center gap-1.5">
+                  <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Đang xử lý...
+                </span>
+                <span v-else>Xác nhận hoàn tất</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
 
     <!-- Owner Review Modal -->
-    <Transition name="fade">
-      <div v-if="showReviewModal"
-        class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div
-          class="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-100 transform transition-all p-6 space-y-4" @click.stop>
-          <!-- Header -->
-          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 fill-amber-500">
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-              </svg>
-              Đánh giá khách thuê
-            </h3>
-            <button @click="closeReviewModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                class="text-slate-400">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
-          </div>
-
-          <!-- Content -->
-          <div class="space-y-4 text-xs">
-            <div v-if="selectedTripForReview" class="text-slate-500 font-medium">
-              Đánh giá trải nghiệm của bạn với khách hàng <span class="font-bold text-slate-800">{{ selectedTripForReview.renter.name }}</span> cho chuyến đi #{{ selectedTripForReview.id }}.
-            </div>
-
-            <!-- Star selection -->
-            <div class="space-y-2 flex flex-col items-center py-2">
-              <label class="block font-bold text-slate-700 text-center">Số sao đánh giá:</label>
-              <div class="flex items-center gap-2">
-                <button 
-                  v-for="star in 5" 
-                  :key="star"
-                  type="button" 
-                  @click="reviewRating = star"
-                  class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-300 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none"
-                >
-                  <Icon name="heroicons:star-solid" class="w-8 h-8"
-                    :class="star <= reviewRating ? 'text-amber-400' : 'text-slate-200'" />
-                </button>
-              </div>
-              <span class="font-bold text-[#1e4e57] text-[11px] mt-1">
-                {{ ratingLabel(reviewRating) }}
-              </span>
-            </div>
-
-            <!-- Comment input -->
-            <div class="space-y-1.5">
-              <label class="block font-bold text-slate-700">Ý kiến đóng góp (tùy chọn):</label>
-              <textarea 
-                v-model="reviewComment" 
-                rows="4"
-                placeholder="Khách hàng đi xe giữ gìn sạch sẽ, trả xe đúng giờ, lịch sự..."
-                class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"
-              ></textarea>
-            </div>
-
-            <!-- Submit button -->
-            <button 
-              @click="submitOwnerReview"
-              :disabled="reviewRating === 0 || submittingReview"
-              class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-[0.98] cursor-pointer"
-            >
-              <span v-if="submittingReview" class="flex items-center gap-1.5">
-                <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
-                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+    <Teleport to="body">
+      <Transition name="fade">
+        <div v-if="showReviewModal"
+          class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div @click="closeReviewModal" class="absolute inset-0 cursor-pointer"></div>
+          <div
+            class="relative max-w-md w-full bg-white rounded-3xl overflow-hidden shadow-2xl p-6 border border-slate-100 transform transition-all space-y-4 animate-scale-up" @click.stop>
+            <!-- Header -->
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-amber-500 fill-amber-500">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                Đang gửi...
-              </span>
-              <span v-else>Gửi đánh giá</span>
-            </button>
+                Đánh giá khách thuê
+              </h3>
+              <button @click="closeReviewModal" class="p-1 hover:bg-slate-100 rounded-full transition-colors cursor-pointer">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                  class="text-slate-400">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+
+            <!-- Content -->
+            <div class="space-y-4 text-xs">
+              <div v-if="selectedTripForReview" class="text-slate-500 font-medium">
+                Đánh giá trải nghiệm của bạn với khách hàng <span class="font-bold text-slate-800">{{ selectedTripForReview.renter.name }}</span> cho chuyến đi #{{ selectedTripForReview.id }}.
+              </div>
+
+              <!-- Star selection -->
+              <div class="space-y-2 flex flex-col items-center py-2">
+                <label class="block font-bold text-slate-700 text-center">Số sao đánh giá:</label>
+                <div class="flex items-center gap-2">
+                  <button 
+                    v-for="star in 5" 
+                    :key="star" 
+                    type="button" 
+                    @click="reviewRating = star"
+                    class="p-1 rounded-full hover:scale-110 active:scale-95 transition-all text-slate-300 hover:text-amber-400 cursor-pointer border-0 bg-transparent outline-none"
+                  >
+                    <Icon name="heroicons:star-solid" class="w-8 h-8"
+                      :class="star <= reviewRating ? 'text-amber-400' : 'text-slate-200'" />
+                  </button>
+                </div>
+                <span class="font-bold text-[#1e4e57] text-[11px] mt-1">
+                  {{ ratingLabel(reviewRating) }}
+                </span>
+              </div>
+
+              <!-- Comment input -->
+              <div class="space-y-1.5">
+                <label class="block font-bold text-slate-700">Ý kiến đóng góp (tùy chọn):</label>
+                <textarea 
+                  v-model="reviewComment" 
+                  rows="4"
+                  placeholder="Khách hàng đi xe giữ gìn sạch sẽ, trả xe đúng giờ, lịch sự..."
+                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs text-slate-700 outline-none transition focus:border-[#1e4e57] focus:bg-white focus:ring-4 focus:ring-[#1e4e57]/10 placeholder:text-slate-400"
+                ></textarea>
+              </div>
+
+              <!-- Submit button -->
+              <button 
+                @click="submitOwnerReview"
+                :disabled="reviewRating === 0 || submittingReview"
+                class="w-full py-3 px-4 rounded-xl text-xs font-bold text-white transition-all bg-[#1e4e57] hover:bg-[#286874] disabled:bg-slate-300 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 active:scale-[0.98] cursor-pointer"
+              >
+                <span v-if="submittingReview" class="flex items-center gap-1.5">
+                  <svg class="animate-spin h-4 w-4 text-white" viewBox="0 0 24 24" fill="none">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Đang gửi...
+                </span>
+                <span v-else>Gửi đánh giá</span>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -958,10 +1073,53 @@ const reviewRating = ref(5);
 const reviewComment = ref('');
 const submittingReview = ref(false);
 
+// Owner Complete Trip State
+const returnChecklist = ref({
+  exterior: false,
+  interior: false,
+  documents: false,
+  fuelOdo: false,
+  operation: false,
+  dateTime: false,
+});
+
+const isAllChecked = computed(() => {
+  return (
+    returnChecklist.value.exterior &&
+    returnChecklist.value.interior &&
+    returnChecklist.value.documents &&
+    returnChecklist.value.fuelOdo &&
+    returnChecklist.value.operation &&
+    returnChecklist.value.dateTime
+  );
+});
+
+const toggleCheckAll = () => {
+  const target = !isAllChecked.value;
+  returnChecklist.value.exterior = target;
+  returnChecklist.value.interior = target;
+  returnChecklist.value.documents = target;
+  returnChecklist.value.fuelOdo = target;
+  returnChecklist.value.operation = target;
+  returnChecklist.value.dateTime = target;
+};
+
+const resetChecklist = () => {
+  returnChecklist.value = {
+    exterior: false,
+    interior: false,
+    documents: false,
+    fuelOdo: false,
+    operation: false,
+    dateTime: false,
+  };
+};
+
 const openCompleteTripModal = (trip: any) => {
   selectedTripForComplete.value = trip;
   uploadedImages.value = [];
   completing.value = false;
+  resetChecklist();
   showCompleteModal.value = true;
 };
 
@@ -969,9 +1127,14 @@ const closeCompleteModal = () => {
   showCompleteModal.value = false;
   selectedTripForComplete.value = null;
   uploadedImages.value = [];
+  resetChecklist();
 };
 
 const submitCompletion = async () => {
+  if (!isAllChecked.value) {
+    showToast('Vui lòng kiểm tra và tích chọn đủ tất cả các mục xác nhận.', 'error');
+    return;
+  }
   if (uploadedImages.value.length === 0) {
     showToast('Vui lòng tải lên ít nhất 1 ảnh xe khi trả xe.', 'error');
     return;
@@ -1072,5 +1235,20 @@ const getOwnerReview = (trip: any) => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+@keyframes scaleUp {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-scale-up {
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 </style>

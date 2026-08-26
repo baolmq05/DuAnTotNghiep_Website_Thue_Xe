@@ -14,8 +14,8 @@ class GoogleAuthController extends Controller
 {
     public function loginWithGoogle(Request $request)
     {
-        // Get token from Nuxt
-        $idToken = $request->input('token');
+        // Get token from Nuxt / Flutter
+        $idToken = $request->input('token') ?? $request->input('id_token');
         if (!$idToken) {
             return response()->json([
                 'success' => false,
@@ -37,10 +37,12 @@ class GoogleAuthController extends Controller
             ) {
                 $email = $request->input('email');
                 $name = $request->input('name') ?? 'Google Local Test';
+                $avatar = $request->input('avatar') ?? $request->input('picture');
                 if ($email) {
                     $payload = [
                         'email' => $email,
-                        'name' => $name
+                        'name' => $name,
+                        'picture' => $avatar,
                     ];
                 }
             }
@@ -53,27 +55,45 @@ class GoogleAuthController extends Controller
 
             if ($payload) {
                 $email = $payload['email'];
-                $name = $payload['name'];
-                // Kiểm tra xem Email này đã có trong DB chưa, chưa có thì tự tạo mới
-                // đã thêm 'status' và 'role_id' dự phòng lỗi not null của database
-                $user = User::firstOrCreate(
-                    ['email' => $email],
-                    [
+                $name = $payload['name'] ?? 'User';
+                $picture = $payload['picture'] ?? $request->input('avatar') ?? $request->input('picture') ?? null;
+
+                // Kiểm tra xem Email này đã có trong DB chưa
+                $user = User::where('email', $email)->first();
+
+                if (!$user) {
+                    $user = User::create([
                         'name' => $name,
+                        'email' => $email,
                         'password' => bcrypt(Str::random(16)),
                         'email_verified_at' => now(),
-                        'avatar' => $payload['picture'] ?? null,
+                        'avatar' => $picture,
                         'status' => 1,
                         'role_id' => 2,
-                    ]
-                );
-                // tạo token theo chuẩn JWT-AUTH đồng bộ với Model User của bạn
+                    ]);
+                } else {
+                    // Cập nhật avatar nếu tài khoản chưa có avatar hoặc đang dùng link google
+                    $needsSave = false;
+                    if (!empty($picture) && (empty($user->avatar) || str_contains($user->avatar, 'googleusercontent.com'))) {
+                        $user->avatar = $picture;
+                        $needsSave = true;
+                    }
+                    if (empty($user->name) && !empty($name)) {
+                        $user->name = $name;
+                        $needsSave = true;
+                    }
+                    if ($needsSave) {
+                        $user->save();
+                    }
+                }
+
+                // Tạo token theo chuẩn JWT-AUTH
                 $token = JWTAuth::fromUser($user);
                 return response()->json([
                     'success' => true,
                     'message' => 'Đăng nhập Google thành công!',
-                    'access_token' => $token,// trả về token lưu vaofo cookie
-                    'user' => $user
+                    'access_token' => $token,
+                    'user' => $user->fresh(['drivingLicense', 'wallet', 'role'])
                 ]);
             }
             return response()->json([

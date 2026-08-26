@@ -144,7 +144,7 @@ import { ref, watch, nextTick } from 'vue'
 import LoadingOverlay from '@/components/Common/LoadingOverlay.vue' // Đảm bảo đúng đường dẫn file của bạn
 
 const { isRegisterOpen, openRegister, closeRegister, switchToLogin } = useAuthModal()
-const { register, loginWithFacebook: loginWithFacebookService } = useAuth()
+const { register, loginWithGoogle: loginWithGoogleService, loginWithFacebook: loginWithFacebookService } = useAuth()
 const { showToast } = useToast()
 const { openRegisterSuccess } = useRegisterSuccessModal()
 
@@ -210,21 +210,10 @@ const handleGoogleRegisterResponse = async (response) => {
   const responsePayload = decodeJWT(response.credential);
 
   try {
-    const res = await $fetch('http://127.0.0.1:8000/api/auth/google', {
-      method: 'POST',
-      body: { token: response.credential }
-    })
+    const res = await loginWithGoogleService(response.credential);
 
     if (res.success) {
       showToast(`Xin chào ${responsePayload.name}! Kết nối Google thành công.`, "success")
-
-      if (typeof window !== 'undefined') {
-        localStorage.setItem("USER_TOKEN", res.access_token);
-        document.cookie = `USER_TOKEN=${res.access_token}; path=/; max-age=${60 * 60 * 24 * 7};`;
-        localStorage.setItem("USER_INFO", JSON.stringify(res.user));
-        document.cookie = `USER_INFO=${encodeURIComponent(JSON.stringify(res.user))}; path=/; max-age=${60 * 60 * 24 * 7};`;
-      }
-
       setTimeout(() => { window.location.reload() }, 300)
     } else {
       isLoading.value = false

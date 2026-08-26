@@ -41,9 +41,9 @@ const submit = async () => {
 </template> 
  -->
 <template>
-    <div class="space-y-5">
-        <!-- Header -->
-        <div class="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6">
+    <div class="space-y-4">
+        <!-- Header (Only show if not compact) -->
+        <div v-if="!compact" class="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-50 to-white p-6">
             <div class="flex items-start justify-between gap-4">
                 <div>
                     <h3 class="text-xl font-bold text-slate-900">
@@ -81,12 +81,28 @@ const submit = async () => {
             isDragging
                 ? 'border-brand-primary bg-brand-primary/5'
                 : 'border-slate-300 hover:border-brand-primary hover:bg-slate-50',
+            compact ? 'p-3 bg-slate-50/50' : '',
         ]" @click="openFilePicker" @dragenter.prevent="isDragging = true" @dragover.prevent="isDragging = true"
             @dragleave.prevent="isDragging = false" @drop.prevent="handleDrop">
             <input ref="fileInput" type="file" class="hidden" multiple accept="image/*" @change="handleFileChange" />
 
-            <div class="py-16 px-6 flex flex-col items-center">
+            <!-- Compact Mode Upload Dropzone -->
+            <div v-if="compact" class="py-3 px-3 flex items-center justify-center gap-3 text-center">
+                <div class="h-10 w-10 rounded-xl bg-brand-primary/10 flex items-center justify-center shrink-0">
+                    <Icon name="solar:cloud-upload-bold" class="w-5 h-5 text-brand-primary" />
+                </div>
+                <div class="text-left">
+                    <p class="text-xs font-bold text-slate-800">
+                        Nhấn để chọn ảnh hoặc kéo thả vào đây
+                    </p>
+                    <p class="text-[11px] text-slate-400 font-medium">
+                        Tối đa {{ maxFiles }} ảnh (Đã chọn: {{ images.length }}/{{ maxFiles }})
+                    </p>
+                </div>
+            </div>
 
+            <!-- Full Mode Upload Dropzone -->
+            <div v-else class="py-16 px-6 flex flex-col items-center">
                 <div class="h-24 w-24 rounded-full bg-brand-primary/10 flex items-center justify-center">
                     <Icon name="solar:cloud-upload-bold" class="w-12 h-12 text-brand-primary" />
                 </div>
@@ -98,34 +114,32 @@ const submit = async () => {
                     class="mt-6 rounded-xl bg-brand-primary px-6 py-3 font-semibold text-white shadow hover:opacity-90 transition">
                     Chọn hình ảnh
                 </button>
-
             </div>
         </div>
 
         <!-- Preview -->
-        <!-- Preview -->
-        <div v-if="images.length > 0" class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div v-if="images.length > 0" class="grid grid-cols-2 gap-3 sm:grid-cols-3" :class="compact ? 'lg:grid-cols-3' : 'lg:grid-cols-4'">
             <div v-for="(image, index) in images" :key="index"
                 class="group relative overflow-hidden rounded-2xl border-2 transition-all duration-300 cursor-pointer"
                 :class="image.isThumbnail
-                    ? 'border-brand-primary shadow-lg shadow-brand-primary/20'
+                    ? 'border-brand-primary shadow-md shadow-brand-primary/20'
                     : 'border-slate-200 hover:border-brand-primary/40'
                     " @click="setThumbnail(index)">
                 <!-- Image -->
                 <img :src="image.url" :alt="`Ảnh ${index + 1}`"
-                    class="h-44 w-full object-cover transition-transform duration-300 group-hover:scale-105" />
+                    class="w-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    :class="compact ? 'h-24 sm:h-28' : 'h-44'" />
 
                 <!-- Uploading -->
                 <div v-if="image.uploading" class="absolute inset-0 bg-black/60 flex items-center justify-center">
                     <div class="text-center text-white">
-                        <svg class="animate-spin w-8 h-8 mx-auto mb-3" xmlns="http://www.w3.org/2000/svg" fill="none"
+                        <svg class="animate-spin w-6 h-6 mx-auto mb-1.5" xmlns="http://www.w3.org/2000/svg" fill="none"
                             viewBox="0 0 24 24">
                             <circle cx="12" cy="12" r="10" stroke="white" stroke-width="4" opacity=".25" />
-
                             <path fill="white" d="M4 12a8 8 0 018-8v4A4 4 0 008 12H4z" />
                         </svg>
 
-                        <p class="text-sm">
+                        <p class="text-xs">
                             Đang upload...
                         </p>
                     </div>
@@ -133,40 +147,34 @@ const submit = async () => {
 
                 <!-- Thumbnail -->
                 <div v-if="image.isThumbnail"
-                    class="absolute left-3 top-3 flex items-center gap-1 rounded-full bg-brand-primary px-3 py-1 text-[11px] font-bold text-white shadow-lg">
+                    class="absolute left-2.5 top-2.5 flex items-center gap-1 rounded-full bg-brand-primary px-2.5 py-0.5 text-[10px] font-bold text-white shadow-md">
                     <Icon name="solar:star-bold" class="w-3 h-3" />
-
-                    Ảnh đại diện
+                    Ảnh chính
                 </div>
 
                 <!-- Hover -->
                 <div v-else
                     class="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-all duration-300">
                     <span
-                        class="scale-0 group-hover:scale-100 transition-transform duration-300 rounded-full bg-black/60 px-4 py-2 text-xs font-semibold text-white">
-                        Đặt làm ảnh đại diện
+                        class="scale-0 group-hover:scale-100 transition-transform duration-300 rounded-full bg-black/60 px-3 py-1 text-[10px] font-semibold text-white">
+                        Đặt làm ảnh chính
                     </span>
                 </div>
 
                 <!-- Delete -->
                 <button type="button"
-                    class="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-red-500 hover:text-white"
+                    class="absolute top-2 right-2 flex h-7 w-7 items-center justify-center rounded-full bg-white/90 shadow opacity-0 transition-all duration-300 group-hover:opacity-100 hover:bg-red-500 hover:text-white"
                     @click.stop="removeImage(index)">
-                    <Icon name="ic:outline-close" class="w-4 h-4" />
+                    <Icon name="ic:outline-close" class="w-3.5 h-3.5" />
                 </button>
             </div>
         </div>
 
         <!-- Empty -->
-        <div v-else class="rounded-2xl border border-dashed border-slate-300 py-12 text-center">
-            <Icon name="solar:gallery-wide-outline" class="mx-auto mb-3 h-12 w-12 text-slate-300" />
-
-            <p class="text-sm text-slate-500">
-                Chưa có hình ảnh nào
-            </p>
-
-            <p class="mt-1 text-xs text-slate-400">
-                Hãy tải lên hình ảnh đầu tiên của xe
+        <div v-else class="rounded-2xl border border-dashed border-slate-300 text-center" :class="compact ? 'py-4' : 'py-12'">
+            <Icon name="solar:gallery-wide-outline" class="mx-auto text-slate-300" :class="compact ? 'h-6 w-6 mb-1' : 'h-12 w-12 mb-3'" />
+            <p class="text-xs text-slate-400 font-medium">
+                Chưa có hình ảnh nào được chọn
             </p>
         </div>
     </div>
@@ -193,6 +201,11 @@ const props = defineProps({
     maxFiles: {
         type: Number,
         default: 10,
+    },
+
+    compact: {
+        type: Boolean,
+        default: false,
     },
 });
 

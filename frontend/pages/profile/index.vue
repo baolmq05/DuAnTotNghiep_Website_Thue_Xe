@@ -26,6 +26,7 @@
             <div class="relative group">
               <img :src="user?.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100'"
                 class="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border border-slate-100 shadow-sm"
+                referrerpolicy="no-referrer"
                 alt="User Avatar" />
 
               <button type="button" @click="openAvatarEditModal"
@@ -390,7 +391,7 @@
             <div
               class="relative w-40 h-40 rounded-full overflow-hidden border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center cursor-pointer hover:border-brand-primary transition-colors"
               @click="triggerAvatarFileInput">
-              <img v-if="avatarPreview" :src="avatarPreview" alt="Ảnh đại diện" class="w-full h-full object-cover" />
+              <img v-if="avatarPreview" :src="avatarPreview" alt="Ảnh đại diện" referrerpolicy="no-referrer" class="w-full h-full object-cover" />
 
               <div v-else class="flex flex-col items-center justify-center text-center px-4">
                 <Icon name="ic:outline-image" class="text-brand-primary" size="34" />

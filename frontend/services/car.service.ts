@@ -103,6 +103,7 @@ export interface Car {
     features?: CarFeatureRegister[];
     reviews_avg_rating?: string | number | null;
     trips_count?: number;
+    has_ongoing_trip?: boolean;
     owner?: {
         id: number;
         name: string;

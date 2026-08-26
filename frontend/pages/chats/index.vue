@@ -158,11 +158,11 @@
 
             <!-- User / me (right side) -->
             <div v-if="msg.role === 'user'" class="flex gap-3 justify-end msg-anim">
-              <div class="max-w-lg">
+              <div class="max-w-lg flex flex-col items-end">
                 <div :class="[
                   msg.type === 'image'
                     ? 'rounded-2xl overflow-hidden shadow-xs'
-                    : 'bg-brand-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-xs'
+                    : 'bg-brand-primary text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-xs w-fit max-w-full'
                 ]">
                   <div v-if="msg.type === 'image'" class="relative group max-w-[250px]">
                     <img 
@@ -181,7 +181,7 @@
                       </div>
                     </div>
                   </div>
-                  <p v-else class="text-sm leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                  <p v-else class="text-sm leading-relaxed whitespace-pre-line break-words">{{ msg.text }}</p>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 text-right mr-1">{{ msg.time }}</p>
               </div>
@@ -201,6 +201,7 @@
               <!-- Host avatar -->
               <div v-else-if="activeHost" class="w-8 h-8 flex-shrink-0 mt-0.5">
                 <img v-if="activeHost.other_user?.avatar" :src="activeHost.other_user.avatar"
+                  referrerpolicy="no-referrer"
                   class="w-8 h-8 rounded-full object-cover" />
                 <div v-else
                   class="w-8 h-8 rounded-full flex items-center justify-center text-brand-primary bg-brand-secondary text-xs font-bold">
@@ -208,11 +209,13 @@
                 </div>
               </div>
 
-              <div class="max-w-lg md:max-w-xl w-full">
+              <div class="max-w-lg md:max-w-xl flex flex-col items-start">
                 <div :class="[
                   msg.type === 'image'
                     ? 'rounded-2xl overflow-hidden shadow-xs'
-                    : 'bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs'
+                    : (activeConvId === 'bot' && parseBotMessage(msg.text).type === 'car_list'
+                        ? 'bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs w-full'
+                        : 'bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 shadow-xs w-fit max-w-full')
                 ]">
                   <div v-if="msg.type === 'image'" class="relative group max-w-[250px]">
                     <img 
@@ -307,11 +310,11 @@
                       </div>
 
                       <!-- Regular Text Message -->
-                      <p v-else class="text-sm text-gray-800 leading-relaxed" v-html="parseBotMessage(msg.text).text"></p>
+                      <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line break-words" v-html="parseBotMessage(msg.text).text"></p>
                     </div>
 
                     <!-- Host / User regular message -->
-                    <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line">{{ msg.text }}</p>
+                    <p v-else class="text-sm text-gray-800 leading-relaxed whitespace-pre-line break-words">{{ msg.text }}</p>
                   </div>
                 </div>
                 <p class="text-xs text-gray-400 mt-1 ml-1">
