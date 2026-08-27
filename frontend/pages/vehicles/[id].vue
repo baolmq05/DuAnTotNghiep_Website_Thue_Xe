@@ -591,10 +591,17 @@
 
                 <!-- CTA -->
                 <button
-                  :disabled="isOwner || hasActiveBooking || (receiveMethod === 'delivery' && (isDistanceTooFar || !deliveryCoords))"
+                  :disabled="isBookingLoading || isOwner || hasActiveBooking || (receiveMethod === 'delivery' && isDistanceTooFar)"
                   class="w-full bg-brand-primary hover:bg-brand-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-300 text-sm tracking-widest shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 hover:-translate-y-[0.5px] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   @click="handleBooking">
-                  <span v-if="isOwner">XE CỦA CHÍNH BẠN</span>
+                  <span v-if="isBookingLoading" class="flex items-center justify-center gap-2">
+                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    ĐANG XỬ LÝ...
+                  </span>
+                  <span v-else-if="isOwner">XE CỦA CHÍNH BẠN</span>
                   <span v-else-if="hasActiveBooking">CHUYẾN ĐI CHƯA HOÀN THÀNH</span>
                   <span v-else-if="receiveMethod === 'delivery' && isDistanceTooFar">KHOẢNG CÁCH QUÁ XA</span>
                   <span v-else>CHỌN THUÊ</span>
@@ -855,6 +862,7 @@ const car = ref<any>(null);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const isFavorite = ref(false);
+const isBookingLoading = ref(false);
 
 const seoTitle = computed(() => {
   if (!car.value) return 'Đang tải thông tin xe... | DRIVIO';
@@ -940,6 +948,7 @@ const loadUserSavedAddresses = async () => {
 
 const selectSavedAddress = async (savedAddr: any) => {
   if (!savedAddr || !savedAddr.address_name) return
+  const currentScrollY = typeof window !== 'undefined' ? window.scrollY : 0
   deliveryAddress.value = savedAddr.address_name
   deliverySuggestions.value = []
 
@@ -986,6 +995,9 @@ const selectSavedAddress = async (savedAddr: any) => {
 
           nextTick(() => {
             drawDeliveryMap(carLat, carLng, loc.lat, loc.lng)
+            if (typeof window !== 'undefined') {
+              window.scrollTo({ top: currentScrollY, behavior: 'instant' })
+            }
           })
         }
       }
@@ -1048,6 +1060,7 @@ const searchDeliveryPlace = async () => {
 }
 
 const selectDeliveryPlace = async (item: any) => {
+  const currentScrollY = typeof window !== 'undefined' ? window.scrollY : 0
   deliveryAddress.value = item.description
   deliverySuggestions.value = []
   try {
@@ -1089,6 +1102,9 @@ const selectDeliveryPlace = async (item: any) => {
 
           nextTick(() => {
             drawDeliveryMap(carLat, carLng, loc.lat, loc.lng)
+            if (typeof window !== 'undefined') {
+              window.scrollTo({ top: currentScrollY, behavior: 'instant' })
+            }
           })
         }
       }
@@ -1099,6 +1115,7 @@ const selectDeliveryPlace = async (item: any) => {
 }
 
 const drawDeliveryMap = (carLat: number, carLng: number, userLat: number, userLng: number) => {
+  const currentScrollY = typeof window !== 'undefined' ? window.scrollY : 0
   const container = document.getElementById('detail-map')
   if (!container || !maplibregl) return
 
@@ -1125,12 +1142,12 @@ const drawDeliveryMap = (carLat: number, carLng: number, userLat: number, userLn
   map.on('load', () => {
     carMarker.value = new maplibregl.Marker({ color: '#1e4e57' })
       .setLngLat([carLng, carLat])
-      .setPopup(new maplibregl.Popup({ offset: 25 }).setText("Vị trí xe"))
+      .setPopup(new maplibregl.Popup({ offset: 25, focusAfterOpen: false }).setText("Vị trí xe"))
       .addTo(map)
 
     userMarker.value = new maplibregl.Marker({ color: 'red' })
       .setLngLat([userLng, userLat])
-      .setPopup(new maplibregl.Popup({ offset: 25 }).setText("Địa điểm giao xe"))
+      .setPopup(new maplibregl.Popup({ offset: 25, focusAfterOpen: false }).setText("Địa điểm giao xe"))
       .addTo(map)
       .togglePopup()
 
@@ -1141,6 +1158,9 @@ const drawDeliveryMap = (carLat: number, carLng: number, userLat: number, userLn
 
     setTimeout(() => {
       map.resize()
+      if (typeof window !== 'undefined') {
+        window.scrollTo({ top: currentScrollY, behavior: 'instant' })
+      }
     }, 200)
   })
 
@@ -1153,119 +1173,94 @@ const calculatedDeliveryFee = computed(() => {
 })
 
 const handleBooking = async () => {
-  if (!selectedStart.value || !selectedEnd.value) {
-    showToast('Vui lòng chọn thời gian nhận và trả xe.', 'info')
-    return
-  }
-
-  // Kiểm tra trùng lịch bận
-  if (disabledDates.value.length > 0) {
-    const start = selectedStart.value
-    const end = selectedEnd.value
-    const overlap = disabledDates.value.some((range: any) => {
-      return start <= range.end && end >= range.start
-    })
-    if (overlap) {
-      showToast('Thời gian thuê trùng với lịch xe đã bận. Vui lòng chọn thời gian khác.', 'error')
-      return
-    }
-  }
-
-  if (!user.value) {
-    showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'info')
-    openLogin()
-    return
-  }
-
-  // Đồng bộ dữ liệu user mới nhất từ backend để tránh dùng trạng thái GPLX cũ trong cookie.
-  await refreshProfile()
-
-  const drivingLicense = user.value.driving_license
-  if (drivingLicense && drivingLicense.status === 0) {
-    showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'info')
-    return
-  }
-
-  const isPhoneMissing = !user.value.phone
-  const isLicenseMissing = !drivingLicense || drivingLicense.status === 2
-
-  if (isPhoneMissing || isLicenseMissing) {
-    missingFields.value = { phone: isPhoneMissing, drivingLicense: isLicenseMissing }
-
-    // Điền sẵn data cũ (nếu có) vào form modal
-    quickUpdateForm.value.phone = user.value.phone || ''
-    quickUpdateForm.value.driving_license_number = drivingLicense?.driving_license_number || ''
-    quickUpdateForm.value.full_name = drivingLicense?.full_name || ''
-    quickUpdateForm.value.DOB = drivingLicense?.DOB || ''
-
-    // Reset trạng thái file ảnh tạm
-    licenseImagePreview.value = ''
-    licenseImageFile.value = null
-
-    // Bật modal lên và dừng luồng xử lý đơn hàng tại đây
-    isUpdateModalOpen.value = true
-    return
-  }
-
-  // Kiểm tra số điện thoại
-  // if (!user.value.phone) {
-  //   showToast('Bạn chưa cập nhật số điện thoại. Đang chuyển hướng đến trang cá nhân...', 'info')
-  //   setTimeout(() => {
-  //     navigateTo('/profile')
-  //   }, 2000)
-  //   return
-  // }
-
-  // Kiểm tra giấy phép lái xe
-  // const drivingLicense = user.value.driving_license
-  // if (!drivingLicense) {
-  //   showToast('Bạn chưa cập nhật thông tin giấy phép lái xe. Đang chuyển hướng đến trang cá nhân...', 'info')
-  //   setTimeout(() => {
-  //     navigateTo('/profile')
-  //   }, 2000)
-  //   return
-  // }
-
-  // if (drivingLicense.status === 0) {
-  //   showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'info')
-  //   return
-  // }
-
-  // if (drivingLicense.status === 2) {
-  //   showToast('Giấy phép lái xe của bạn đã bị từ chối. Đang chuyển hướng đến trang cá nhân để cập nhật...', 'info')
-  //   setTimeout(() => {
-  //     navigateTo('/profile')
-  //   }, 2000)
-  //   return
-  // }
-
-  if (drivingLicense.status !== 1) {
-    showToast('Giấy phép lái xe của bạn không hợp lệ.', 'error')
-    return
-  }
-
-  if (receiveMethod.value === 'delivery') {
-    if (!deliveryCoords.value) {
-      showToast('Vui lòng chọn địa điểm nhận xe.', 'info')
-      return
-    }
-    if (isDistanceTooFar.value) {
-      showToast('Địa điểm giao xe vượt quá khoảng cách tối đa của chủ xe.', 'error')
-      return
-    }
-  }
-
-  if (car.value && car.value.user_id === user.value.id) {
-    showToast('Bạn không thể thuê xe của chính mình!', 'error')
-    return
-  }
-
-  if (hasActiveBooking.value) {
-    showToast('Bạn đang có chuyến đi chưa hoàn thành với xe này!', 'error')
-    return
-  }
+  if (isBookingLoading.value) return
+  isBookingLoading.value = true
 
   try {
+    if (!selectedStart.value || !selectedEnd.value) {
+      showToast('Vui lòng chọn thời gian nhận và trả xe.', 'info')
+      return
+    }
+
+    // Kiểm tra trùng lịch bận
+    if (disabledDates.value.length > 0) {
+      const start = selectedStart.value
+      const end = selectedEnd.value
+      const overlap = disabledDates.value.some((range: any) => {
+        return start <= range.end && end >= range.start
+      })
+      if (overlap) {
+        showToast('Thời gian thuê trùng với lịch xe đã bận. Vui lòng chọn thời gian khác.', 'error')
+        return
+      }
+    }
+
+    if (!user.value) {
+      showToast('Vui lòng đăng nhập để thực hiện đặt xe.', 'info')
+      openLogin()
+      return
+    }
+
+    // Đồng bộ dữ liệu user mới nhất từ backend để tránh dùng trạng thái GPLX cũ trong cookie.
+    try {
+      await refreshProfile()
+    } catch (e) {
+      console.warn('Lỗi đồng bộ hồ sơ user:', e)
+    }
+
+    const drivingLicense = user.value.driving_license
+    if (drivingLicense && drivingLicense.status === 0) {
+      showToast('Giấy phép lái xe của bạn đang chờ duyệt. Vui lòng đợi quản trị viên phê duyệt để thuê xe.', 'info')
+      return
+    }
+
+    const isPhoneMissing = !user.value.phone
+    const isLicenseMissing = !drivingLicense || drivingLicense.status === 2
+
+    if (isPhoneMissing || isLicenseMissing) {
+      missingFields.value = { phone: isPhoneMissing, drivingLicense: isLicenseMissing }
+
+      // Điền sẵn data cũ (nếu có) vào form modal
+      quickUpdateForm.value.phone = user.value.phone || ''
+      quickUpdateForm.value.driving_license_number = drivingLicense?.driving_license_number || ''
+      quickUpdateForm.value.full_name = drivingLicense?.full_name || ''
+      quickUpdateForm.value.DOB = drivingLicense?.DOB || ''
+
+      // Reset trạng thái file ảnh tạm
+      licenseImagePreview.value = ''
+      licenseImageFile.value = null
+
+      // Bật modal lên và dừng luồng xử lý đơn hàng tại đây
+      isUpdateModalOpen.value = true
+      return
+    }
+
+    if (drivingLicense.status !== 1) {
+      showToast('Giấy phép lái xe của bạn không hợp lệ.', 'error')
+      return
+    }
+
+    if (receiveMethod.value === 'delivery') {
+      if (!deliveryCoords.value) {
+        showToast('Vui lòng chọn địa điểm nhận xe.', 'info')
+        return
+      }
+      if (isDistanceTooFar.value) {
+        showToast('Địa điểm giao xe vượt quá khoảng cách tối đa của chủ xe.', 'error')
+        return
+      }
+    }
+
+    if (car.value && car.value.user_id === user.value.id) {
+      showToast('Bạn không thể thuê xe của chính mình!', 'error')
+      return
+    }
+
+    if (hasActiveBooking.value) {
+      showToast('Bạn đang có chuyến đi chưa hoàn thành với xe này!', 'error')
+      return
+    }
+
     const pad = (num: number) => String(num).padStart(2, '0')
     const formatFullDate = (d: Date) => `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
     const startStr = selectedStart.value ? formatFullDate(selectedStart.value) : ''
@@ -1333,8 +1328,10 @@ const handleBooking = async () => {
     }
   } catch (error: any) {
     console.error('Lỗi khi gửi yêu cầu thuê xe:', error)
-    const errMsg = error.response?._data?.message || 'Có lỗi xảy ra khi gửi yêu cầu thuê xe.'
+    const errMsg = error.data?.message || error.response?._data?.message || error.message || 'Có lỗi xảy ra khi gửi yêu cầu thuê xe.'
     showToast(errMsg, 'error')
+  } finally {
+    isBookingLoading.value = false
   }
 }
 

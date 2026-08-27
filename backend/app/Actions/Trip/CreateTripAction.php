@@ -30,6 +30,26 @@ class CreateTripAction
             throw new InvalidArgumentException('Bạn không thể thuê xe của chính mình!');
         }
 
+        // Kiểm tra tránh tạo nhiều chuyến đi trùng lặp khi người dùng nhấn nhanh liên tục
+        $existingTrip = Trip::where('user_id', $user->id)
+            ->where('car_id', $data['car_id'])
+            ->whereIn('status', [
+                TripStatus::Pending->value,
+                TripStatus::Confirmed->value,
+                TripStatus::Ongoing->value,
+                TripStatus::WaitingExtension->value,
+                TripStatus::WaitingReturn->value,
+            ])
+            ->where(function ($q) use ($data) {
+                $q->where('start_at', '<=', $data['end_at'])
+                  ->where('end_at', '>=', $data['start_at']);
+            })
+            ->first();
+
+        if ($existingTrip) {
+            throw new InvalidArgumentException('Bạn đã gửi yêu cầu thuê xe cho thời gian này trước đó. Vui lòng kiểm tra lại chuyến đi của bạn.');
+        }
+
         // 3. Tính toán thời gian & chi phí thuê xe
         $start = Carbon::parse($data['start_at']);
         $end = Carbon::parse($data['end_at']);

@@ -55,10 +55,13 @@ class Car extends Model
                 $owner = $car->owner;
                 if ($owner) {
                     $status = (int) $car->status;
+                    $originalStatus = (int) $car->getOriginal('status');
                     $message = '';
-                    if ($status == 1) {
+                    
+                    // Chỉ gửi thông báo khi thay đổi từ trạng thái Chờ duyệt (2)
+                    if ($status === 1 && $originalStatus === 2) {
                         $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã được phê duyệt thành công. Xe đã sẵn sàng để hoạt động!";
-                    } elseif ($status == 3) {
+                    } elseif ($status === 3 && $originalStatus === 2) {
                         $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã bị từ chối phê duyệt. Vui lòng kiểm tra lại thông tin xe.";
                     }
 
