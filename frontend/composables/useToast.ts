@@ -1,23 +1,41 @@
 import { useState } from "#app";
+import { computed } from "vue";
+
+export interface ToastItem {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  duration?: number;
+}
 
 export const useToast = () => {
-  const isShow = useState('toast_show', () => false);
-  const message = useState('toast_message', () => '');
-  const type = useState<'success' | 'error' | 'info'>('toast_type', () => 'success');
+  const toasts = useState<ToastItem[]>('global_toasts', () => []);
 
-  const showToast = (msg: string, toastType: 'success' | 'error' | 'info' = 'success') => {
-    message.value = msg;
-    type.value = toastType;
-    isShow.value = true;
+  // Backward-compatibility computed refs
+  const isShow = computed(() => toasts.value.length > 0);
+  const message = computed(() => toasts.value[toasts.value.length - 1]?.message || '');
+  const type = computed(() => toasts.value[toasts.value.length - 1]?.type || 'success');
+
+  const removeToast = (id: number) => {
+    toasts.value = toasts.value.filter(t => t.id !== id);
+  };
+
+  const showToast = (msg: string, toastType: 'success' | 'error' | 'warning' | 'info' = 'success', duration = 4500) => {
+    const id = Date.now() + Math.random();
+    toasts.value.push({ id, message: msg, type: toastType, duration });
+
     setTimeout(() => {
-      isShow.value = false;
-    }, 4000);
+      removeToast(id);
+    }, duration);
   };
 
   return {
+    toasts,
     isShow,
     message,
     type,
-    showToast
+    showToast,
+    removeToast
   };
 };
+

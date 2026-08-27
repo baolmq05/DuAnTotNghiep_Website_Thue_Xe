@@ -159,7 +159,7 @@ class CarInfolist
                 ->description('Các tính năng bổ sung của phương tiện.')
                 ->schema([
                     TextEntry::make('features.feature_name')
-                        ->label('')
+                        ->hiddenLabel()
                         ->badge()
                         ->color('success')
                         ->placeholder('Không có tiện ích đi kèm nào.')
@@ -189,7 +189,7 @@ class CarInfolist
                 ->description('Danh sách hình ảnh chi tiết của xe.')
                 ->schema([
                     ImageEntry::make('images.image_url')
-                        ->label('')
+                        ->hiddenLabel()
                         ->extraImgAttributes([
                             'class' => 'rounded-lg shadow-md border object-cover',
                             'style' => 'aspect-ratio: 16/9; max-height: 200px; display: inline-block; margin: 4px;',

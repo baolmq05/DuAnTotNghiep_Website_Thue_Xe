@@ -20,7 +20,7 @@ class RefundInfolist
                     ->description('Dùng ứng dụng ngân hàng quét mã QR để chuyển khoản nhanh.')
                     ->schema([
                         ViewEntry::make('qr_code')
-                            ->label('')
+                            ->hiddenLabel()
                             ->view('filament.resources.refunds.components.qr-code'),
                     ])
                     ->columnSpan(5),

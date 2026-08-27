@@ -218,7 +218,8 @@
                                     <p class="text-sm text-slate-500">Số lít nhiên liệu cho quãng đường 100km.</p>
                                 </div>
                                 <div class="relative w-full sm:w-1/3">
-                                    <input type="number" v-model="fuelConsumption"
+                                    <input type="number" v-model="fuelConsumption" min="0.1" step="0.1"
+                                        @input="handleFuelConsumptionInput"
                                         class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                 </div>
                             </section>
@@ -279,7 +280,7 @@
                                 <div class="space-y-1.5">
                                     <span class="text-xs text-slate-400">Giá đề xuất: 350.000 ₫/ngày</span>
                                     <div class="relative max-w-xs flex items-center">
-                                        <input type="number" id="base-price" v-model="basePrice"
+                                        <input type="number" id="base-price" v-model="basePrice" min="1"
                                             class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-10 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
                                         <span class="absolute right-4 font-bold text-slate-400">K</span>
                                     </div>
@@ -313,7 +314,7 @@
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Mức giảm đề xuất: <strong class="text-slate-800">{{ discountVal
                                                     }}%</strong></span>
-                                            <span class="font-bold">5%</span>
+                                            <span class="font-bold">50%</span>
                                         </div>
                                     </div>
                                     <div
@@ -532,6 +533,26 @@
                             </section>
                         </div>
 
+                        <!-- BANNER TỔNG HỢP LỖI VALIDATE NẾU THIẾU NHIỀU TRƯỜNG -->
+                        <div v-if="formValidationErrors.length > 0" class="mt-6 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 transition-all">
+                            <div class="flex items-start gap-3">
+                                <Icon name="heroicons:exclamation-circle" class="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-rose-800">
+                                        Vui lòng bổ sung đầy đủ thông tin ({{ formValidationErrors.length }} mục):
+                                    </h4>
+                                    <ul class="mt-2 space-y-1 text-xs font-semibold text-rose-700 list-disc list-inside">
+                                        <li v-for="(err, idx) in formValidationErrors" :key="idx">
+                                            <span class="text-rose-500 font-bold">[Bước {{ err.step }}]</span> {{ err.message }}
+                                        </li>
+                                    </ul>
+                                </div>
+                                <button type="button" @click="formValidationErrors = []" class="text-rose-400 hover:text-rose-600 p-1 cursor-pointer">
+                                    <Icon name="heroicons:x-mark" class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+
                         <div class="mt-10 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
                             <button type="button"
                                 class="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-6 py-4 text-sm font-bold text-slate-700 transition hover:bg-slate-50 sm:w-auto"
@@ -555,6 +576,70 @@
                 </form>
             </div>
         </section>
+
+        <!-- MODAL CẬP NHẬT SỐ ĐIỆN THOẠI TẠI CHỖ -->
+        <Teleport to="body">
+            <Transition name="fade-modal">
+                <div v-if="isProfileModalOpen"
+                    class="fixed inset-0 z-[90000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
+                    @click.self="isProfileModalOpen = false">
+                    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-7 border border-slate-100 overflow-hidden">
+                        <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-2xl bg-[#1e4e57]/10 flex items-center justify-center text-[#1e4e57]">
+                                    <Icon name="solar:phone-calling-rounded-bold" class="w-5 h-5 text-[#1e4e57]" />
+                                </div>
+                                <div>
+                                    <h3 class="text-base font-bold text-slate-900">Cập nhật Số điện thoại</h3>
+                                    <p class="text-xs text-slate-500">Cần có SĐT để khách thuê liên hệ khi nhận xe</p>
+                                </div>
+                            </div>
+                            <button type="button" @click="isProfileModalOpen = false"
+                                class="text-slate-400 hover:text-slate-600 transition-colors p-1.5 rounded-full hover:bg-slate-100 cursor-pointer">
+                                <Icon name="heroicons:x-mark" class="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form @submit.prevent="submitProfileUpdate" class="mt-5 space-y-4">
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700">Họ và tên <span class="text-rose-500">*</span></label>
+                                <input type="text" v-model="profileForm.name" @input="profileErrors.name = ''" placeholder="Nhập họ và tên đầy đủ"
+                                    class="w-full px-4 py-3 bg-slate-50 border rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 transition-all"
+                                    :class="profileErrors.name ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 focus:border-[#1e4e57] focus:ring-[#1e4e57]/10'" />
+                                <p v-if="profileErrors.name" class="text-xs text-rose-500 font-medium mt-1">{{ profileErrors.name }}</p>
+                            </div>
+
+                            <div class="space-y-1.5">
+                                <label class="block text-xs font-bold text-slate-700">Số điện thoại liên hệ <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"
+                                        :class="profileErrors.phone ? 'text-rose-400' : 'text-slate-400'">
+                                        <Icon name="solar:phone-calling-rounded-linear" class="w-4 h-4" />
+                                    </div>
+                                    <input type="tel" v-model="profileForm.phone" @input="profileErrors.phone = ''" placeholder="VD: 0912345678"
+                                        class="w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 transition-all"
+                                        :class="profileErrors.phone ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 focus:border-[#1e4e57] focus:ring-[#1e4e57]/10'" />
+                                </div>
+                                <p v-if="profileErrors.phone" class="text-xs text-rose-500 font-medium mt-1">{{ profileErrors.phone }}</p>
+                                <p v-else class="text-[11px] text-slate-400">Số điện thoại gồm 10 chữ số (VD: 0912345678).</p>
+                            </div>
+
+                            <div class="pt-3 flex items-center justify-end gap-3">
+                                <button type="button" @click="isProfileModalOpen = false"
+                                    class="px-5 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer">
+                                    Để sau
+                                </button>
+                                <button type="submit" :disabled="profileSubmitting"
+                                    class="px-5 py-2.5 rounded-xl bg-[#1e4e57] text-xs font-bold text-white shadow-lg shadow-[#1e4e57]/20 hover:bg-[#286874] transition-all disabled:opacity-50 cursor-pointer">
+                                    <span v-if="profileSubmitting">Đang lưu...</span>
+                                    <span v-else>Lưu & Tiếp tục</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </Transition>
+        </Teleport>
     </div>
 </template>
 
@@ -606,6 +691,13 @@ const selectedManufactureYear = ref(new Date().getFullYear())
 const selectedTransmission = ref('Số tự động')
 const selectedFuelType = ref('Xăng')
 const fuelConsumption = ref(10)
+const handleFuelConsumptionInput = () => {
+    if (fuelConsumption.value !== null && fuelConsumption.value !== undefined) {
+        if (Number(fuelConsumption.value) < 0) {
+            fuelConsumption.value = 0
+        }
+    }
+}
 const description = ref('')
 const basePrice = ref(350)
 const address = ref('')
@@ -681,8 +773,73 @@ const toggleFeature = (name: string) => {
 const uploadedImages = ref<string[]>([])
 const imageUploadRef = ref<any>(null)
 
-const { isLoggedIn } = useAuth()
+const { user, isLoggedIn, updateProfile, refreshProfile } = useAuth()
 const { openLogin } = useAuthModal()
+
+const isProfileModalOpen = ref(false)
+const profileForm = ref({ name: '', phone: '' })
+const profileErrors = ref<{ name?: string; phone?: string; general?: string }>({})
+const profileSubmitting = ref(false)
+const formValidationErrors = ref<{ step: number; message: string }[]>([])
+
+const submitProfileUpdate = async () => {
+    profileErrors.value = {}
+    const name = profileForm.value.name.trim()
+    const phone = profileForm.value.phone.trim()
+
+    let hasError = false
+    if (!name) {
+        profileErrors.value.name = 'Vui lòng nhập họ và tên của bạn.'
+        hasError = true
+    } else if (name.length < 2) {
+        profileErrors.value.name = 'Họ và tên phải có ít nhất 2 ký tự.'
+        hasError = true
+    } else if (name.length > 50) {
+        profileErrors.value.name = 'Họ và tên không được vượt quá 50 ký tự.'
+        hasError = true
+    }
+
+    if (!phone) {
+        profileErrors.value.phone = 'Vui lòng nhập số điện thoại liên hệ.'
+        hasError = true
+    } else {
+        const phoneRegex = /^(0|\+84)(3|5|7|8|9|2)\d{8}$/
+        if (!phoneRegex.test(phone)) {
+            profileErrors.value.phone = 'Số điện thoại không hợp lệ (VD: 0912345678, gồm 10 chữ số).'
+            hasError = true
+        }
+    }
+
+    if (hasError) {
+        showToast('Vui lòng kiểm tra và hoàn thiện thông tin.', 'error')
+        return
+    }
+
+    profileSubmitting.value = true
+    try {
+        const res = await updateProfile({ name, phone })
+        if (res && res.success) {
+            showToast('Cập nhật thông tin thành công! Bạn có thể tiếp tục đăng ký xe.', 'success')
+            isProfileModalOpen.value = false
+            profileErrors.value = {}
+        } else {
+            if (res?.errors) {
+                if (res.errors.phone) profileErrors.value.phone = Array.isArray(res.errors.phone) ? res.errors.phone[0] : res.errors.phone
+                if (res.errors.name) profileErrors.value.name = Array.isArray(res.errors.name) ? res.errors.name[0] : res.errors.name
+            }
+            showToast(res?.message || 'Cập nhật thông tin thất bại.', 'error')
+        }
+    } catch (err: any) {
+        const errData = err.data || err.response?._data || err.response?.data
+        if (errData?.errors) {
+            if (errData.errors.phone) profileErrors.value.phone = Array.isArray(errData.errors.phone) ? errData.errors.phone[0] : errData.errors.phone
+            if (errData.errors.name) profileErrors.value.name = Array.isArray(errData.errors.name) ? errData.errors.name[0] : errData.errors.name
+        }
+        showToast(errData?.message || 'Có lỗi xảy ra khi cập nhật thông tin.', 'error')
+    } finally {
+        profileSubmitting.value = false
+    }
+}
 
 // Computed filters phục vụ tính năng tìm kiếm real-time
 const filteredBrands = computed(() => {
@@ -781,103 +938,93 @@ const loadFeatures = async () => {
 }
 
 const onSubmit = async () => {
-    if (!licensePlate.value) {
-        showToast('Vui lòng nhập biển số xe.', 'error');
-        activeStep.value = 1;
-        return;
-    }
-    licensePlate.value = licensePlate.value.trim().toUpperCase();
-    if (licensePlate.value.length > 12) {
-        showToast('Biển số xe không được vượt quá 12 ký tự.', 'error');
-        activeStep.value = 1;
+    if (!user.value?.phone || !user.value?.phone.trim()) {
+        profileForm.value.name = user.value?.name || '';
+        profileForm.value.phone = user.value?.phone || '';
+        isProfileModalOpen.value = true;
+        showToast('Vui lòng cập nhật số điện thoại để tiếp tục đăng ký xe.', 'warning');
         return;
     }
 
-    if (!VIN.value) {
-        showToast('Vui lòng nhập số khung (VIN).', 'error');
-        activeStep.value = 1;
-        return;
-    }
-    VIN.value = VIN.value.trim().toUpperCase();
-    if (VIN.value.length !== 17) {
-        showToast('Số khung (VIN) phải gồm đúng 17 ký tự.', 'error');
-        activeStep.value = 1;
-        return;
+    const validationErrors: { step: number; message: string }[] = [];
+
+    const plate = licensePlate.value?.trim().toUpperCase() || '';
+    if (!plate) {
+        validationErrors.push({ step: 1, message: 'Vui lòng nhập biển số xe.' });
+    } else if (plate.length > 12) {
+        validationErrors.push({ step: 1, message: 'Biển số xe không được vượt quá 12 ký tự.' });
     }
 
-    if (!engineNumber.value) {
-        showToast('Vui lòng nhập số máy.', 'error');
-        activeStep.value = 1;
-        return;
+    const vin = VIN.value?.trim().toUpperCase() || '';
+    if (!vin) {
+        validationErrors.push({ step: 1, message: 'Vui lòng nhập số khung (VIN).' });
+    } else if (vin.length !== 17) {
+        validationErrors.push({ step: 1, message: 'Số khung (VIN) phải gồm đúng 17 ký tự.' });
     }
-    engineNumber.value = engineNumber.value.trim().toUpperCase();
-    if (engineNumber.value.length > 100) {
-        showToast('Số máy không được vượt quá 100 ký tự.', 'error');
-        activeStep.value = 1;
-        return;
+
+    const engine = engineNumber.value?.trim().toUpperCase() || '';
+    if (!engine) {
+        validationErrors.push({ step: 1, message: 'Vui lòng nhập số máy.' });
+    } else if (engine.length > 100) {
+        validationErrors.push({ step: 1, message: 'Số máy không được vượt quá 100 ký tự.' });
     }
 
     if (!selectedBrandId.value) {
-        showToast('Vui lòng chọn hãng xe.', 'error');
-        activeStep.value = 1;
-        return;
+        validationErrors.push({ step: 1, message: 'Vui lòng chọn hãng xe.' });
     }
+
     if (!selectedTypeId.value) {
-        showToast('Vui lòng chọn mẫu xe.', 'error');
-        activeStep.value = 1;
-        return;
+        validationErrors.push({ step: 1, message: 'Vui lòng chọn mẫu xe.' });
     }
-    if (!address.value) {
-        showToast('Vui lòng nhập địa chỉ xe.', 'error');
-        activeStep.value = 2;
-        return;
+
+    const consumption = Number(fuelConsumption.value);
+    if (fuelConsumption.value === null || fuelConsumption.value === undefined || isNaN(consumption) || consumption <= 0) {
+        validationErrors.push({ step: 1, message: 'Mức tiêu thụ nhiên liệu phải lớn hơn 0 (L/100km).' });
     }
+
+    const price = Number(basePrice.value);
+    if (!basePrice.value || isNaN(price) || price <= 0) {
+        validationErrors.push({ step: 2, message: 'Đơn giá thuê xe phải lớn hơn 0.' });
+    }
+
+    if (!address.value?.trim()) {
+        validationErrors.push({ step: 2, message: 'Vui lòng nhập địa chỉ xe.' });
+    }
+
     if (uploadedImages.value.length === 0) {
-        showToast('Vui lòng tải lên ít nhất 1 hình ảnh của xe.', 'error');
-        activeStep.value = 3;
+        validationErrors.push({ step: 3, message: 'Vui lòng tải lên ít nhất 1 hình ảnh của xe.' });
+    }
+
+    formValidationErrors.value = validationErrors;
+
+    if (validationErrors.length > 0) {
+        activeStep.value = validationErrors[0]?.step ?? 1;
+        validationErrors.forEach((err, index) => {
+            setTimeout(() => {
+                showToast(err.message, 'error');
+            }, index * 80);
+        });
         return;
     }
-    console.log(licensePlate.value);
-    console.log(VIN.value);
-    console.log(engineNumber.value);
-    console.log(selectedBrandId.value);
-    console.log(selectedTypeId.value);
-    console.log(selectedSeatCount.value);
-    console.log(selectedManufactureYear.value);
-    console.log(selectedTransmission.value);
-    console.log(selectedFuelType.value);
-    console.log(fuelConsumption.value);
-    console.log(description.value);
-    console.log(basePrice.value);
-    console.log(discountEnabled.value);
-    console.log(discountVal.value);
-    console.log(address.value);
-    console.log(selectedCoords.value);
-    console.log(deliveryEnabled.value);
-    console.log(kmLimitEnabled.value);
-    console.log(kmLimitVal.value);
-    console.log(overFeeVal.value);
-    console.log(rentalTerms.value);
-    console.log(uploadedImages.value);
 
     submitting.value = true;
     let formData = new FormData();
 
     try {
-        formData.append('license_plate', licensePlate.value);
-        formData.append('VIN', VIN.value);
-        formData.append('engine_number', engineNumber.value);
-        formData.append('car_brand_id', selectedBrandId.value.toString());
-        formData.append('car_type_id', selectedTypeId.value.toString());
+        formData.append('license_plate', plate);
+        formData.append('VIN', vin);
+        formData.append('engine_number', engine);
+        formData.append('car_brand_id', selectedBrandId.value!.toString());
+        formData.append('car_type_id', selectedTypeId.value!.toString());
         formData.append('seat_count', selectedSeatCount.value.toString());
         formData.append('manufacture_year', selectedManufactureYear.value.toString());
         formData.append('transmission', selectedTransmission.value);
         formData.append('fuel_type', selectedFuelType.value);
-        formData.append('fuel_consumption', fuelConsumption.value.toString());
+        formData.append('fuel_consumption', consumption.toString());
         formData.append('description', description.value);
 
         // Price (basePrice in thousands -> absolute)
-        const unitPriceVal = basePrice.value * 1000;
+        const unitPriceVal = price * 1000;
         formData.append('unit_price', unitPriceVal.toString());
 
         // Discount value
@@ -888,7 +1035,7 @@ const onSubmit = async () => {
         formData.append('discount_value', discountValue.toString());
 
         // Location address
-        formData.append('address', address.value);
+        formData.append('address', address.value.trim());
         if (selectedCoords.value) {
             formData.append('location', `${selectedCoords.value.lat},${selectedCoords.value.lng}`);
         } else {
@@ -919,13 +1066,8 @@ const onSubmit = async () => {
         // Upload ảnh lên Cloudinary
         const imageUrls = await imageUploadRef.value?.upload()
 
-        if (!imageUrls) {
-            showToast('Không thể upload hình ảnh.', 'error')
-            return
-        }
-
         if (!imageUrls || imageUrls.length === 0) {
-            showToast("Không thể upload hình ảnh", "error")
+            showToast("Không thể upload hình ảnh. Vui lòng thử lại.", "error")
             return
         }
 
@@ -942,19 +1084,19 @@ const onSubmit = async () => {
         }
     } catch (e: any) {
         console.error('Đăng ký xe thất bại:', e);
-        let errMsg = 'Có lỗi xảy ra khi kết nối máy chủ.';
-
-        const data = e.response?._data;
-        if (data) {
-            if (data.errors) {
-                const errorsList = Object.values(data.errors).flatMap((err: any) => err);
-                if (errorsList.length > 0) {
-                    errMsg = errorsList.join(' ');
-                }
-            } else if (data.message) {
-                errMsg = data.message;
+        const data = e.data || e.response?._data || e.response?.data;
+        if (data && data.errors) {
+            const errorsList = Object.values(data.errors).flatMap((err: any) => err);
+            if (errorsList.length > 0) {
+                errorsList.forEach((msg: any, index: number) => {
+                    setTimeout(() => {
+                        showToast(String(msg), 'error');
+                    }, index * 120);
+                });
+                return;
             }
         }
+        const errMsg = data?.message || e.message || 'Đăng ký xe thất bại. Vui lòng kiểm tra lại thông tin.';
         showToast(errMsg, 'error');
     } finally {
         submitting.value = false;
@@ -1119,6 +1261,16 @@ onMounted(async () => {
         navigateTo('/');
         return;
     }
+
+    await refreshProfile();
+
+    if (!user.value?.phone || !user.value?.phone.trim()) {
+        profileForm.value.name = user.value?.name || '';
+        profileForm.value.phone = user.value?.phone || '';
+        isProfileModalOpen.value = true;
+        showToast('Vui lòng cập nhật số điện thoại trước khi đăng ký xe.', 'info');
+    }
+
     if (process.client) {
         try {
             const module = await import('maplibre-gl');

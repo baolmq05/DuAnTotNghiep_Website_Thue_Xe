@@ -58,9 +58,8 @@ class PromotionInfolist
                             ->label('Tổng lượt sử dụng')
                             ->placeholder('Không giới hạn'),
                         TextEntry::make('description')
-                            ->label('')
-                            ->placeholder('Không có mô tả')
                             ->label('Mô tả')
+                            ->placeholder('Không có mô tả')
                             ->columnSpanFull(),
                     ]),
                 ]),

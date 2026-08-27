@@ -80,7 +80,7 @@ class UserForm
                             }),
 
                         Placeholder::make('driving_license_action')
-                            ->label('')
+                            ->hiddenLabel()
                             ->content(function ($record) {
                                 if (!$record || !$record->driving_license_id) {
                                     return '';

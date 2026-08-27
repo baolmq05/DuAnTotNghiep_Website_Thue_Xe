@@ -84,7 +84,7 @@ class ReportInfolist
                     ->description('Ảnh chụp màn hình, hình ảnh sự cố hoặc bằng chứng người dùng đã tải lên.')
                     ->schema([
                         ImageEntry::make('images.image_url')
-                            ->label('')
+                            ->hiddenLabel()
                             ->placeholder('Không có hình ảnh bằng chứng nào được tải lên.')
                             ->extraImgAttributes([
                                 'class' => 'rounded-lg shadow-md border object-cover',

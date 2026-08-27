@@ -66,8 +66,8 @@ class DrivingLicensesTable
                 //
             ])
             ->recordActions([
-                // ViewAction::make(),
-                EditAction::make(),
+                EditAction::make()
+                    ->label('Chi tiết / Duyệt'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

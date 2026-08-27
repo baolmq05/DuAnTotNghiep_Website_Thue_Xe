@@ -253,6 +253,13 @@ class CarController extends Controller
     {
         $user = auth('api')->user();
 
+        if (!$user || empty($user->phone)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn cần cập nhật số điện thoại tại trang Cá nhân trước khi đăng ký xe.'
+            ], 400);
+        }
+
         DB::beginTransaction();
         try {
             // 1. Create Location

@@ -81,23 +81,22 @@ class DrivingLicenseForm
                         Grid::make(1)
                             ->columnSpan(1)
                             ->schema([
-                                Section::make('Duyệt giấy phép')
+                                Section::make('Duyệt giấy phép lái xe')
                                     ->schema([
                                         Placeholder::make('current_status')
                                             ->label('Trạng thái')
                                             ->content(fn($record) => match ($record?->status) {
-                                                0 => new HtmlString('<span style="color:#ca8a04;">Chờ duyệt</span>'),
-                                                1 => new HtmlString('<span style="color:#16a34a;">Đã duyệt</span>'),
-                                                2 => new HtmlString('<span style="color:#dc2626;">Từ chối</span>'),
+                                                0 => new HtmlString('<span style="color:#ca8a04; font-weight:600;">Chờ duyệt</span>'),
+                                                1 => new HtmlString('<span style="color:#16a34a; font-weight:600;">Đã duyệt</span>'),
+                                                2 => new HtmlString('<span style="color:#dc2626; font-weight:600;">Từ chối</span>'),
                                                 default => '-',
                                             }),
 
                                         Actions::make([
                                             Action::make('approve')
-                                                ->label('Duyệt')
+                                                ->label('Duyệt hồ sơ')
                                                 ->icon('heroicon-o-check-circle')
                                                 ->color('success')
-                                                // ->requiresConfirmation()
                                                 ->action(function ($record) {
                                                     $record->update([
                                                         'status' => 1,
@@ -105,16 +104,16 @@ class DrivingLicenseForm
                                                 }),
 
                                             Action::make('reject')
-                                                ->label('Từ chối')
+                                                ->label('Từ chối duyệt')
                                                 ->icon('heroicon-o-x-circle')
                                                 ->color('danger')
-                                                // ->requiresConfirmation()
                                                 ->action(function ($record) {
                                                     $record->update([
                                                         'status' => 2,
                                                     ]);
                                                 }),
                                         ])
+                                            ->label('Thao tác duyệt')
                                             ->visible(fn($record) => $record?->status == 0)
                                     ]),
 
@@ -133,7 +132,8 @@ class DrivingLicenseForm
                                             ->content(fn($record) => $record?->user?->phone ?? 'Chưa cập nhật'),
 
                                         Placeholder::make('account_action')
-                                            ->label('')
+                                            ->label('Thao tác tài khoản')
+                                            ->hiddenLabel()
                                             ->content(function ($record) {
                                                 $user = $record?->user;
                                                 if (!$user) {
