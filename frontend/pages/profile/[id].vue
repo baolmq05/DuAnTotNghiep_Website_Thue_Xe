@@ -278,6 +278,10 @@ const route = useRoute()
 const router = useRouter()
 const userId = route.params.id as string
 
+if (userId === 'delete-account' || isNaN(Number(userId))) {
+  navigateTo('/profile', { replace: true })
+}
+
 const activeTab = ref<'owner' | 'renter'>('owner')
 const loading = ref(true)
 const profileData = ref<any>(null)

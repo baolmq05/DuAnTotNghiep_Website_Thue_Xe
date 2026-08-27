@@ -44,7 +44,7 @@
             </h3>
 
             <p class="text-sm text-gray-500 mt-1">
-              Tham gia: {{ user?.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : '13/05/2026' }}
+              Tham gia: {{ user?.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN') : 'Chưa cập nhật' }}
             </p>
 
             <div class="mt-4 border border-slate-200 bg-slate-50/50 rounded-xl px-4 py-2 flex items-center gap-1.5 shadow-sm">
@@ -69,7 +69,9 @@
             <div class="bg-gray-50 rounded-xl p-4">
               <p class="text-gray-500 text-sm">Giới tính</p>
 
-              <p class="font-medium mt-2">{{ user?.gender === 1 ? 'Nam' : (user?.gender === 0 ? 'Nữ' : 'Khác') }}</p>
+              <p class="font-medium mt-2">
+                {{ user?.gender === 1 ? 'Nam' : (user?.gender === 0 ? 'Nữ' : (user?.gender === 2 ? 'Khác' : 'Chưa cập nhật')) }}
+              </p>
             </div>
           </div>
 
@@ -95,7 +97,9 @@
             <div class="flex flex-col gap-1 sm:flex-row sm:justify-between">
               <span class="text-gray-500"> Google </span>
 
-              <span class="font-medium">{{ user?.name || 'Chưa liên kết' }}</span>
+              <span class="font-medium" :class="isGoogleLinked ? 'text-emerald-600 font-semibold' : 'text-slate-500'">
+                {{ isGoogleLinked ? 'Đã liên kết' : 'Chưa liên kết' }}
+              </span>
             </div>
           </div>
         </div>
@@ -175,7 +179,7 @@
       </div>
 
       <!-- Edit / Create state -->
-      <form v-else @submit.prevent="handleUpdateLicense" class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+      <form v-else @submit.prevent="handleUpdateLicense" novalidate class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
         <div>
           <h3 class="font-semibold mb-4">Ảnh mặt trước GPLX</h3>
 
@@ -216,19 +220,19 @@
           <div class="space-y-4">
             <div>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Số GPLX</label>
-              <input v-model="licenseForm.driving_license_number" required placeholder="Nhập số GPLX"
+              <input v-model="licenseForm.driving_license_number" placeholder="Nhập số GPLX"
                 class="w-full bg-gray-50 rounded-xl p-3 outline-none border focus:border-brand-primary focus:bg-white transition-all text-sm font-medium" />
             </div>
 
             <div>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Họ và tên</label>
-              <input v-model="licenseForm.full_name" required placeholder="Họ và tên"
+              <input v-model="licenseForm.full_name" placeholder="Họ và tên"
                 class="w-full bg-gray-50 rounded-xl p-3 outline-none border focus:border-brand-primary focus:bg-white transition-all text-sm font-medium" />
             </div>
 
             <div>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block mb-1">Ngày sinh</label>
-              <input v-model="licenseForm.DOB" required type="date"
+              <input v-model="licenseForm.DOB" type="date" :max="todayDate"
                 class="w-full bg-gray-50 rounded-xl p-3 outline-none border focus:border-brand-primary focus:bg-white transition-all text-sm font-medium" />
             </div>
 
@@ -317,11 +321,11 @@
         class="relative bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl z-10 p-8 border border-slate-100 flex flex-col animate-scale-in">
         <h3 class="text-xl font-black text-brand-dark mb-6">Chỉnh sửa thông tin cá nhân</h3>
 
-        <form @submit.prevent="handleUpdateProfile" class="space-y-4">
+        <form @submit.prevent="handleUpdateProfile" novalidate class="space-y-4">
           <!-- Name Field -->
           <div class="space-y-1.5">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Họ và tên</label>
-            <input v-model="editForm.name" type="text" required
+            <input v-model="editForm.name" type="text"
               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
           </div>
 
@@ -347,7 +351,7 @@
 
             <div class="space-y-1.5">
               <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Ngày sinh</label>
-              <input v-model="editForm.DOB" type="date"
+              <input v-model="editForm.DOB" type="date" :max="todayDate"
                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all" />
             </div>
           </div>
@@ -360,9 +364,10 @@
               Đóng
             </button>
             <!-- Submit Button -->
-            <button type="submit"
-              class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-sm shadow-md shadow-brand-primary/10">
-              Cập nhật thông tin
+            <button type="submit" :disabled="submittingProfile"
+              class="py-3 px-4 bg-brand-primary hover:bg-brand-dark text-white font-bold rounded-xl transition-all duration-200 focus:outline-none text-sm shadow-md shadow-brand-primary/10 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+              <Icon v-if="submittingProfile" name="svg-spinners:ring-resize" class="w-4 h-4" />
+              <span>Cập nhật thông tin</span>
             </button>
           </div>
         </form>
@@ -434,25 +439,25 @@
         class="relative bg-white w-full max-w-lg rounded-3xl overflow-hidden shadow-2xl z-10 p-8 border border-slate-100 flex flex-col animate-scale-in">
         <h3 class="text-xl font-black text-brand-dark mb-6">Liên kết tài khoản ngân hàng</h3>
 
-        <form @submit.prevent="handleUpdateBank" class="space-y-4">
+        <form @submit.prevent="handleUpdateBank" novalidate class="space-y-4">
           <!-- Bank Name Field -->
           <div class="space-y-1.5">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Tên ngân hàng</label>
-            <select v-if="banksList.length > 0" v-model="bankForm.bank_name" required
+            <select v-if="banksList.length > 0" v-model="bankForm.bank_name"
               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-semibold">
               <option value="" disabled>Chọn ngân hàng</option>
               <option v-for="bank in banksList" :key="bank.bin" :value="bank.short_name">
                 {{ bank.short_name }} - {{ bank.name }}
               </option>
             </select>
-            <input v-else v-model="bankForm.bank_name" type="text" required placeholder="Ví dụ: Vietcombank, Techcombank..."
+            <input v-else v-model="bankForm.bank_name" type="text" placeholder="Ví dụ: Vietcombank, Techcombank..."
               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-semibold" />
           </div>
 
           <!-- Bank Account Number Field -->
           <div class="space-y-1.5">
             <label class="text-xs font-bold text-gray-700 uppercase tracking-wider">Số tài khoản</label>
-            <input v-model="bankForm.bank_account_number" type="text" required placeholder="Nhập số tài khoản ngân hàng"
+            <input v-model="bankForm.bank_account_number" type="text" placeholder="Nhập số tài khoản ngân hàng"
               class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-brand-primary focus:bg-white transition-all font-mono font-bold" />
           </div>
 
@@ -477,7 +482,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 // import { myCarService, type Car } from '~/services/my_car.service'
 import { BASE_URL } from '~/enviroment/enviroment'
 
@@ -497,6 +502,16 @@ const { showToast } = useToast()
 const isEditModalOpen = ref(false)
 const isAvatarEditModalOpen = ref(false)
 const loadingCars = ref(true)
+const submittingProfile = ref(false)
+const todayDate = computed(() => new Date().toISOString().slice(0, 10))
+const isGoogleLinked = computed(() => {
+  if (!user.value) return false
+  return !!(
+    user.value.provider === 'google' ||
+    user.value.google_id ||
+    (user.value.avatar && user.value.avatar.includes('googleusercontent.com'))
+  )
+})
 // const userCars = ref<Car[]>([])
 
 const editForm = reactive({
@@ -521,18 +536,48 @@ const closeEditModal = () => {
 }
 
 const handleUpdateProfile = async () => {
-  const res = await updateProfile({
-    name: editForm.name,
-    phone: editForm.phone,
-    gender: editForm.gender,
-    DOB: editForm.DOB
-  })
+  const nameTrimmed = (editForm.name || '').trim()
+  if (!nameTrimmed) {
+    showToast("Họ và tên không được để trống.", "error")
+    return
+  }
+  const phoneTrimmed = (editForm.phone || '').trim()
+  if (!phoneTrimmed) {
+    showToast("Số điện thoại không được để trống.", "error")
+    return
+  }
+  if (!phoneTrimmed.startsWith('0')) {
+    showToast("Số điện thoại phải bắt đầu bằng số 0.", "error")
+    return
+  }
+  if (!/^\d+$/.test(phoneTrimmed) || phoneTrimmed.length !== 10) {
+    showToast("Số điện thoại phải có đúng 10 số.", "error")
+    return
+  }
+  if (editForm.DOB && editForm.DOB > todayDate.value) {
+    showToast("Ngày sinh không được lớn hơn ngày hiện tại.", "error")
+    return
+  }
 
-  if (res.success) {
-    showToast("Cập nhật thông tin thành công!", "success")
-    closeEditModal()
-  } else {
-    showToast(res.message || "Cập nhật hồ sơ thất bại!", "error")
+  submittingProfile.value = true
+  try {
+    const res = await updateProfile({
+      name: editForm.name,
+      phone: phoneTrimmed,
+      gender: editForm.gender,
+      DOB: editForm.DOB
+    })
+
+    if (res.success) {
+      showToast("Cập nhật thông tin thành công!", "success")
+      closeEditModal()
+    } else {
+      showToast(res.message || "Cập nhật hồ sơ thất bại!", "error")
+    }
+  } catch (err: any) {
+    showToast("Đã xảy ra lỗi khi cập nhật thông tin.", "error")
+  } finally {
+    submittingProfile.value = false
   }
 }
 
@@ -600,19 +645,23 @@ const setLicenseFile = (file: File) => {
 
 const handleUpdateLicense = async () => {
   if (!licenseForm.driving_license_number.trim()) {
-    showToast('Vui lòng nhập số GPLX.', 'error')
+    showToast("Vui lòng nhập số GPLX.", "error")
     return
   }
   if (!licenseForm.full_name.trim()) {
-    showToast('Vui lòng nhập họ và tên.', 'error')
+    showToast("Vui lòng nhập họ và tên.", "error")
     return
   }
   if (!licenseForm.DOB) {
-    showToast('Vui lòng chọn ngày sinh.', 'error')
+    showToast("Vui lòng chọn ngày sinh.", "error")
+    return
+  }
+  if (licenseForm.DOB > todayDate.value) {
+    showToast("Ngày sinh không được lớn hơn ngày hiện tại.", "error")
     return
   }
   if (!user.value?.driving_license && !licenseImageFile.value) {
-    showToast('Vui lòng tải lên ảnh bằng lái xe.', 'error')
+    showToast("Vui lòng tải lên ảnh bằng lái xe.", "error")
     return
   }
 
@@ -651,16 +700,16 @@ const handleUpdateLicense = async () => {
 
     const res = await submitDrivingLicense(formData)
     if (res.success) {
-      showToast('Gửi duyệt bằng lái xe thành công!', 'success')
+      showToast("Cập nhật thông tin thành công!", "success")
       isEditingLicense.value = false
       licenseImagePreview.value = ''
       licenseImageFile.value = null
     } else {
-      showToast(res.message || 'Gửi duyệt bằng lái xe thất bại.', 'error')
+      showToast(res.message || "Cập nhật hồ sơ thất bại!", "error")
     }
   } catch (err: any) {
     console.error('Lỗi khi gửi duyệt bằng lái:', err)
-    showToast('Đã có lỗi xảy ra khi tải ảnh lên. Vui lòng thử lại sau.', 'error')
+    showToast("Đã xảy ra lỗi khi cập nhật thông tin.", "error")
   } finally {
     submittingLicense.value = false
   }

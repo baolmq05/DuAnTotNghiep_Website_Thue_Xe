@@ -64,11 +64,6 @@ const settingMenus = [
     icon: "ic:outline-lock",
     href: "/profile/change-password",
   },
-  {
-    title: "Yêu cầu xoá tài khoản",
-    icon: "ic:outline-delete-outline",
-    href: "/profile/delete-account",
-  },
 ];
 
 const isActive = (path: string) => {

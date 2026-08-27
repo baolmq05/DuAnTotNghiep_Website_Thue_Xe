@@ -65,11 +65,11 @@ export const useAuth = () => {
         }
         return { success: true, message: res.message };
       }
-      return { success: false, message: "Cập nhật hồ sơ thất bại." };
+      return { success: false, message: res?.message || "Cập nhật hồ sơ thất bại." };
     } catch (err: any) {
       console.error(err);
-      const errMsg = err.response?._data?.message || "Cập nhật hồ sơ thất bại.";
-      return { success: false, message: errMsg, errors: err.response?._data?.errors };
+      const errMsg = err.data?.message || err.response?._data?.message || "Cập nhật hồ sơ thất bại.";
+      return { success: false, message: errMsg, errors: err.data?.errors || err.response?._data?.errors };
     }
   };
 

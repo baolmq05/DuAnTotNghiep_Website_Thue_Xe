@@ -35,7 +35,7 @@ class SubmitDrivingLicenseRequest extends FormRequest
                 Rule::unique('driving_licenses', 'driving_license_number')->ignore($licenseId)
             ],
             'full_name' => 'required|string|max:255',
-            'DOB' => 'required|date',
+            'DOB' => 'required|date|before_or_equal:today',
             'image' => [
                 $licenseId ? 'nullable' : 'required',
                 function ($attribute, $value, $fail) {
@@ -71,6 +71,7 @@ class SubmitDrivingLicenseRequest extends FormRequest
             'full_name.required' => 'Họ và tên không được để trống.',
             'DOB.required' => 'Ngày sinh không được để trống.',
             'DOB.date' => 'Ngày sinh không đúng định dạng ngày tháng.',
+            'DOB.before_or_equal' => 'Ngày sinh không được lớn hơn ngày hiện tại.',
             'image.required' => 'Ảnh bằng lái xe không được để trống.',
         ];
     }
