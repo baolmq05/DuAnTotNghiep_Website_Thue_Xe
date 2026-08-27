@@ -566,4 +566,73 @@ class CarController extends Controller
             'data' => $car
         ], 200);
     }
+
+    /**
+     * API Gửi yêu cầu xóa xe (Chờ duyệt xóa)
+     * PATCH /api/cars/{id}/request-delete
+     */
+    public function requestDelete(Request $request, $id)
+    {
+        $user = auth('api')->user();
+
+        $car = Car::find($id);
+        if (!$car) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy thông tin xe'
+            ], 404);
+        }
+
+        // Kiểm tra quyền sở hữu
+        if ($car->user_id !== $user->id && $user->role_id !== 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Bạn không có quyền yêu cầu xóa xe này.'
+            ], 403);
+        }
+
+        // Kiểm tra chuyến đi đang diễn ra
+        if ($car->has_ongoing_trip) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe đang có chuyến đi hoặc yêu cầu thuê đang diễn ra, không thể gửi yêu cầu xóa xe.'
+            ], 400);
+        }
+
+        // Không cho phép yêu cầu xóa khi đã gửi yêu cầu xóa trước đó (status == 4)
+        if ((int)$car->status === 4) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Xe đã được gửi yêu cầu xóa và đang chờ ban quản trị duyệt.'
+            ], 400);
+        }
+
+        // Validate lý do xóa
+        $validator = Validator::make($request->all(), [
+            'deletion_reason' => 'required|string|min:5|max:1000',
+        ], [
+            'deletion_reason.required' => 'Vui lòng nhập lý do xóa xe.',
+            'deletion_reason.min' => 'Lý do xóa xe phải có ít nhất 5 ký tự.',
+            'deletion_reason.max' => 'Lý do xóa xe không được vượt quá 1000 ký tự.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first()
+            ], 400);
+        }
+
+        // Cập nhật trạng thái chờ duyệt xóa (status = 4) và lưu lý do xóa
+        $car->update([
+            'status' => 4,
+            'deletion_reason' => $request->input('deletion_reason')
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Đã gửi yêu cầu xóa xe thành công! Vui lòng chờ quản trị viên phê duyệt.',
+            'data' => $car
+        ], 200);
+    }
 }

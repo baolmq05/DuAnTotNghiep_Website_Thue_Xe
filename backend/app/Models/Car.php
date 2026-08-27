@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Car extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
         'name',
         'license_plate',
@@ -26,7 +29,9 @@ class Car extends Model
         'user_id',
         'delivery_option_id',
         'usage_limit_id',
-        'status'
+        'status',
+        'rejection_reason',
+        'deletion_reason'
     ];
 
     protected $appends = ['has_ongoing_trip'];
@@ -62,7 +67,8 @@ class Car extends Model
                     if ($status === 1 && $originalStatus === 2) {
                         $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã được phê duyệt thành công. Xe đã sẵn sàng để hoạt động!";
                     } elseif ($status === 3 && $originalStatus === 2) {
-                        $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã bị từ chối phê duyệt. Vui lòng kiểm tra lại thông tin xe.";
+                        $reason = $car->rejection_reason ? " Lý do từ chối: {$car->rejection_reason}" : " Vui lòng kiểm tra lại thông tin xe.";
+                        $message = "Xe '{$car->name}' (Biển số: {$car->license_plate}) của bạn đã bị từ chối phê duyệt.{$reason}";
                     }
 
                     if ($message) {

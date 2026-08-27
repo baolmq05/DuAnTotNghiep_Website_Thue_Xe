@@ -92,6 +92,7 @@ export interface Car {
     delivery_option_id?: number;
     usage_limit_id?: number;
     status: number;
+    rejection_reason?: string;
     created_at?: string;
     updated_at?: string;
     car_location?: CarLocation;

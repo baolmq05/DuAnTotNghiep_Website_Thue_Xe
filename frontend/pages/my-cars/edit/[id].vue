@@ -11,6 +11,28 @@
       </NuxtLink>
     </div>
 
+    <!-- Alert hiển thị lý do từ chối nếu có -->
+    <div
+      v-if="carStatus === 3"
+      class="mb-6 flex items-start gap-4 rounded-3xl border border-rose-200 bg-rose-50 p-5 shadow-sm max-w-5xl mx-auto">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+        class="text-rose-600 shrink-0 mt-0.5">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <div>
+        <h4 class="font-extrabold text-rose-900 text-base">Xe bị từ chối phê duyệt</h4>
+        <p class="text-rose-800 text-sm leading-relaxed mt-1">
+          Lý do từ chối: <strong class="text-rose-900">{{ rejectionReason || 'Không có lý do cụ thể' }}</strong>
+        </p>
+        <p class="text-rose-700 text-xs mt-2 leading-relaxed">
+          Vui lòng điều chỉnh lại thông tin xe theo yêu cầu trên và gửi cập nhật để ban quản trị duyệt lại.
+        </p>
+      </div>
+    </div>
+
     <!-- Alert cảnh báo admin duyệt lại -->
     <div
       class="mb-8 flex items-start gap-4 rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm max-w-5xl mx-auto">
@@ -578,6 +600,8 @@ const selectedCoords = ref<{ lat: number; lng: number } | null>(null)
 
 const activeStep = ref(1)
 const loadingCar = ref(true)
+const carStatus = ref<number | null>(null)
+const rejectionReason = ref<string>('')
 
 // Form states
 const licensePlate = ref('')
@@ -714,6 +738,8 @@ const fetchCarData = async () => {
     const res = await carService.getCarById(carId)
     if (res && res.success && res.data) {
       const car = res.data
+      carStatus.value = car.status
+      rejectionReason.value = car.rejection_reason || ''
 
       // Kiểm tra quyền sở hữu chiếc xe
       if (user.value && car.user_id !== user.value.id && user.value.role_id !== 1) {

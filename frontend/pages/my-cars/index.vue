@@ -102,13 +102,22 @@
                   class="inline-flex items-center gap-1.5 text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
                   Chờ phê duyệt
                 </span>
-                <span v-else-if="car.status === 3"
-                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
-                  Bị từ chối
-                </span>
+                <div v-else-if="car.status === 3" class="flex flex-col gap-1 items-start">
+                  <span
+                    class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                    Bị từ chối
+                  </span>
+                  <span v-if="car.rejectionReason" class="text-[11px] text-rose-600 font-medium italic mt-1 bg-rose-50/50 px-2 py-0.5 rounded-lg border border-rose-100/50 max-w-[200px] break-words" :title="car.rejectionReason">
+                    Lý do: {{ car.rejectionReason }}
+                  </span>
+                </div>
                 <span v-else-if="car.status === 0"
                   class="inline-flex items-center gap-1.5 text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
                   Dừng hoạt động
+                </span>
+                <span v-else-if="car.status === 4"
+                  class="inline-flex items-center gap-1.5 text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-100 px-2.5 py-1 rounded-full uppercase tracking-wider">
+                  Chờ duyệt xóa
                 </span>
               </div>
 
@@ -226,24 +235,41 @@
                   {{ formatPrice(car.revenue) }}
                 </p>
               </div>
-              <button v-if="car.hasOngoingTrip" @click.stop="showToast('Xe đang có chuyến đi, không thể chỉnh sửa', 'error')"
-                class="px-4 py-2 text-xs font-bold text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed flex items-center gap-1.5 border border-slate-200 shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                </svg>
-                Chỉnh sửa
-              </button>
-              <NuxtLink v-else :to="`/my-cars/edit/${car.id}`" @click.stop
-                class="px-4 py-2 text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#163a41] rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
-                </svg>
-                Chỉnh sửa
-              </NuxtLink>
+              <div class="flex items-center gap-2">
+                <!-- Delete request button -->
+                <button
+                  v-if="car.status !== 4"
+                  @click.stop="requestDelete(car)"
+                  :disabled="car.statusChanging"
+                  class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100 transition duration-200 disabled:opacity-50 cursor-pointer"
+                  title="Yêu cầu xóa xe"
+                >
+                  <Icon name="lucide:trash-2" class="w-4.5 h-4.5" />
+                </button>
+                <span v-else class="text-xs text-rose-500 font-bold bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">
+                  Chờ duyệt xóa
+                </span>
+
+                <!-- Chỉnh sửa button -->
+                <button v-if="car.hasOngoingTrip" @click.stop="showToast('Xe đang có chuyến đi, không thể chỉnh sửa', 'error')"
+                  class="px-4 py-2 text-xs font-bold text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed flex items-center gap-1.5 border border-slate-200 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                  Chỉnh sửa
+                </button>
+                <NuxtLink v-else-if="car.status !== 4" :to="`/my-cars/edit/${car.id}`" @click.stop
+                  class="px-4 py-2 text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#163a41] rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"></path>
+                  </svg>
+                  Chỉnh sửa
+                </NuxtLink>
+              </div>
             </div>
           </div>
         </div>
@@ -277,6 +303,76 @@
       </button>
     </div>
   </div>
+
+  <!-- Custom Deletion Request Modal with Reason Input -->
+  <Teleport to="body">
+    <Transition
+      enter-active-class="transition duration-300 ease-out"
+      enter-from-class="opacity-0 scale-95"
+      enter-to-class="opacity-100 scale-100"
+      leave-active-class="transition duration-200 ease-in"
+      leave-from-class="opacity-100 scale-100"
+      leave-to-class="opacity-0 scale-95"
+    >
+      <div v-if="showDeleteConfirm" class="fixed inset-0 z-[1000] flex items-center justify-center p-4">
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @click="closeDeleteModal"></div>
+
+        <!-- Modal content -->
+        <div class="relative w-full max-w-md overflow-hidden rounded-3xl bg-white p-6 shadow-2xl transition-all border border-slate-100">
+          <div class="flex flex-col items-center">
+            <!-- Icon (Warning/Danger) -->
+            <div class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl mb-4 bg-rose-50 text-rose-500">
+              <Icon name="heroicons:exclamation-triangle" class="h-7 w-7" />
+            </div>
+
+            <!-- Title -->
+            <h3 class="text-xl font-bold text-slate-800 text-center">
+              Yêu cầu xóa xe
+            </h3>
+
+            <!-- Description -->
+            <p class="mt-2 text-sm text-center text-slate-500 leading-relaxed">
+              Bạn có chắc chắn muốn gửi yêu cầu xóa xe <strong>{{ carToDelete?.name }}</strong> (Biển số: <span class="font-mono">{{ carToDelete?.licensePlate }}</span>)? 
+              Vui lòng nhập lý do xóa xe bên dưới để ban quản trị phê duyệt.
+            </p>
+
+            <!-- Textarea for deletion reason -->
+            <div class="w-full mt-4">
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lý do xóa xe (tối thiểu 5 ký tự):</label>
+              <textarea 
+                v-model="deleteReasonText" 
+                rows="3" 
+                placeholder="Nhập lý do chi tiết..." 
+                class="w-full rounded-2xl border border-slate-200 p-3.5 text-sm text-slate-700 outline-none resize-none focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 transition duration-200"
+              ></textarea>
+            </div>
+
+            <!-- Actions -->
+            <div class="mt-6 flex w-full gap-3">
+              <button
+                type="button"
+                class="flex-1 rounded-xl bg-slate-100 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-200 focus:outline-none cursor-pointer"
+                @click="closeDeleteModal"
+              >
+                Hủy bỏ
+              </button>
+              
+              <button
+                type="button"
+                class="flex-1 rounded-xl py-3 text-sm font-semibold text-white transition focus:outline-none shadow-sm cursor-pointer"
+                :class="deleteReasonText.trim().length >= 5 ? 'bg-rose-500 hover:bg-rose-600' : 'bg-slate-300 cursor-not-allowed'"
+                :disabled="deleteReasonText.trim().length < 5"
+                @click="handleConfirmDelete"
+              >
+                Gửi yêu cầu
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script lang="ts" setup>
@@ -292,6 +388,9 @@ definePageMeta({
 const { user } = useAuth();
 const { showToast } = useToast();
 const loading = ref(true);
+const showDeleteConfirm = ref(false);
+const carToDelete = ref<any>(null);
+const deleteReasonText = ref('');
 const userCars = ref<Car[]>([]);
 
 // State lưu trạng thái bộ lọc đang được chọn (Mặc định hiển thị "Tất cả")
@@ -304,6 +403,7 @@ const statusOptions = computed(() => {
     { value: '2', label: 'Chờ duyệt', count: formattedCars.value.filter(c => c.status === 2).length, dotColor: 'bg-amber-500' },
     { value: '3', label: 'Bị từ chối', count: formattedCars.value.filter(c => c.status === 3).length, dotColor: 'bg-rose-500' },
     { value: '0', label: 'Dừng hoạt động', count: formattedCars.value.filter(c => c.status === 0).length, dotColor: 'bg-gray-400' },
+    { value: '4', label: 'Chờ duyệt xóa', count: formattedCars.value.filter(c => c.status === 4).length, dotColor: 'bg-rose-600' },
   ];
 });
 
@@ -348,7 +448,8 @@ const formattedCars = computed(() => {
       revenue: computedRevenue,
       activeDays: activeDays,
       hasOngoingTrip: !!car.has_ongoing_trip,
-      statusChanging: (car as any).statusChanging || false
+      statusChanging: (car as any).statusChanging || false,
+      rejectionReason: car.rejection_reason
     };
   });
 });
@@ -397,6 +498,50 @@ const toggleStatus = async (car: any) => {
     showToast(errMsg, 'error');
   } finally {
     (origCar as any).statusChanging = false;
+  }
+};
+
+const requestDelete = (car: any) => {
+  if (car.hasOngoingTrip) {
+    showToast('Xe đang có chuyến đi hoặc yêu cầu thuê đang diễn ra, không thể xóa hoặc gửi yêu cầu xóa xe.', 'error');
+    return;
+  }
+
+  carToDelete.value = car;
+  showDeleteConfirm.value = true;
+};
+
+const closeDeleteModal = () => {
+  showDeleteConfirm.value = false;
+  carToDelete.value = null;
+  deleteReasonText.value = '';
+};
+
+const handleConfirmDelete = async () => {
+  const car = carToDelete.value;
+  const reason = deleteReasonText.value.trim();
+  if (!car || reason.length < 5) return;
+
+  const origCar = userCars.value.find(c => c.id === car.id);
+  if (!origCar) return;
+
+  (origCar as any).statusChanging = true;
+
+  try {
+    const res = await myCarService.requestDeleteCar(car.id, reason);
+    if (res.success && res.data) {
+      origCar.status = res.data.status;
+      showToast(res.message, 'success');
+    } else {
+      showToast(res.message || 'Có lỗi xảy ra khi gửi yêu cầu xóa.', 'error');
+    }
+  } catch (err: any) {
+    console.error('Lỗi khi gửi yêu cầu xóa xe:', err);
+    const errMsg = err?.data?.message || 'Không thể gửi yêu cầu xóa xe.';
+    showToast(errMsg, 'error');
+  } finally {
+    (origCar as any).statusChanging = false;
+    closeDeleteModal();
   }
 };
 

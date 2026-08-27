@@ -129,6 +129,7 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('cars', [CarController::class, 'store']);
     Route::put('cars/{id}', [CarController::class, 'update']);
     Route::patch('cars/{id}/status', [CarController::class, 'updateStatus']);
+    Route::patch('cars/{id}/request-delete', [CarController::class, 'requestDelete']);
 
     // Trips
     Route::get('trips', [TripController::class, 'index']);

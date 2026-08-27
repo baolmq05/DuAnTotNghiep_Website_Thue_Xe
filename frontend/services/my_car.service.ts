@@ -20,6 +20,7 @@ export interface Car {
   delivery_option_id: number;
   usage_limit_id: number;
   status: number;
+  rejection_reason?: string;
   car_location?: {
     id: number;
     location: string;
@@ -82,6 +83,17 @@ export class MyCarService extends BaseService {
   async toggleCarStatus(id: number): Promise<ApiResponse<Car>> {
     return this.request<ApiResponse<Car>>(`${this.endpoint}/${id}/status`, {
       method: "PATCH",
+      useAuth: true
+    });
+  }
+
+  /**
+   * Gửi yêu cầu xóa xe (Chờ duyệt xóa)
+   */
+  async requestDeleteCar(id: number, deletionReason: string): Promise<ApiResponse<Car>> {
+    return this.request<ApiResponse<Car>>(`${this.endpoint}/${id}/request-delete`, {
+      method: "PATCH",
+      body: { deletion_reason: deletionReason },
       useAuth: true
     });
   }

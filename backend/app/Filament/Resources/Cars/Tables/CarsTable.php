@@ -57,6 +57,7 @@ class CarsTable
                         '1' => 'success',
                         '3' => 'danger',
                         '0' => 'gray',
+                        '4' => 'danger',
                         default => 'gray',
                     })
                     ->formatStateUsing(fn(string $state): string => match ((string) $state) {
@@ -64,8 +65,15 @@ class CarsTable
                         '1' => 'Đã duyệt',
                         '3' => 'Bị từ chối',
                         '0' => 'Dừng hoạt động',
+                        '4' => 'Chờ duyệt xóa',
                         default => 'Không xác định',
                     }),
+
+                TextColumn::make('rejection_reason')
+                    ->label('Lý do từ chối')
+                    ->wrap()
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
 
                 TextColumn::make('created_at')
                     ->label('Ngày gửi')
@@ -80,6 +88,7 @@ class CarsTable
                         '1' => 'Đã duyệt',
                         '3' => 'Bị từ chối',
                         '0' => 'Dừng hoạt động',
+                        '4' => 'Chờ duyệt xóa',
                     ])
             ])
             ->recordActions([
