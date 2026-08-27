@@ -64,17 +64,19 @@
                         </div>
 
                         <!-- Empty State -->
-                        <div v-else class="flex flex-col items-center justify-center py-16 px-4 bg-white rounded-3xl border border-slate-100 shadow-sm text-center max-w-xl mx-auto my-4 transition-all duration-300">
-                            <div class="p-4 bg-rose-50 rounded-full text-rose-500 mb-4 animate-bounce">
-                                <Icon name="lucide:search-x" class="w-12 h-12" />
+                        <div v-else class="flex flex-col items-center justify-center py-20 px-6 bg-white rounded-3xl border border-slate-100 shadow-sm text-center w-full my-6 transition-all duration-300">
+                            <div class="flex items-center justify-center w-20 h-20 bg-rose-50 text-rose-500 rounded-full mb-6 ring-8 ring-rose-50/30">
+                                <Icon name="lucide:search-x" class="w-10 h-10 animate-bounce" />
                             </div>
-                            <h3 class="text-xl font-extrabold text-slate-800 mb-2">Không tìm thấy xe phù hợp</h3>
-                            <p class="text-sm text-slate-500 mb-6 leading-relaxed font-medium">
-                                Rất tiếc, chúng tôi không tìm thấy xe nào khớp với bộ lọc hoặc địa điểm tìm kiếm của bạn. Hãy thử thiết lập lại bộ lọc để bắt đầu lại.
+                            <h3 class="text-2xl font-black text-slate-800 mb-3 tracking-tight">Không tìm thấy xe phù hợp</h3>
+                            <p class="text-base text-slate-500 mb-8 max-w-xl leading-relaxed font-medium">
+                                Rất tiếc, chúng tôi không tìm thấy xe nào khớp với bộ lọc hoặc địa điểm tìm kiếm của bạn.
+                                <br class="hidden sm:inline" />
+                                Hãy thử thiết lập lại bộ lọc để bắt đầu lại.
                             </p>
                             <button @click="handleClearAll"
-                                class="px-6 py-2.5 bg-[#1e4e57] text-white hover:bg-[#286874] font-bold text-sm rounded-xl shadow-md shadow-[#286874]/15 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer">
-                                <Icon name="lucide:rotate-ccw" class="w-4 h-4" />
+                                class="px-8 py-3 bg-[#1e4e57] text-white hover:bg-[#286874] font-bold text-base rounded-xl shadow-lg shadow-[#286874]/15 transition-all transform hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2 cursor-pointer">
+                                <Icon name="lucide:rotate-ccw" class="w-5 h-5" />
                                 Thiết lập lại bộ lọc
                             </button>
                         </div>
