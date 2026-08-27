@@ -216,6 +216,9 @@ const fetchUnreadChatsCount = async () => {
           $echo.private(channelName)
             .listen('.message.sent', (e: any) => {
               if (e.message.sender_id !== user.value?.id) {
+                if (route.path === '/chats') {
+                  return
+                }
                 unreadChatsCount.value++
               }
             })

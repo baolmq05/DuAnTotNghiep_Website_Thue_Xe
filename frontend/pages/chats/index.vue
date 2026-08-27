@@ -473,10 +473,17 @@ const activeHost = computed(() =>
 )
 
 const filteredConversations = computed(() => {
+  let list = []
   if (chatFilterTab.value === 'active') {
-    return conversations.value.filter(c => c.status === 1 || c.status === '1')
+    list = conversations.value.filter(c => c.status === 1 || c.status === '1')
+  } else {
+    list = conversations.value.filter(c => c.status === 0 || c.status === '0')
   }
-  return conversations.value.filter(c => c.status === 0 || c.status === '0')
+  return [...list].sort((a, b) => {
+    const timeA = a.last_message?.created_at ? new Date(a.last_message.created_at).getTime() : new Date(a.created_at).getTime()
+    const timeB = b.last_message?.created_at ? new Date(b.last_message.created_at).getTime() : new Date(b.created_at).getTime()
+    return timeB - timeA
+  })
 })
 
 // ---------------- REALTIME & SOCKETS ----------------
@@ -523,6 +530,7 @@ function subscribeToAllConversations() {
         }
         conv.last_message.text = e.message.text
         conv.last_message.time = timeFormatted
+        conv.last_message.created_at = e.message.created_at
       })
   })
 }
@@ -660,10 +668,12 @@ async function sendMessage() {
   }
 
   if (activeHost.value && chat_id.value) {
-    if (activeHost.value.last_message) {
-      activeHost.value.last_message.text = text
-      activeHost.value.last_message.time = time
+    if (!activeHost.value.last_message) {
+      activeHost.value.last_message = {}
     }
+    activeHost.value.last_message.text = text
+    activeHost.value.last_message.time = time
+    activeHost.value.last_message.created_at = new Date().toISOString()
 
     // Tự động push tin nhắn vừa gửi vào local để hiển thị ngay lập tức
     messages.value.push({
@@ -857,9 +867,13 @@ async function uploadImage(event) {
       }
 
       // Cập nhật tin nhắn cuối trên sidebar
-      if (activeHost.value && activeHost.value.last_message) {
+      if (activeHost.value) {
+        if (!activeHost.value.last_message) {
+          activeHost.value.last_message = {}
+        }
         activeHost.value.last_message.text = '[Hình ảnh]'
         activeHost.value.last_message.time = getTime()
+        activeHost.value.last_message.created_at = new Date().toISOString()
       }
     } else {
       // Xóa tin nhắn tạm thời nếu lỗi

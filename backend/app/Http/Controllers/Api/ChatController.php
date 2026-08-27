@@ -80,7 +80,11 @@ class ChatController extends Controller
                         ] : null,
                         'unread_count' => $unreadCount
                     ];
-                });
+                })
+                ->sortByDesc(function ($conv) {
+                    return $conv['last_message']['created_at'] ?? $conv['created_at'];
+                })
+                ->values();
 
             return response()->json([
                 'success' => true,
