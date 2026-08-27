@@ -44,36 +44,82 @@ class ReportInfolist
                         ]),
                     ]),
 
-                // 2. Đối tượng liên quan (Người báo cáo & Chuyến đi)
+                // 2. Đối tượng liên quan (Người báo cáo, Chủ xe bị báo cáo & Chuyến đi)
                 Section::make('Thông tin Liên quan')
                     ->icon('heroicon-o-user-group')
-                    ->description('Thông tin chi tiết về người báo cáo và chuyến đi phát sinh sự cố.')
+                    ->description('Thông tin chi tiết về người báo cáo, chủ xe bị báo cáo và chuyến đi phát sinh sự cố.')
                     ->schema([
-                        Grid::make(2)->schema([
+                        Grid::make(3)->schema([
                             Section::make('Người báo cáo')
                                 ->schema([
                                     TextEntry::make('reporter.name')
                                         ->label('Họ và tên')
-                                        ->weight('bold'),
+                                        ->weight('bold')
+                                        ->placeholder('Không xác định'),
                                     TextEntry::make('reporter.email')
-                                        ->label('Email'),
+                                        ->label('Email')
+                                        ->placeholder('N/A'),
                                     TextEntry::make('reporter.phone')
                                         ->label('Số điện thoại')
-                                        ->copyable(),
+                                        ->copyable()
+                                        ->placeholder('N/A'),
+                                ])->columnSpan(1),
+
+                            Section::make('Chủ xe (Người bị báo cáo)')
+                                ->schema([
+                                    TextEntry::make('trip.car.owner.name')
+                                        ->label('Họ và tên chủ xe')
+                                        ->weight('bold')
+                                        ->placeholder('Không xác định'),
+                                    TextEntry::make('trip.car.owner.email')
+                                        ->label('Email')
+                                        ->placeholder('N/A'),
+                                    TextEntry::make('trip.car.owner.phone')
+                                        ->label('Số điện thoại')
+                                        ->copyable()
+                                        ->placeholder('N/A'),
+                                    TextEntry::make('trip.car.owner.status')
+                                        ->label('Trạng thái tài khoản')
+                                        ->formatStateUsing(fn ($state) => (int) $state === 1 ? 'Hoạt động' : 'Bị khóa')
+                                        ->badge()
+                                        ->color(fn ($state) => (int) $state === 1 ? 'success' : 'danger')
+                                        ->placeholder('N/A'),
+                                    TextEntry::make('owner_strikes')
+                                        ->label('Vi phạm (90 ngày qua)')
+                                        ->getStateUsing(function ($record) {
+                                            $ownerId = $record->trip?->car?->user_id;
+                                            if (!$ownerId) return '0 lần';
+                                            $count = \App\Models\OwnerPenalty::where('user_id', $ownerId)
+                                                ->where('created_at', '>=', now()->subDays(90))
+                                                ->count();
+                                            return $count . ' lần vi phạm';
+                                        })
+                                        ->badge()
+                                        ->color(function ($record) {
+                                            $ownerId = $record->trip?->car?->user_id;
+                                            if (!$ownerId) return 'gray';
+                                            $count = \App\Models\OwnerPenalty::where('user_id', $ownerId)
+                                                ->where('created_at', '>=', now()->subDays(90))
+                                                ->count();
+                                            return $count > 0 ? 'warning' : 'success';
+                                        }),
                                 ])->columnSpan(1),
 
                             Section::make('Chuyến đi liên quan')
                                 ->schema([
                                     TextEntry::make('trip.id')
-                                        ->label('Mã chuyến đi')
+                                        ->label('ID Chuyến đi')
                                         ->formatStateUsing(fn ($state) => '#' . $state)
                                         ->weight('bold'),
+                                    TextEntry::make('trip.trip_code')
+                                        ->label('Mã chuyến đi')
+                                        ->placeholder('N/A'),
                                     TextEntry::make('trip.car.name')
                                         ->label('Phương tiện')
                                         ->placeholder('Không xác định'),
-                                    TextEntry::make('trip.car.owner.name')
-                                        ->label('Chủ xe')
-                                        ->placeholder('Không xác định'),
+                                    TextEntry::make('trip.car.license_plate')
+                                        ->label('Biển số xe')
+                                        ->placeholder('N/A'),
                                 ])->columnSpan(1),
                         ]),
                     ]),
@@ -117,6 +163,18 @@ class ReportInfolist
                                 ->label('Ghi chú / Kết luận của Admin')
                                 ->placeholder('Chưa có ghi chú xử lý nào.')
                                 ->columnSpanFull(),
+
+                            TextEntry::make('penalty.penalty_type')
+                                ->label('Hình thức xử phạt áp dụng')
+                                ->badge()
+                                ->placeholder('Chưa/Không có hình phạt')
+                                ->visible(fn ($record) => $record->penalty !== null),
+
+                            TextEntry::make('penalty.reason')
+                                ->label('Lý do vi phạm đã ghi nhận')
+                                ->placeholder('N/A')
+                                ->visible(fn ($record) => $record->penalty !== null)
+                                ->columnSpan(2),
                         ]),
                     ]),
             ]);

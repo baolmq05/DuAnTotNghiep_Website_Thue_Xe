@@ -38,6 +38,12 @@ class ReportsTable
                     ->searchable()
                     ->sortable(),
 
+                TextColumn::make('trip.car.owner.name')
+                    ->label('Chủ xe (Bị báo cáo)')
+                    ->searchable()
+                    ->placeholder('N/A')
+                    ->sortable(),
+
                 TextColumn::make('trip.id')
                     ->label('Mã chuyến đi')
                     ->formatStateUsing(fn ($state) => '#' . $state)

@@ -39,14 +39,13 @@ class UserForm
                             ->email()
                             ->required()
                             ->disabled(fn (string $operation): bool => $operation === 'edit'),
-                        Select::make('role')
+                        Select::make('role_id')
                             ->label('Vai trò')
                             ->options([
                                 '1' => 'Quản trị viên',
-                                '2' => 'Người mua',
-                                '3' => 'Người bán',
+                                '2' => 'Người dùng',
+                                '3' => 'Chủ xe',
                             ])
-                            ->default('3')
                             ->required(),
                         Select::make('status')
                             ->label('Trạng thái')
