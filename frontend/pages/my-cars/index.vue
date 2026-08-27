@@ -44,7 +44,8 @@
     <!-- Loaded Cars -->
     <div v-else-if="filteredCars.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="car in filteredCars" :key="car.licensePlate"
-        class="group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full transform translate-z-0">
+        @click="navigateTo('/vehicles/' + car.id)"
+        class="group bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col h-full transform translate-z-0 cursor-pointer">
         <!-- Card Image section -->
         <div class="relative overflow-hidden aspect-[16/10] shrink-0">
           <img :src="car.image" :alt="car.name"
@@ -225,7 +226,7 @@
                   {{ formatPrice(car.revenue) }}
                 </p>
               </div>
-              <button v-if="car.hasOngoingTrip" @click="showToast('Xe đang có chuyến đi, không thể chỉnh sửa', 'error')"
+              <button v-if="car.hasOngoingTrip" @click.stop="showToast('Xe đang có chuyến đi, không thể chỉnh sửa', 'error')"
                 class="px-4 py-2 text-xs font-bold text-slate-400 bg-slate-100 rounded-xl cursor-not-allowed flex items-center gap-1.5 border border-slate-200 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -234,7 +235,7 @@
                 </svg>
                 Chỉnh sửa
               </button>
-              <NuxtLink v-else :to="`/my-cars/edit/${car.id}`"
+              <NuxtLink v-else :to="`/my-cars/edit/${car.id}`" @click.stop
                 class="px-4 py-2 text-xs font-bold text-white bg-[#1e4e57] hover:bg-[#163a41] rounded-xl transition duration-200 flex items-center gap-1.5 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                   stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

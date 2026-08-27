@@ -3,19 +3,18 @@
     <!-- Page Header -->
     <div class="flex flex-col gap-1">
       <h1 class="text-2xl md:text-3xl font-black text-slate-900">Danh sách xe yêu thích</h1>
-      <p class="text-sm text-slate-500">Lưu lại những chiếc xe bạn yêu thích để dễ dàng tìm kiếm và đặt xe bất cứ lúc nào.</p>
+      <p class="text-sm text-slate-500">Lưu lại những chiếc xe bạn yêu thích để dễ dàng tìm kiếm và đặt xe bất cứ lúc
+        nào.</p>
     </div>
 
     <!-- Search and Count Bar -->
-    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div
+      class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
       <div class="relative flex-1 max-w-md">
-        <Icon name="heroicons:magnifying-glass" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
-        <input 
-          v-model="searchQuery" 
-          type="text" 
-          placeholder="Tìm xe trong danh sách yêu thích..."
-          class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-[#286874] focus:bg-white focus:ring-4 focus:ring-[#286874]/10" 
-        />
+        <Icon name="heroicons:magnifying-glass"
+          class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-lg" />
+        <input v-model="searchQuery" type="text" placeholder="Tìm xe trong danh sách yêu thích..."
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-4 text-sm text-slate-700 outline-none transition focus:border-[#286874] focus:bg-white focus:ring-4 focus:ring-[#286874]/10" />
       </div>
       <div class="text-sm font-semibold text-slate-600">
         Đang hiển thị {{ filteredFavorites.length }} / {{ favorites.length }} xe
@@ -24,7 +23,8 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-      <div v-for="i in 4" :key="i" class="animate-pulse bg-white rounded-2xl border border-slate-100 p-4 h-[380px] flex flex-col justify-between">
+      <div v-for="i in 4" :key="i"
+        class="animate-pulse bg-white rounded-2xl border border-slate-100 p-4 h-[380px] flex flex-col justify-between">
         <div class="bg-slate-200 rounded-xl h-[180px] w-full mb-4"></div>
         <div class="space-y-3 flex-1">
           <div class="h-4 bg-slate-200 rounded w-2/3"></div>
@@ -35,16 +35,16 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="favorites.length === 0" class="flex flex-col items-center justify-center text-center py-16 px-4 rounded-2xl border border-dashed border-slate-300 bg-white shadow-sm animate-fade-in">
+    <div v-else-if="favorites.length === 0"
+      class="flex flex-col items-center justify-center text-center py-16 px-4 rounded-2xl border border-dashed border-slate-300 bg-white shadow-sm animate-fade-in">
       <div class="w-16 h-16 rounded-full bg-rose-50 flex items-center justify-center text-rose-500 mb-4 shadow-inner">
         <Icon name="heroicons:heart" class="w-8 h-8 animate-pulse" />
       </div>
       <h3 class="text-lg font-bold text-slate-800 mb-1">Danh sách yêu thích trống</h3>
-      <p class="text-sm text-slate-500 max-w-sm mb-6">Bạn chưa nhấn yêu thích chiếc xe nào. Hãy khám phá và chọn chiếc xe ưng ý nhất nhé!</p>
-      <NuxtLink 
-        to="/vehicle-list" 
-        class="inline-flex items-center gap-2 px-6 py-3 bg-[#286874] text-white font-semibold rounded-xl hover:bg-[#1e4e57] transition shadow-md shadow-[#286874]/20 hover:shadow-lg active:scale-95"
-      >
+      <p class="text-sm text-slate-500 max-w-sm mb-6">Bạn chưa nhấn yêu thích chiếc xe nào. Hãy khám phá và chọn chiếc
+        xe ưng ý nhất nhé!</p>
+      <NuxtLink to="/vehicle-list"
+        class="inline-flex items-center gap-2 px-6 py-3 bg-[#286874] text-white font-semibold rounded-xl hover:bg-[#1e4e57] transition shadow-md shadow-[#286874]/20 hover:shadow-lg active:scale-95">
         Khám phá xe ngay
         <Icon name="heroicons:arrow-right" class="w-4 h-4" />
       </NuxtLink>
@@ -53,23 +53,15 @@
     <!-- Favorites Grid -->
     <div v-else-if="filteredFavorites.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fade-in">
       <div v-for="fav in filteredFavorites" :key="fav.id" class="cursor-pointer" @click="goToDetail(fav.car_id)">
-        <VehicleCard
-          :name="fav.car?.name || fav.car_name"
-          :image="getThumbnail(fav.car)"
-          :price="fav.car?.unit_price || 0"
-          :location="fav.car?.car_location?.address || 'Chưa cập nhật'"
-          :seats="Number(fav.car?.seat_count || 4)"
-          :transmission="normalizeTransmission(fav.car?.transmission || '')"
+        <VehicleCard :name="fav.car?.name || fav.car_name" :image="getThumbnail(fav.car)"
+          :price="fav.car?.unit_price || 0" :location="fav.car?.car_location?.address || 'Chưa cập nhật'"
+          :seats="Number(fav.car?.seat_count || 4)" :transmission="normalizeTransmission(fav.car?.transmission || '')"
           :fuel="normalizeFuel(fav.car?.fuel_type || '')"
           :rating="fav.car?.reviews_avg_rating ? parseFloat(fav.car.reviews_avg_rating as string) : 5.0"
-          :trips="fav.car?.trips_count || 0"
-          :discount="getDiscount(fav.car)"
-          :isFavorite="true"
-          :ownerName="fav.car?.owner?.name || 'Chủ xe'"
-          :ownerAvatar="fav.car?.owner?.avatar || ''"
+          :trips="fav.car?.trips_count || 0" :discount="getDiscount(fav.car)" :isFavorite="true"
+          :ownerName="fav.car?.owner?.name || 'Chủ xe'" :ownerAvatar="fav.car?.owner?.avatar || ''"
           :isDelivery="fav.car?.delivery_option_id ? true : false"
-          @toggle-favorite="handleRemoveFavorite(fav.car_id)"
-        />
+          @toggle-favorite="handleRemoveFavorite(fav.car_id)" />
       </div>
     </div>
 
@@ -201,6 +193,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

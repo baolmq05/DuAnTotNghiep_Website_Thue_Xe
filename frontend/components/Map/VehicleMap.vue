@@ -87,10 +87,10 @@
               <div class="flex items-center justify-between gap-1.5 mt-1.5 pt-1.5 border-t border-slate-100 min-w-0">
                 <div class="flex flex-col min-w-0">
                   <span v-if="car.discount_value > 0" class="text-slate-400 line-through text-[9px] md:text-[10px] font-normal leading-none mb-0.5">
-                    {{ (car.price / 1000).toLocaleString('vi-VN') }}K
+                    {{ car.price ? car.price.toLocaleString('vi-VN') : '0' }} VNĐ
                   </span>
                   <span class="text-[#286874] font-black text-xs md:text-sm leading-tight truncate">
-                    {{ ((car.price - car.discount_value) / 1000).toLocaleString('vi-VN') }}K<span class="text-slate-500 text-[10px] font-normal">/ngày</span>
+                    {{ ((car.price || 0) - (car.discount_value || 0)).toLocaleString('vi-VN') }} VNĐ<span class="text-slate-500 text-[10px] font-normal">/ngày</span>
                   </span>
                 </div>
                 

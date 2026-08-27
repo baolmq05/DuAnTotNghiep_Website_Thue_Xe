@@ -4,15 +4,16 @@
       <!-- Section Header -->
       <div class="flex items-center justify-between mb-6">
         <div>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-              Xe bạn đã xem gần đây
-            </h2>
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+            Xe bạn đã xem gần đây
+          </h2>
         </div>
       </div>
 
       <!-- Loading State -->
       <div v-if="isLoading" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div v-for="n in 4" :key="n" class="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white animate-pulse">
+        <div v-for="n in 4" :key="n"
+          class="border border-slate-100 rounded-2xl overflow-hidden shadow-sm bg-white animate-pulse">
           <div class="h-48 bg-slate-200 w-full"></div>
           <div class="p-4 space-y-3">
             <div class="h-4 bg-slate-200 rounded w-2/3"></div>
@@ -31,32 +32,17 @@
       </div>
 
       <!-- Car Grid (Top 4 viewed cars) -->
-      <div v-else-if="viewedCars.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        <div 
-          v-for="item in viewedCars" 
-          :key="item.id"
-          class="block h-full cursor-pointer"
-          @click="goToDetail(item.car.id)"
-        >
-          <VehicleCard 
-            :name="item.car.name" 
-            :image="item.car.image" 
-            :price="item.car.price"
-            :location="item.car.location" 
-            :seats="item.car.seats" 
-            :transmission="item.car.transmission"
-            :fuel="item.car.fuel" 
-            :rating="item.car.rating" 
-            :trips="item.car.trips"
-            :is-instant-book="item.car.isInstantBook" 
-            :is-delivery="item.car.isDelivery"
-            :no-deposit="item.car.noDeposit" 
-            :discount="item.car.discount"
-            :isFavorite="isCarFavorited(item.car.id)"
-            :ownerAvatar="item.car.ownerAvatar"
-            :ownerName="item.car.ownerName"
-            @toggle-favorite="handleToggleFavorite(item.car.id)" 
-          />
+      <div v-else-if="viewedCars.length > 0"
+        class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div v-for="item in viewedCars" :key="item.id" class="block h-full cursor-pointer"
+          @click="goToDetail(item.car.id)">
+          <VehicleCard :name="item.car.name" :image="item.car.image" :price="item.car.price"
+            :location="item.car.location" :seats="item.car.seats" :transmission="item.car.transmission"
+            :fuel="item.car.fuel" :rating="item.car.rating" :trips="item.car.trips"
+            :is-instant-book="item.car.isInstantBook" :is-delivery="item.car.isDelivery"
+            :no-deposit="item.car.noDeposit" :discount="item.car.discount" :isFavorite="isCarFavorited(item.car.id)"
+            :ownerAvatar="item.car.ownerAvatar" :ownerName="item.car.ownerName"
+            @toggle-favorite="handleToggleFavorite(item.car.id)" />
         </div>
       </div>
 
@@ -66,10 +52,8 @@
           <Icon name="lucide:eye-off" class="w-6 h-6" />
         </div> -->
         <h3 class="text-base font-bold text-slate-800">Chưa có lịch sử xem xe</h3>
-        <NuxtLink 
-          to="/vehicle-list" 
-          class="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity"
-        >
+        <NuxtLink to="/vehicle-list"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-xl hover:opacity-90 transition-opacity">
           <Icon name="lucide:search" class="w-4 h-4" />
           <span>Tìm xe ngay</span>
         </NuxtLink>

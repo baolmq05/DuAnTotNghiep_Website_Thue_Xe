@@ -56,7 +56,7 @@
                   <div class="flex items-center gap-1.5">
                     <Icon name="heroicons:star-solid" class="w-4 h-4 text-yellow-400" />
                     <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
-                      parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
+                      parseFloat(car.reviews_avg_rating).toFixed(1) : '0.0' }}</span>
                     <span class="text-xs text-gray-400 font-bold uppercase tracking-wider">• {{ car?.trips_count || 0 }}
                       chuyến</span>
                   </div>
@@ -231,8 +231,7 @@
                   class="w-14 h-14 rounded-full bg-brand-primary flex items-center justify-center text-white text-xl font-bold flex-shrink-0 shadow-md shadow-brand-primary/10">
                   {{ car?.owner?.name?.charAt(0).toUpperCase() || 'M' }}
                 </div>
-                <img v-else :src="car.owner.avatar" alt="Owner Avatar"
-                  referrerpolicy="no-referrer"
+                <img v-else :src="car.owner.avatar" alt="Owner Avatar" referrerpolicy="no-referrer"
                   class="w-14 h-14 rounded-full object-cover shrink-0 shadow-md shadow-brand-primary/10" />
                 <div class="flex-1">
                   <p class="font-extrabold text-brand-dark group-hover:text-brand-primary transition-colors">
@@ -240,10 +239,11 @@
                   </p>
                   <div class="flex items-center gap-2 mt-1">
                     <Icon name="heroicons:star-solid" class="w-4 h-4 text-yellow-400" />
-                    <span class="text-sm font-extrabold text-brand-dark">{{ car?.reviews_avg_rating ?
-                      parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }}</span>
+                    <span class="text-sm font-extrabold text-brand-dark">{{ car?.owner?.rating !== undefined ?
+                      parseFloat(car.owner.rating).toFixed(1) : '0.0' }}</span>
                     <span class="text-gray-300">•</span>
-                    <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ car?.trips_count || 0 }}
+                    <span class="text-xs text-gray-500 font-bold uppercase tracking-wider">{{ car?.owner?.trips_count ||
+                      0 }}
                       chuyến</span>
                   </div>
                 </div>
@@ -272,13 +272,16 @@
               <div v-for="review in formattedReviews" :key="review.name"
                 class="border-b border-slate-100 pb-4 last:border-0 last:pb-0">
                 <div class="flex items-center gap-3 mb-2.5">
-                  <NuxtLink v-if="review.id" :to="'/profile/' + review.id + '?role=renter'" class="flex items-center gap-3 group">
+                  <NuxtLink v-if="review.id" :to="'/profile/' + review.id + '?role=renter'"
+                    class="flex items-center gap-3 group">
                     <div v-if="!review.avatar"
                       class="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 shadow-sm transition-transform group-hover:scale-105"
                       :style="{ backgroundColor: review.color }">
                       {{ review.name.charAt(0) }}
                     </div>
-                    <img v-else :src="review.avatar" referrerpolicy="no-referrer" class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="Reviewer Avatar" />
+                    <img v-else :src="review.avatar" referrerpolicy="no-referrer"
+                      class="w-10 h-10 rounded-full object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105"
+                      alt="Reviewer Avatar" />
                     <div>
                       <p class="text-sm font-bold text-brand-dark group-hover:text-brand-primary transition-colors">
                         {{ review.name }}
@@ -288,7 +291,8 @@
                           <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3.5 h-3.5"
                             :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'" />
                         </div>
-                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
+                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date
+                        }}</span>
                       </div>
                     </div>
                   </NuxtLink>
@@ -308,7 +312,8 @@
                           <Icon v-for="s in 5" :key="s" name="heroicons:star-solid" class="w-3.5 h-3.5"
                             :class="s <= review.rating ? 'text-yellow-400' : 'text-slate-200'" />
                         </div>
-                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date }}</span>
+                        <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">{{ review.date
+                        }}</span>
                       </div>
                     </div>
                   </div>
@@ -336,14 +341,15 @@
               <div class="bg-brand-dark px-6 py-5">
                 <div class="flex flex-col">
                   <span v-if="car && car.discount_value > 0" class="text-xs text-white/50 line-through mb-0.5">
-                    {{ (car.unit_price / 1000).toFixed(0) }}K/ngày
+                    {{ car.unit_price ? car.unit_price.toLocaleString('vi-VN') : '0' }} VNĐ/ngày
                   </span>
                   <div class="flex items-end gap-2">
                     <span class="text-3xl font-black text-white">
-                      {{ car ? ((car.unit_price - (car.discount_value || 0)) / 1000).toFixed(0) : '' }}K
+                      {{ car ? ((car.unit_price || 0) - (car.discount_value || 0)).toLocaleString('vi-VN') : '' }} VNĐ
                     </span>
                     <span class="text-brand-light text-sm font-medium pb-0.5">/ngày</span>
-                    <span v-if="car && car.discount_value > 0" class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-1 mb-0.5">
+                    <span v-if="car && car.discount_value > 0"
+                      class="bg-rose-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-md ml-1 mb-0.5">
                       -{{ Math.round((car.discount_value / car.unit_price) * 100) }}%
                     </span>
                   </div>
@@ -351,7 +357,7 @@
                 <div class="flex items-center gap-2 mt-1.5 text-white">
                   <Icon name="heroicons:star-solid" class="w-3.5 h-3.5 text-yellow-400" />
                   <span class="text-xs text-white/70 font-semibold">{{ car?.reviews_avg_rating ?
-                    parseFloat(car.reviews_avg_rating).toFixed(1) : '5.0' }} • {{ car?.trips_count || 0 }} chuyến</span>
+                    parseFloat(car.reviews_avg_rating).toFixed(1) : '0.0' }} • {{ car?.trips_count || 0 }} chuyến</span>
                 </div>
               </div>
 
@@ -435,19 +441,16 @@
                     <div v-if="user && userSavedAddresses.length > 0" class="space-y-1.5">
                       <div class="flex items-center justify-between text-xs text-slate-600 font-semibold">
                         <span>Địa chỉ đã lưu của bạn:</span>
-                        <NuxtLink to="/profile/address" target="_blank" class="text-brand-primary hover:underline text-[11px]">
+                        <NuxtLink to="/profile/address" target="_blank"
+                          class="text-brand-primary hover:underline text-[11px]">
                           Quản lý
                         </NuxtLink>
                       </div>
                       <div class="flex flex-wrap gap-1.5">
-                        <button
-                          v-for="addr in userSavedAddresses"
-                          :key="addr.id"
-                          type="button"
+                        <button v-for="addr in userSavedAddresses" :key="addr.id" type="button"
                           @click="selectSavedAddress(addr)"
                           class="px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer max-w-full text-left"
-                          :class="deliveryAddress === addr.address_name ? 'bg-[#1e4e57] text-white border-[#1e4e57] shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'"
-                        >
+                          :class="deliveryAddress === addr.address_name ? 'bg-[#1e4e57] text-white border-[#1e4e57] shadow-sm' : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'">
                           <span class="truncate max-w-[220px] block">{{ addr.address_name }}</span>
                         </button>
                       </div>
@@ -474,13 +477,10 @@
 
                     <!-- Checkbox lưu địa chỉ mới vào sổ địa chỉ -->
                     <div v-if="user && deliveryAddress" class="flex items-center gap-2 pl-0.5">
-                      <input
-                        type="checkbox"
-                        id="saveAddressCheckbox"
-                        v-model="saveAddressToBook"
-                        class="w-3.5 h-3.5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary/20 accent-[#1e4e57] cursor-pointer"
-                      />
-                      <label for="saveAddressCheckbox" class="text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
+                      <input type="checkbox" id="saveAddressCheckbox" v-model="saveAddressToBook"
+                        class="w-3.5 h-3.5 rounded border-slate-300 text-brand-primary focus:ring-brand-primary/20 accent-[#1e4e57] cursor-pointer" />
+                      <label for="saveAddressCheckbox"
+                        class="text-[11px] font-semibold text-slate-500 cursor-pointer select-none">
                         Lưu địa chỉ này vào Sổ địa chỉ để dùng cho lần sau
                       </label>
                     </div>
@@ -526,32 +526,25 @@
                     <span class="text-slate-700 font-semibold">Mã giảm giá</span>
                   </div>
                   <div class="flex gap-2">
-                    <input
-                      type="text"
-                      v-model="promoCodeInput"
-                      placeholder="Nhập mã giảm giá..."
+                    <input type="text" v-model="promoCodeInput" placeholder="Nhập mã giảm giá..."
                       class="flex-1 px-3 py-2 text-sm border border-slate-200 rounded-xl focus:outline-none focus:border-brand-primary bg-slate-50 focus:bg-white transition-all text-brand-dark"
-                      :disabled="isPromoApplied || isPromoLoading"
-                    />
-                    <button
-                      v-if="!isPromoApplied"
-                      @click="applyPromoCode"
-                      :disabled="isPromoLoading"
-                      class="px-4 py-2 bg-brand-primary hover:bg-brand-dark text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-brand-primary/10 disabled:opacity-50 flex items-center justify-center min-w-[80px]"
-                    >
+                      :disabled="isPromoApplied || isPromoLoading" />
+                    <button v-if="!isPromoApplied" @click="applyPromoCode" :disabled="isPromoLoading"
+                      class="px-4 py-2 bg-brand-primary hover:bg-brand-dark text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-brand-primary/10 disabled:opacity-50 flex items-center justify-center min-w-[80px]">
                       <span v-if="isPromoLoading">
-                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none"
+                          viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4">
+                          </circle>
+                          <path class="opacity-75" fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                          </path>
                         </svg>
                       </span>
                       <span v-else>Áp dụng</span>
                     </button>
-                    <button
-                      v-else
-                      @click="removePromoCode"
-                      class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-rose-500/10"
-                    >
+                    <button v-else @click="removePromoCode"
+                      class="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white text-sm font-bold rounded-xl transition-all shadow-md shadow-rose-500/10">
                       Hủy bỏ
                     </button>
                   </div>
@@ -559,7 +552,8 @@
                     <Icon name="lucide:circle-alert" class="w-3.5 h-3.5" />
                     {{ promoError }}
                   </p>
-                  <p v-if="isPromoApplied && appliedPromo" class="text-xs text-green-600 font-semibold pl-1 flex items-center gap-1">
+                  <p v-if="isPromoApplied && appliedPromo"
+                    class="text-xs text-green-600 font-semibold pl-1 flex items-center gap-1">
                     <Icon name="lucide:circle-check" class="w-3.5 h-3.5" />
                     Đã áp dụng: <span class="font-bold uppercase text-brand-dark">{{ appliedPromo?.code }}</span>
                   </p>
@@ -597,15 +591,16 @@
 
                 <!-- CTA -->
                 <button
-                  :disabled="hasActiveBooking || (receiveMethod === 'delivery' && (isDistanceTooFar || !deliveryCoords))"
+                  :disabled="isOwner || hasActiveBooking || (receiveMethod === 'delivery' && (isDistanceTooFar || !deliveryCoords))"
                   class="w-full bg-brand-primary hover:bg-brand-dark text-white font-extrabold py-4 rounded-2xl transition-all duration-300 text-sm tracking-widest shadow-lg shadow-brand-primary/20 hover:shadow-brand-primary/30 hover:-translate-y-[0.5px] transform disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   @click="handleBooking">
-                  <span v-if="hasActiveBooking">CHUYẾN ĐI CHƯA HOÀN THÀNH</span>
+                  <span v-if="isOwner">XE CỦA CHÍNH BẠN</span>
+                  <span v-else-if="hasActiveBooking">CHUYẾN ĐI CHƯA HOÀN THÀNH</span>
                   <span v-else-if="receiveMethod === 'delivery' && isDistanceTooFar">KHOẢNG CÁCH QUÁ XA</span>
                   <span v-else>CHỌN THUÊ</span>
                 </button>
 
-      
+
               </div>
             </div>
 
@@ -623,7 +618,8 @@
     </div>
 
     <!-- XE TƯƠNG TỰ -->
-    <div v-if="similarCars.length > 0" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6">
+    <div v-if="similarCars.length > 0"
+      class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-100 mt-6">
       <div class="flex items-center justify-between mb-6">
         <div>
           <h2 class="text-xl font-black text-brand-dark flex items-center gap-2">
@@ -632,7 +628,8 @@
           </h2>
           <p class="text-xs text-slate-400 font-medium mt-1">Các mẫu xe cùng thương hiệu được yêu thích tại DRIVIO</p>
         </div>
-        <NuxtLink v-if="car?.car_brand_id" :to="`/vehicle-list?brand_id=${car.car_brand_id}`" class="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1">
+        <NuxtLink v-if="car?.car_brand_id" :to="`/vehicle-list?brand_id=${car.car_brand_id}`"
+          class="text-xs font-bold text-brand-primary hover:underline flex items-center gap-1">
           <span>Xem thêm</span>
           <Icon name="lucide:arrow-right" class="w-3.5 h-3.5" />
         </NuxtLink>
@@ -640,21 +637,10 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <NuxtLink v-for="simCar in similarCars" :key="simCar.id" :to="`/vehicles/${simCar.id}`" class="block h-full">
-          <VehicleCard
-            :name="simCar.name"
-            :image="simCar.image"
-            :price="simCar.price"
-            :location="simCar.location"
-            :seats="Number(simCar.seats)"
-            :transmission="simCar.transmission"
-            :fuel="simCar.fuel"
-            :rating="Number(simCar.rating)"
-            :trips="Number(simCar.trips)"
-            :discount="simCar.discount"
-            :ownerName="simCar.ownerName"
-            :ownerAvatar="simCar.ownerAvatar"
-            :isDelivery="simCar.isDelivery"
-          />
+          <VehicleCard :name="simCar.name" :image="simCar.image" :price="simCar.price" :location="simCar.location"
+            :seats="Number(simCar.seats)" :transmission="simCar.transmission" :fuel="simCar.fuel"
+            :rating="Number(simCar.rating)" :trips="Number(simCar.trips)" :discount="simCar.discount"
+            :ownerName="simCar.ownerName" :ownerAvatar="simCar.ownerAvatar" :isDelivery="simCar.isDelivery" />
         </NuxtLink>
       </div>
     </div>
@@ -670,7 +656,8 @@
          ════════════════════════════════════════════════════════════ -->
   <Teleport to="body">
     <Transition name="fade">
-      <div v-if="isUpdateModalOpen" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+      <div v-if="isUpdateModalOpen"
+        class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
         <!-- Màn đen mờ phía sau (Overlay) -->
         <div class="absolute inset-0 cursor-pointer" @click="isUpdateModalOpen = false"></div>
 
@@ -712,7 +699,8 @@
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Icon name="solar:phone-calling-rounded-linear" class="w-4 h-4" />
                 </div>
-                <input type="text" v-model="quickUpdateForm.phone" placeholder="Nhập số điện thoại của bạn (VD: 0912345678)"
+                <input type="text" v-model="quickUpdateForm.phone"
+                  placeholder="Nhập số điện thoại của bạn (VD: 0912345678)"
                   class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
               </div>
             </div>
@@ -726,7 +714,8 @@
                   <Icon name="solar:shield-check-bold" class="w-4 h-4 text-emerald-600" />
                   Thông tin Giấy phép lái xe (GPLX)
                 </h4>
-                <span class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
+                <span
+                  class="text-[10px] bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-md font-semibold">
                   Bắt buộc
                 </span>
               </div>
@@ -736,7 +725,8 @@
                 <label class="block text-xs font-bold text-slate-700">
                   Họ và tên <span class="text-rose-500">*</span>
                 </label>
-                <input type="text" v-model="quickUpdateForm.full_name" placeholder="Họ và tên đầy đủ trên GPLX (VD: NGUYEN VAN A)"
+                <input type="text" v-model="quickUpdateForm.full_name"
+                  placeholder="Họ và tên đầy đủ trên GPLX (VD: NGUYEN VAN A)"
                   class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
               </div>
 
@@ -746,7 +736,8 @@
                   <label class="block text-xs font-bold text-slate-700">
                     Số GPLX <span class="text-rose-500">*</span>
                   </label>
-                  <input type="text" v-model="quickUpdateForm.driving_license_number" placeholder="Số GPLX (9-12 chữ số)"
+                  <input type="text" v-model="quickUpdateForm.driving_license_number"
+                    placeholder="Số GPLX (9-12 chữ số)"
                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:border-[#1e4e57] focus:bg-white focus:ring-2 focus:ring-[#1e4e57]/10 transition-all" />
                 </div>
 
@@ -798,7 +789,8 @@
                   @dragleave.prevent="isLicenseDragging = false" @drop.prevent="onLicenseDrop"
                   class="border-2 border-dashed rounded-2xl p-4 flex items-center justify-center gap-3 cursor-pointer transition-all bg-slate-50/60"
                   :class="isLicenseDragging ? 'border-[#1e4e57] bg-[#1e4e57]/5' : 'border-slate-300 hover:border-[#1e4e57] hover:bg-slate-50'">
-                  <div class="h-10 w-10 rounded-xl bg-[#1e4e57]/10 flex items-center justify-center shrink-0 text-[#1e4e57]">
+                  <div
+                    class="h-10 w-10 rounded-xl bg-[#1e4e57]/10 flex items-center justify-center shrink-0 text-[#1e4e57]">
                     <Icon name="solar:cloud-upload-bold" class="w-5 h-5" />
                   </div>
                   <div class="text-left">
@@ -812,7 +804,8 @@
                 </div>
 
                 <!-- Input file ẩn -->
-                <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*" class="hidden" />
+                <input type="file" ref="licenseFileInputRef" @change="onLicenseFileChange" accept="image/*"
+                  class="hidden" />
               </div>
             </div>
 
@@ -854,6 +847,7 @@ definePageMeta({ layout: "vehicle-detail" });
 const route = useRoute();
 const carId = route.params.id as string;
 const { user, updateProfile, submitDrivingLicense, refreshProfile } = useAuth();
+const isOwner = computed(() => !!(user.value && car.value && car.value.user_id === user.value.id));
 const { showToast } = useToast();
 const { openLogin } = useAuthModal();
 
@@ -1415,7 +1409,7 @@ const applyPromoCode = async () => {
     promoError.value = "Vui lòng nhập mã giảm giá.";
     return;
   }
-  
+
   if (!selectedStart.value || !selectedEnd.value) {
     promoError.value = "Vui lòng chọn thời gian thuê xe trước.";
     return;
@@ -1625,12 +1619,7 @@ const loadCarDetails = async (id: string) => {
     if (response.success && response.data) {
       car.value = response.data;
 
-      // Kiểm tra nếu là chủ xe thì không được phép truy cập
-      if (user.value && car.value.user_id === user.value.id) {
-        showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'info');
-        navigateTo('/vehicle-list');
-        return;
-      }
+      // Cho phép chủ xe truy cập nhưng sẽ khóa nút thuê
 
       // Kiểm tra xem xe này có nằm trong danh sách yêu thích hay không
       await checkFavoriteStatus(id);
@@ -1700,13 +1689,7 @@ watch(() => route.params.id, (newId) => {
   }
 });
 
-// Watch thay đổi thông tin user đăng nhập để chuyển hướng nếu sở hữu xe
-watch(() => user.value, (newUser) => {
-  if (newUser && car.value && car.value.user_id === newUser.id) {
-    showToast('Bạn không thể truy cập chi tiết xe của chính mình!', 'info');
-    navigateTo('/vehicle-list');
-  }
-});
+// Cho phép chủ xe truy cập nhưng sẽ khóa nút thuê
 
 // Computed values based on car data
 const carImages = computed(() => {
@@ -1788,7 +1771,7 @@ const cancelPolicies = [
   },
   {
     time: "Trong vòng 7 ngày trước chuyến đi (Sau 1h khi đặt)",
-    fee: "40% giá trị chuyến đi",
+    fee: "40% giá trị  đi",
   },
 ];
 
@@ -2117,6 +2100,7 @@ const submitQuickUpdate = async () => {
     transform: scale(0.95);
     opacity: 0;
   }
+
   to {
     transform: scale(1);
     opacity: 1;

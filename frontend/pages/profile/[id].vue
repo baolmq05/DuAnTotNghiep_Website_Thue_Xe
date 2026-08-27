@@ -145,7 +145,7 @@
                         <span>{{ car.trips_count }} chuyến</span>
                       </div>
                       <div class="text-right">
-                        <span class="text-base font-black text-brand-primary">{{ car.unit_price ? (car.unit_price / 1000).toFixed(0) : 0 }}K</span>
+                        <span class="text-base font-black text-brand-primary">{{ car.unit_price ? car.unit_price.toLocaleString('vi-VN') : 0 }} VNĐ</span>
                         <span class="text-[10px] text-slate-400 font-medium">/ngày</span>
                       </div>
                     </div>

@@ -17,8 +17,8 @@ class CarSeeder extends Seeder
         Car::create([
             'name' => 'Toyota Camry',
             'license_plate' => '30A-12345',
-            'VIN'=> '1HGCR2F8XHA045239',
-            'engine_number'=> 'K24W1-1234567',
+            'VIN' => '1HGCR2F8XHA045239',
+            'engine_number' => 'K24W1-1234567',
             'fuel_consumption' => 8,
             'unit_price' => 1000000,
             'discount_value' => 100000,
@@ -39,8 +39,8 @@ class CarSeeder extends Seeder
         Car::create([
             'name' => 'Honda Civic',
             'license_plate' => '30B-54321',
-            'VIN'=> '1HGCR2F1XHA045239',
-            'engine_number'=> 'K34W1-1234567',
+            'VIN' => '1HGCR2F1XHA045239',
+            'engine_number' => 'K34W1-1234567',
             'fuel_consumption' => 7,
             'unit_price' => 900000,
             'discount_value' => 50000,
@@ -61,8 +61,8 @@ class CarSeeder extends Seeder
         Car::create([
             'name' => 'Toyota Wigo',
             'license_plate' => '30C-67890',
-            'VIN'=> '1HGCR2F8XHA345239',
-            'engine_number'=> 'K64W1-1234567',
+            'VIN' => '1HGCR2F8XHA345239',
+            'engine_number' => 'K64W1-1234567',
             'fuel_consumption' => 6,
             'unit_price' => 700000,
             'discount_value' => 30000,
@@ -83,8 +83,8 @@ class CarSeeder extends Seeder
         Car::create([
             'name' => 'Toyota Corolla Cross',
             'license_plate' => '30D-98765',
-            'VIN'=> '1HGCR2F8XHA045339',
-            'engine_number'=> 'K94W1-1234567',
+            'VIN' => '1HGCR2F8XHA045339',
+            'engine_number' => 'K94W1-1234567',
             'fuel_consumption' => 7,
             'unit_price' => 800000,
             'discount_value' => 40000,

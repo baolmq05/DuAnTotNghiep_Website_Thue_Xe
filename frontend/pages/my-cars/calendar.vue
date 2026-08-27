@@ -123,7 +123,7 @@
             <span class="w-3 h-3 rounded-full bg-orange-400"></span> Chờ thanh toán
           </div>
           <div class="flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-amber-500"></span> Chưa bắt đầu (Chờ giao)
+            <span class="w-3 h-3 rounded-full bg-amber-500"></span> Đã xác nhận (Chờ giao)
           </div>
           <div class="flex items-center gap-2">
             <span class="w-3 h-3 rounded-full bg-emerald-500"></span> Đang diễn ra

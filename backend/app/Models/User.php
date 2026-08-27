@@ -74,7 +74,14 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
         ];
     }
     protected $with = ['drivingLicense'];
-    protected $appends = ['rating'];
+    protected $appends = ['rating', 'trips_count'];
+
+    public function getTripsCountAttribute()
+    {
+        return \App\Models\Trip::whereHas('car', function ($q) {
+            $q->where('user_id', $this->id);
+        })->where('status', \App\Enum\TripStatus::Complete->value)->count();
+    }
 
     public function getRatingAttribute()
     {

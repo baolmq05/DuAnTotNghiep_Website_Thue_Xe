@@ -20,11 +20,9 @@
             <!-- GÓC TRÊN PHẢI: Nút yêu thích TRẦN (Bỏ vòng tròn) -->
             <button @click.stop="$emit('toggle-favorite')"
                 class="absolute top-3 right-3 z-10 drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)] hover:scale-110 transition-transform duration-200 active:scale-90">
-                <Icon 
-                    :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'" 
-                    class="w-6 h-6 transition-colors duration-200" 
-                    :class="isFavorite ? 'text-rose-500' : 'text-white'"
-                />
+                <Icon :name="isFavorite ? 'heroicons:heart-solid' : 'heroicons:heart'"
+                    class="w-6 h-6 transition-colors duration-200"
+                    :class="isFavorite ? 'text-rose-500' : 'text-white'" />
             </button>
 
             <!-- GÓC DƯỚI PHẢI TRÊN ẢNH: Avatar chủ xe -->
@@ -77,7 +75,7 @@
                     </div>
                     <div class="flex flex-col items-center justify-center py-0.5 border-r border-slate-200/60 min-w-0">
                         <span class="text-xs font-semibold text-slate-700 truncate w-full px-1">{{ transmission
-                        }}</span>
+                            }}</span>
                         <span class="text-[10px] text-slate-400 mt-0.5">Hộp số</span>
                     </div>
                     <div class="flex flex-col items-center justify-center py-0.5 min-w-0">
@@ -151,7 +149,7 @@ const discountedPrice = computed(() => {
 
 const formatPrice = (val: string | number) => {
     if (typeof val === 'number') {
-        return val.toLocaleString('vi-VN') + 'đ';
+        return val.toLocaleString('vi-VN') + ' VNĐ';
     }
     return val;
 }
