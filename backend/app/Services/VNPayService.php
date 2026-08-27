@@ -36,7 +36,7 @@ class VNPayService
      */
     public function createPaymentUrl(string $txnRef, float $amount, string $orderInfo): string
     {
-        $vnp_Amount = $amount * 100; // VNPay uses VND * 100
+        $vnp_Amount = (int) round($amount * 100); // VNPay uses VND * 100
         $vnp_IpAddr = request()->ip() ?: '127.0.0.1';
 
         $inputData = [
@@ -95,11 +95,13 @@ class VNPayService
         $i = 0;
         $hashData = "";
         foreach ($inputData as $key => $value) {
-            if ($i == 1) {
-                $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
-            } else {
-                $hashData .= urlencode($key) . "=" . urlencode($value);
-                $i = 1;
+            if (substr($key, 0, 4) === 'vnp_') {
+                if ($i == 1) {
+                    $hashData .= '&' . urlencode($key) . "=" . urlencode($value);
+                } else {
+                    $hashData .= urlencode($key) . "=" . urlencode($value);
+                    $i = 1;
+                }
             }
         }
 
