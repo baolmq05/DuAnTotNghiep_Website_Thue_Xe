@@ -35,28 +35,24 @@ class StatsOverview extends StatsOverviewWidget
         $revenueRate      = $totalRatePercent / 100;
 
         // 2. Tính tổng doanh thu hệ thống từ tất cả các trip có trạng thái là 4 (Complete - Đã hoàn thành)
-        $totalCompletedCost = (float) (Trip::where('status', TripStatus::Complete->value)
-            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
-            ->value('total') ?? 0);
-
-        $totalRevenue = $totalCompletedCost * $revenueRate;
+        $totalRevenue = max(0, (float) (Trip::where('status', TripStatus::Complete->value)
+            ->selectRaw('SUM(cost * ? - COALESCE(promo_discount_amount, 0)) as total', [$revenueRate])
+            ->value('total') ?? 0));
 
         // 3. Tính doanh thu tháng hiện tại và tháng trước để so sánh tỷ lệ tăng trưởng (%)
-        $currentMonthCost = (float) (Trip::where('status', TripStatus::Complete->value)
+        $currentRevenue = max(0, (float) (Trip::where('status', TripStatus::Complete->value)
             ->whereYear('created_at', now()->year)
             ->whereMonth('created_at', now()->month)
-            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('SUM(cost * ? - COALESCE(promo_discount_amount, 0)) as total', [$revenueRate])
+            ->value('total') ?? 0));
 
-        $lastMonthCost = (float) (Trip::where('status', TripStatus::Complete->value)
+        $lastRevenue = max(0, (float) (Trip::where('status', TripStatus::Complete->value)
             ->whereYear('created_at', now()->subMonth()->year)
             ->whereMonth('created_at', now()->subMonth()->month)
-            ->selectRaw('SUM(cost - COALESCE(discount_amount, 0)) as total')
-            ->value('total') ?? 0);
+            ->selectRaw('SUM(cost * ? - COALESCE(promo_discount_amount, 0)) as total', [$revenueRate])
+            ->value('total') ?? 0));
 
-        $currentRevenue = $currentMonthCost * $revenueRate;
-        $lastRevenue    = $lastMonthCost * $revenueRate;
-        $growth         = $lastRevenue > 0 ? (($currentRevenue - $lastRevenue) / $lastRevenue) * 100 : 0;
+        $growth = $lastRevenue > 0 ? (($currentRevenue - $lastRevenue) / $lastRevenue) * 100 : 0;
 
         // Tính số người dùng mới trong tháng hiện tại
         $newUsersThisMonth = User::whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)->count();

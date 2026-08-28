@@ -34,9 +34,17 @@ class DashboardController extends Controller
         // doanh thu theo tháng và năm hiện tại
         $year = now()->year;
 
-        $rawData = Trip::selectRaw('MONTH(created_at) as month, SUM(cost - discount_amount) as total')
+        $commissionRate = floatval(\App\Models\SystemSetting::get('commission_rate', 18));
+        $penaltyRate    = floatval(\App\Models\SystemSetting::get('fee_2_percent', \App\Models\SystemSetting::get('hol_amount_rate', 2)));
+        $vatRate        = floatval(\App\Models\SystemSetting::get('vat_rate', 7));
+        $revenueRate    = ($commissionRate + $penaltyRate + $vatRate) / 100;
+
+        $isSqlite = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite';
+        $monthExpr = $isSqlite ? "CAST(strftime('%m', created_at) AS INTEGER)" : "MONTH(created_at)";
+
+        $rawData = Trip::selectRaw("{$monthExpr} as month, SUM(cost * ? - COALESCE(promo_discount_amount, 0)) as total", [$revenueRate])
             ->whereIn('car_id', $carIds)
-            ->where('status', 4)
+            ->where('status', \App\Enum\TripStatus::Complete->value)
             ->whereYear('created_at', $year)
             ->groupBy('month')
             ->orderBy('month')
@@ -46,7 +54,7 @@ class DashboardController extends Controller
         $chartData = [];
 
         for ($i = 1; $i <= 12; $i++) {
-            $chartData[] = $rawData[$i] ?? 0;
+            $chartData[] = max(0, (float) ($rawData[$i] ?? 0));
         }
 
         return response()->json([

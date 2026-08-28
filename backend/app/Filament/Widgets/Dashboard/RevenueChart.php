@@ -19,7 +19,10 @@ class RevenueChart extends ChartWidget
         $vatRate        = floatval(\App\Models\SystemSetting::get('vat_rate', 7));
         $revenueRate    = ($commissionRate + $penaltyRate + $vatRate) / 100;
 
-        $rawData = \App\Models\Trip::selectRaw('MONTH(created_at) as month, SUM(cost - COALESCE(discount_amount, 0)) as total')
+        $isSqlite = \Illuminate\Support\Facades\DB::connection()->getDriverName() === 'sqlite';
+        $monthExpr = $isSqlite ? "CAST(strftime('%m', created_at) AS INTEGER)" : "MONTH(created_at)";
+
+        $rawData = \App\Models\Trip::selectRaw("{$monthExpr} as month, SUM(cost * ? - COALESCE(promo_discount_amount, 0)) as total", [$revenueRate])
             ->where('status', \App\Enum\TripStatus::Complete->value)
             ->whereYear('created_at', $year)
             ->groupBy('month')
@@ -29,8 +32,7 @@ class RevenueChart extends ChartWidget
 
         $data = [];
         for ($i = 1; $i <= 12; $i++) {
-            $monthTotal = (float) ($rawData[$i] ?? 0);
-            $data[] = $monthTotal * $revenueRate;
+            $data[] = max(0, (float) ($rawData[$i] ?? 0));
         }
 
         return [
