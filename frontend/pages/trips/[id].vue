@@ -340,12 +340,12 @@
                 </p>
               </div>
 
-              <!-- Strike received (only when report is approved / resolved) -->
+              <!-- Penalty received (only when report is approved / resolved) -->
               <div v-if="report.status == 1 && report.penalty" 
                    class="border border-rose-200 bg-rose-50/50 rounded-2xl p-4 space-y-2.5 animate-fade-in">
                 <h4 class="text-xs font-extrabold text-rose-700 uppercase tracking-wider flex items-center gap-1.5">
                   <Icon name="lucide:ban" class="w-4 h-4 text-rose-600" />
-                  Strike đã nhận (Hình phạt)
+                  Hình phạt vi phạm áp dụng
                 </h4>
                 <div class="flex flex-wrap items-center gap-2">
                   <span class="text-xs font-semibold text-slate-500">Mức phạt:</span>

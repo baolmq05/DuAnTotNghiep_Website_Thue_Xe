@@ -99,6 +99,17 @@
                   <Icon name="lucide:wallet" class="w-3 h-3 text-emerald-600" />
                   Đã về ví
                 </span>
+                <!-- Tag hiển thị khi có Báo cáo vi phạm / Án phạt -->
+                <span v-if="trip.reports && trip.reports.some((r: any) => r.penalty || (r.status === 1 && r.penalty))"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <Icon name="lucide:ban" class="w-3 h-3 text-rose-600" />
+                  Có vi phạm
+                </span>
+                <span v-else-if="trip.reports && trip.reports.some((r: any) => r.status === 0)"
+                  class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                  <Icon name="lucide:alert-triangle" class="w-3 h-3 text-amber-600" />
+                  Bị khiếu nại
+                </span>
                 <!-- Song song status gia hạn nếu có -->
                 <span v-if="trip.latest_extension && trip.latest_extension.status !== 0"
                   class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold border shadow-2xs"

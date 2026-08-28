@@ -6,6 +6,53 @@
       <!-- Premium Dashboard Header Card -->
       
 
+      <!-- Account Suspended / Warning Banner (Clean & Minimal) -->
+      <div v-if="ownerReportSummary?.is_account_suspended" 
+           class="mb-6 bg-rose-50/90 border border-rose-200 text-rose-900 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+            <Icon name="lucide:shield-ban" class="w-5 h-5" />
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm tracking-wide text-rose-950 flex items-center gap-2">
+              Tài khoản chủ xe đang bị Tạm Khóa
+              <span class="text-[10px] uppercase font-bold bg-rose-200/80 text-rose-800 px-2 py-0.5 rounded-full">Đình chỉ</span>
+            </h4>
+            <p class="text-xs text-rose-800 font-normal mt-0.5">
+              Tài khoản của bạn đã đạt mức giới hạn vi phạm. Các xe của bạn sẽ tạm thời không thể nhận chuyến mới.
+            </p>
+          </div>
+        </div>
+        <NuxtLink to="/my-cars/reports"
+          class="px-3.5 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all shrink-0 flex items-center gap-1.5 active:scale-95">
+          <span>Xem chi tiết vi phạm</span>
+          <Icon name="lucide:arrow-right" class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+
+      <div v-else-if="ownerReportSummary && ownerReportSummary.active_strikes > 0"
+           class="mb-6 bg-amber-50/90 border border-amber-200 text-amber-900 rounded-2xl p-4 sm:p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-fade-in">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+            <Icon name="lucide:alert-triangle" class="w-5 h-5" />
+          </div>
+          <div>
+            <h4 class="font-bold text-xs sm:text-sm tracking-wide text-amber-950 flex items-center gap-2">
+              Cảnh báo: Bạn đang có {{ ownerReportSummary.active_strikes }} lần cảnh cáo vi phạm
+              <span class="text-[10px] uppercase font-bold bg-amber-200/80 text-amber-800 px-2 py-0.5 rounded-full">Mức {{ ownerReportSummary.active_strikes }}/3</span>
+            </h4>
+            <p class="text-xs text-amber-800 font-normal mt-0.5">
+              Vui lòng kiểm tra các khiếu nại và tuân thủ quy định để tránh bị tạm ngưng tài khoản khi đạt mức 3.
+            </p>
+          </div>
+        </div>
+        <NuxtLink to="/my-cars/reports"
+          class="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl shadow-sm transition-all shrink-0 flex items-center gap-1.5 active:scale-95">
+          <span>Xem chi tiết vi phạm</span>
+          <Icon name="lucide:arrow-right" class="w-3.5 h-3.5" />
+        </NuxtLink>
+      </div>
+
       <div class="bg-white rounded-2xl shadow-sm px-6 mb-8">
         <div ref="tabWrapper"
           class="flex overflow-x-auto scrollbar-hide gap-8 cursor-grab select-none active:cursor-grabbing"
@@ -55,6 +102,21 @@
               <polyline points="10 9 9 9 8 9"></polyline>
             </svg>
             Chuyến cho thuê
+          </NuxtLink>
+
+          <NuxtLink to="/my-cars/reports"
+            class="py-5 text-slate-500 whitespace-nowrap hover:text-[#1e4e57] transition-colors border-b-2 border-transparent flex items-center gap-2 text-sm font-semibold"
+            active-class="!border-[#1e4e57] !text-[#1e4e57] !font-bold" @click="handleLinkClick">
+            <Icon name="lucide:shield-alert" class="w-4 h-4 text-current opacity-85" />
+            <span>Báo cáo & Vi phạm</span>
+            <span v-if="ownerReportSummary && ownerReportSummary.active_strikes > 0"
+                  class="px-1.5 py-0.2 bg-rose-500 text-white text-[10px] font-extrabold rounded-full animate-pulse shadow-sm">
+              {{ ownerReportSummary.active_strikes }} cảnh cáo
+            </span>
+            <span v-else-if="ownerReportSummary && ownerReportSummary.reports?.pending > 0"
+                  class="px-1.5 py-0.2 bg-amber-500 text-white text-[10px] font-bold rounded-full shadow-sm">
+              {{ ownerReportSummary.reports.pending }} mới
+            </span>
           </NuxtLink>
 
           <NuxtLink to="/my-cars/calendar"
@@ -150,11 +212,13 @@ import { ref, onMounted, computed } from "vue";
 import HeaderProfile from "~/components/Profile/HeaderProfile.vue";
 import { myCarService } from "~/services/my_car.service";
 import { walletService } from "~/services/wallet.service";
+import { reportService, type OwnerReportSummary } from "~/services/report.service";
 
 const { user } = useAuth();
 const totalCars = ref(0);
 const activeCars = ref(0);
 const walletBalance = ref(0);
+const ownerReportSummary = ref<OwnerReportSummary | null>(null);
 
 const activeRate = computed(() => {
   if (totalCars.value === 0) return 0;
@@ -182,6 +246,12 @@ onMounted(async () => {
       const walletRes = await walletService.getWalletDetails();
       if (walletRes.success && walletRes.data) {
         walletBalance.value = walletRes.data.balance || 0;
+      }
+
+      // Get owner report & strike summary
+      const reportRes = await reportService.getOwnerSummary();
+      if (reportRes.success && reportRes.data) {
+        ownerReportSummary.value = reportRes.data;
       }
     } catch (e) {
       console.error("Error loading stats in layout", e);
