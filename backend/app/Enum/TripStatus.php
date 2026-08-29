@@ -13,6 +13,7 @@ enum TripStatus: int
     case OwnerCancel = 6;
     case WaitingExtension = 7;
     case WaitingReturn = 8;
+    case Disputed = 9;
 
     public function label(): string
     {
@@ -26,6 +27,7 @@ enum TripStatus: int
             self::OwnerCancel => 'Chủ xe hủy',
             self::WaitingExtension => 'Chờ gia hạn',
             self::WaitingReturn => 'Chờ trả xe',
+            self::Disputed => 'Đang tranh chấp',
         };
     }
 }

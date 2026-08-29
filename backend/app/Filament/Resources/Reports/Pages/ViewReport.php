@@ -9,6 +9,7 @@ use App\Services\ReportService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -25,20 +26,31 @@ class ViewReport extends ViewRecord
                 ->color('success')
                 ->requiresConfirmation()
                 ->form(fn (): array => [
+                    Select::make('fault_side')
+                        ->label('1. Kết luận bên có lỗi')
+                        ->options([
+                            'owner' => 'Lỗi từ phía Chủ xe (Hủy miễn phí, hoàn 100% tiền cho khách & phạt chủ xe)',
+                            'renter' => 'Lỗi từ phía Khách thuê (Hủy chuyến, trừ tiền cọc & đền bù cho chủ xe)',
+                        ])
+                        ->default('owner')
+                        ->required()
+                        ->helperText('Hệ thống sẽ tự động hủy chuyến và điều chuyển tiền tương ứng.'),
+
                     Textarea::make('admin_note')
-                        ->label('1. Ghi chú xử lý của Admin')
+                        ->label('2. Ghi chú xử lý của Admin (Hiển thị trong kết quả)')
                         ->rows(3)
                         ->placeholder('Nhập chi tiết biện pháp và công việc Admin đã xử lý...')
                         ->required(),
 
                     Textarea::make('reason')
-                        ->label('2. Lý do vi phạm (Lưu thông tin phạt chủ xe)')
+                        ->label('3. Lý do vi phạm (Lưu thông tin phạt chủ xe)')
                         ->rows(3)
                         ->placeholder('Nhập lý do vi phạm để ghi nhận phạt chủ xe...')
-                        ->required(),
+                        ->visible(fn (Get $get): bool => $get('fault_side') == 'owner')
+                        ->required(fn (Get $get): bool => $get('fault_side') == 'owner'),
 
                     Select::make('penalty_type')
-                        ->label('3. Hình thức xử phạt (Tự động xác định theo số vi phạm trong 90 ngày)')
+                        ->label('4. Hình thức xử phạt chủ xe (Tự động theo strike 90 ngày)')
                         ->options(array_combine(
                             array_map(fn ($case) => $case->value, PenaltyType::cases()),
                             array_map(fn ($case) => $case->getLabel(), PenaltyType::cases())
@@ -47,18 +59,21 @@ class ViewReport extends ViewRecord
                             $ownerId = $this->record->trip?->car?->user_id;
                             return ReportService::getPenaltyTypeForOwner($ownerId)->value;
                         })
+                        ->visible(fn (Get $get): bool => $get('fault_side') == 'owner')
                         ->disabled()
                         ->dehydrated(),
                 ])
                 ->action(function (array $data): void {
-                    ReportService::resolveReport($this->record, $data['admin_note'], $data['reason']);
+                    $faultSide = $data['fault_side'] ?? 'owner';
+                    $penaltyReason = $data['reason'] ?? $data['admin_note'];
+                    ReportService::resolveReport($this->record, $data['admin_note'], $penaltyReason, $faultSide);
 
                     Notification::make()
                         ->title('Báo cáo đã được xử lý và đánh dấu hoàn tất')
                         ->success()
                         ->send();
                 })
-                ->visible(fn (): bool => $this->record->status === ReportStatus::Pending),
+                ->visible(fn (): bool => $this->record->status == ReportStatus::Pending),
 
             Action::make('reject_report')
                 ->label('Từ chối khiếu nại/báo cáo')
@@ -80,7 +95,7 @@ class ViewReport extends ViewRecord
                         ->danger()
                         ->send();
                 })
-                ->visible(fn (): bool => $this->record->status === ReportStatus::Pending),
+                ->visible(fn (): bool => $this->record->status == ReportStatus::Pending),
         ];
     }
 }

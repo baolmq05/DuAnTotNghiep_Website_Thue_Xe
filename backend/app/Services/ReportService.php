@@ -2,11 +2,14 @@
 
 namespace App\Services;
 
+use App\Actions\Trip\AdminCancelTripAction;
 use App\Enum\PenaltyType;
 use App\Enum\ReportStatus;
+use App\Enum\TripStatus;
 use App\Mail\OwnerPenaltyMail;
 use App\Mail\ReportRejectedMail;
 use App\Mail\ReportResolvedMail;
+use App\Models\Notification;
 use App\Models\OwnerPenalty;
 use App\Models\Report;
 use App\Models\User;
@@ -29,9 +32,9 @@ class ReportService
             ->where('created_at', '>=', now()->subDays(90))
             ->count();
 
-        if ($strikeCount === 0) {
+        if ($strikeCount == 0) {
             return PenaltyType::Warning1; // Lần 1: Cảnh cáo lần 1
-        } elseif ($strikeCount === 1) {
+        } elseif ($strikeCount == 1) {
             return PenaltyType::Warning2; // Lần 2: Cảnh cáo lần 2
         } else {
             return PenaltyType::AccountSuspension; // Lần 3+: Khóa tài khoản
@@ -41,40 +44,53 @@ class ReportService
     /**
      * Xử lý Duyệt/Chấp nhận báo cáo (Approve/Resolve).
      */
-    public static function resolveReport(Report $report, string $adminNote, string $penaltyReason): void
+    public static function resolveReport(Report $report, string $adminNote, string $penaltyReason, string $faultSide = 'owner'): void
     {
         $ownerId = $report->trip?->car?->user_id;
+        $adminUser = Auth::user() ?? User::find($report->resolved_by ?? 1);
 
         // 1. Cập nhật trạng thái báo cáo
         $report->update([
             'status' => ReportStatus::Resolved,
             'admin_note' => $adminNote,
             'resolved_at' => now(),
-            'resolved_by' => Auth::id(),
+            'resolved_by' => Auth::id() ?? 1,
         ]);
 
-        if ($ownerId) {
-            // 2. Tự động xác định loại hình phạt dựa trên 90 ngày gần nhất
+        // 2. Xử lý hủy chuyến & hoàn tiền nếu chuyến đi đang ở trạng thái Tranh chấp hoặc chưa hoàn thành
+        if ($report->trip && (int) $report->trip->status == TripStatus::Disputed->value) {
+            $adminCancelAction = resolve(AdminCancelTripAction::class);
+            $adminCancelAction->execute(
+                $report->trip_id,
+                $adminUser,
+                $faultSide,
+                $adminNote
+            );
+        }
+
+        // 3. Nếu lỗi thuộc về chủ xe -> áp dụng hình phạt vi phạm
+        if ($faultSide == 'owner' && $ownerId) {
+            // Tự động xác định loại hình phạt dựa trên 90 ngày gần nhất
             $penaltyType = self::getPenaltyTypeForOwner($ownerId);
 
-            // 3. Tạo bản ghi xử phạt
+            // Tạo bản ghi xử phạt
             $penalty = OwnerPenalty::create([
                 'user_id' => $ownerId,
                 'trip_id' => $report->trip_id,
                 'report_id' => $report->id,
                 'penalty_type' => $penaltyType,
                 'start_at' => now(),
-                'reason' => $penaltyReason,
-                'resolved_by' => Auth::id(),
+                'reason' => $penaltyReason ?: $adminNote,
+                'resolved_by' => Auth::id() ?? 1,
             ]);
 
-            // 4. Đếm tổng số strike trong 90 ngày gần nhất
+            // Đếm tổng số strike trong 90 ngày gần nhất
             $totalStrikes = OwnerPenalty::where('user_id', $ownerId)
                 ->where('created_at', '>=', now()->subDays(90))
                 ->count();
 
             // Áp dụng khóa xe nếu hình phạt là Cảnh cáo lần 2
-            if ($penaltyType === PenaltyType::Warning2 && $report->trip?->car) {
+            if ($penaltyType == PenaltyType::Warning2 && $report->trip?->car) {
                 try {
                     $report->trip->car->update(['status' => 0]);
                 } catch (\Exception $e) {
@@ -84,13 +100,13 @@ class ReportService
 
             // Áp dụng khóa tài khoản nếu đủ 3 strike trong 90 ngày hoặc penalty_type là AccountSuspension
             $owner = User::find($ownerId);
-            if ($totalStrikes >= 3 || $penaltyType === PenaltyType::AccountSuspension) {
+            if ($totalStrikes >= 3 || $penaltyType == PenaltyType::AccountSuspension) {
                 if ($owner) {
                     $owner->update(['status' => 0]); // 0: Bị khóa
                 }
             }
 
-            // 5. Gửi email thông báo hình phạt vi phạm trực tiếp cho chủ xe
+            // Gửi email thông báo hình phạt vi phạm trực tiếp cho chủ xe
             if ($owner && $owner->email) {
                 try {
                     Mail::to($owner->email)->send(new OwnerPenaltyMail($penalty, $report));
@@ -100,7 +116,7 @@ class ReportService
             }
         }
 
-        // 5. Gửi email thông báo cho người báo cáo biết báo cáo đã được duyệt
+        // 4. Gửi email thông báo cho người báo cáo biết báo cáo đã được duyệt
         $reporter = $report->reporter;
         if ($reporter && $reporter->email) {
             try {
@@ -112,7 +128,7 @@ class ReportService
     }
 
     /**
-     * Xử lý Từ chối báo cáo (Reject) và gửi email thông báo.
+     * Xử lý Từ chối báo cáo (Reject) và khôi phục trạng thái chuyến đi.
      */
     public static function rejectReport(Report $report, string $adminNote): void
     {
@@ -121,10 +137,35 @@ class ReportService
             'status' => ReportStatus::Rejected,
             'admin_note' => $adminNote,
             'resolved_at' => now(),
-            'resolved_by' => Auth::id(),
+            'resolved_by' => Auth::id() ?? 1,
         ]);
 
-        // 2. Gửi email thông báo về cho người báo cáo
+        // 2. Khôi phục trạng thái chuyến đi nếu chuyến đi đang ở trạng thái Tranh chấp
+        $trip = $report->trip;
+        if ($trip && (int) $trip->status == TripStatus::Disputed->value) {
+            $restoredStatus = $report->previous_trip_status ?? TripStatus::Confirmed->value;
+            $trip->update(['status' => $restoredStatus]);
+
+            $tripCode = $trip->trip_code ?? ('#' . $trip->id);
+
+            // Gửi thông báo cho 2 bên
+            Notification::create([
+                'user_id' => $report->reporter_id,
+                'message' => "Khiếu nại chuyến đi {$tripCode} của bạn đã bị từ chối bởi Quản trị viên. Lý do: {$adminNote}. Chuyến đi tiếp tục bình thường.",
+                'is_read' => '0',
+            ]);
+
+            $targetUserId = ($report->reporter_id == $trip->user_id) ? $trip->car?->user_id : $trip->user_id;
+            if ($targetUserId) {
+                Notification::create([
+                    'user_id' => $targetUserId,
+                    'message' => "Khiếu nại về chuyến đi {$tripCode} đã bị Quản trị viên từ chối. Chuyến đi đã được mở khóa và tiếp tục bình thường.",
+                    'is_read' => '0',
+                ]);
+            }
+        }
+
+        // 3. Gửi email thông báo về cho người báo cáo
         $reporter = $report->reporter;
         if ($reporter && $reporter->email) {
             try {

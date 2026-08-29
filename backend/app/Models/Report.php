@@ -18,7 +18,9 @@ class Report extends Model
         'title',
         'description',
         'status',
+        'previous_trip_status',
         'admin_note',
+        'deadline_at',
         'resolved_at',
         'resolved_by',
     ];
@@ -26,6 +28,7 @@ class Report extends Model
     protected $casts = [
         'report_type' => ReportType::class,
         'status' => ReportStatus::class,
+        'deadline_at' => 'datetime',
         'resolved_at' => 'datetime',
     ];
 

@@ -561,6 +561,34 @@
           </div>
         </div>
 
+        <!-- CASE: Trip is Disputed (status = 9) - Dispute In Progress -->
+        <div v-else-if="trip.status == 9" class="space-y-4 animate-fade-in">
+          <div class="bg-amber-50/80 border border-amber-200 rounded-2xl p-5 text-xs text-amber-900 flex items-start gap-3.5 shadow-sm">
+            <div class="p-2.5 bg-amber-100/90 rounded-xl text-amber-700 shrink-0 border border-amber-200">
+              <Icon name="lucide:shield-alert" class="w-6 h-6" />
+            </div>
+            <div class="leading-relaxed space-y-2 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h4 class="font-black text-sm text-amber-950">Chuyến đi đang trong quá trình giải quyết khiếu nại (Tranh chấp)</h4>
+                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300">Đang đóng băng 🔒</span>
+              </div>
+              <p class="font-medium text-amber-850">
+                Bộ phận CSKH đang can thiệp xác minh với hai bên để giải quyết thỏa đáng. Trong thời gian này, các thao tác hủy chuyến hoặc thay đổi trạng thái bị tạm dừng để tránh phát sinh chi phí phạt oan uổng cho bạn.
+              </p>
+              <div v-if="existingReport" class="mt-3 pt-3 border-t border-amber-200 flex flex-wrap items-center justify-between gap-3">
+                <div class="text-xs text-amber-900">
+                  <span class="font-semibold text-amber-800">Khiếu nại hiện tại:</span> 
+                  <strong class="text-amber-950 font-bold ml-1">{{ existingReport.title }}</strong>
+                </div>
+                <button @click="openComplaintModal" class="px-3.5 py-1.5 rounded-xl bg-amber-700 hover:bg-amber-800 text-white font-bold text-xs transition-all shadow-sm flex items-center gap-1.5 cursor-pointer">
+                  <Icon name="lucide:eye" class="w-3.5 h-3.5" />
+                  <span>Xem chi tiết khiếu nại</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- CASE 2: Trip is Ongoing (status = 3), Completed (status = 4), Waiting Extension (status = 7) or Waiting Return (status = 8) - Display uploaded photos -->
         <div v-else-if="trip.status == 3 || trip.status == 4 || trip.status == 7 || trip.status == 8"
           class="space-y-4">
@@ -904,6 +932,26 @@
                 <Icon v-if="processingAction" name="lucide:loader-2" class="animate-spin w-4 h-4" />
                 <Icon v-else name="lucide:ban" class="w-4 h-4" />
                 <span>Hủy chuyến đi</span>
+              </button>
+            </div>
+          </template>
+          <template v-else-if="trip.status == 9">
+            <Icon name="lucide:shield-alert" class="text-amber-600 mb-2 mx-auto block w-7 h-7" />
+            <p class="mb-1 text-slate-800 font-bold text-xs">Chuyến đi đang có tranh chấp</p>
+            <p class="text-[11px] text-slate-500 mb-3 leading-relaxed">
+              Hệ thống đang tạm khóa thao tác để CSKH xử lý khiếu nại.
+            </p>
+            <div class="flex flex-col gap-2 max-w-md mx-auto pt-1">
+              <button @click="openComplaintModal"
+                class="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-amber-600 hover:bg-amber-700 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-md shadow-amber-600/10">
+                <Icon name="lucide:eye" class="w-4 h-4" />
+                <span>Xem / Quản lý khiếu nại</span>
+              </button>
+              <button disabled
+                class="w-full py-2 px-4 rounded-xl text-xs font-semibold text-slate-400 bg-slate-100 border border-slate-200 cursor-not-allowed flex items-center justify-center gap-1.5"
+                title="Không thể hủy khi đang trong quá trình giải quyết khiếu nại">
+                <Icon name="lucide:lock" class="w-3.5 h-3.5" />
+                <span>Hủy chuyến (Đang bị khóa)</span>
               </button>
             </div>
           </template>
@@ -1695,10 +1743,10 @@ const existingReport = computed(() => {
 })
 
 const reportOptions = [
-  { value: 0, label: 'Giao sai xe' },
-  { value: 1, label: 'Không đến giao/nhận xe' },
-  { value: 2, label: 'Gian lận' },
-  { value: 3, label: 'Khác' }
+  { value: 0, label: 'Giao sai xe (Không đúng mô tả)' },
+  { value: 1, label: 'Không đến giao/nhận xe (Bùng xe)' },
+  { value: 2, label: 'Gian lận / Yêu cầu giao dịch ngoài' },
+  { value: 3, label: 'Khác (Sự cố phát sinh khác)' }
 ]
 
 const openComplaintModal = () => {

@@ -21,8 +21,12 @@ class CancelTripByRenterAction
             throw new InvalidArgumentException('Không tìm thấy thông tin chuyến đi.');
         }
 
-        if ($trip->user_id !== $user->id) {
+        if ($trip->user_id != $user->id) {
             throw new InvalidArgumentException('Bạn không có quyền hủy chuyến đi này.');
+        }
+
+        if ($trip->status == TripStatus::Disputed->value) {
+            throw new InvalidArgumentException('Chuyến đi đang trong quá trình xử lý khiếu nại (Tranh chấp). Vui lòng chờ phản hồi từ bộ phận CSKH trước khi thao tác.');
         }
 
         // Chỉ cho phép hủy khi trạng thái ở 0 (Pending), 1 (WaitingPayment), 2 (Confirmed)

@@ -35,7 +35,7 @@ class ReportController extends Controller
             $trip = Trip::with('car')->find($request->trip_id);
 
             // User must be renter (user_id) or owner of the car (car->user_id)
-            if ($trip->user_id !== $user->id && $trip->car->user_id !== $user->id) {
+            if ($trip->user_id != $user->id && $trip->car->user_id != $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Bạn không có quyền báo cáo/khiếu nại chuyến đi này.'
@@ -60,7 +60,10 @@ class ReportController extends Controller
             // Generate report title
             $reportTypeEnum = ReportType::tryFrom((int) $request->report_type);
             $reportTypeLabel = $reportTypeEnum ? $reportTypeEnum->getLabel() : 'Khiếu nại';
-            $title = "Khiếu nại chuyến đi #" . $trip->trip_code . " - " . $reportTypeLabel;
+            $tripCode = $trip->trip_code ?? ('#' . $trip->id);
+            $title = "Khiếu nại chuyến đi " . $tripCode . " - " . $reportTypeLabel;
+
+            $previousStatus = (int) $trip->status;
 
             // Create Report
             $report = Report::create([
@@ -70,6 +73,8 @@ class ReportController extends Controller
                 'title' => $title,
                 'description' => $request->description,
                 'status' => ReportStatus::Pending,
+                'previous_trip_status' => $previousStatus,
+                'deadline_at' => now()->addHours(72),
             ]);
 
             // Save report images if present
@@ -81,12 +86,34 @@ class ReportController extends Controller
                 }
             }
 
+            // Lock trip status to Disputed (if not already completed)
+            if ($previousStatus != TripStatus::Complete->value) {
+                $trip->update(['status' => TripStatus::Disputed->value]);
+            }
+
+            // Send notification to Reporter
+            Notification::create([
+                'user_id' => $user->id,
+                'message' => "Khiếu nại cho chuyến đi {$tripCode} đã được ghi nhận. Chuyến đi tạm thời ở trạng thái tranh chấp trong khi CSKH xác minh.",
+                'is_read' => '0',
+            ]);
+
+            // Send notification to the other party
+            $targetUserId = ($user->id == $trip->user_id) ? $trip->car?->user_id : $trip->user_id;
+            if ($targetUserId) {
+                Notification::create([
+                    'user_id' => $targetUserId,
+                    'message' => "Chuyến đi {$tripCode} có khiếu nại mới từ đối phương. Hệ thống tạm thời khóa các thao tác chuyến đi để CSKH xử lý.",
+                    'is_read' => '0',
+                ]);
+            }
+
             // Load relations to return
             $report->load('images');
 
             return response()->json([
                 'success' => true,
-                'message' => 'Gửi khiếu nại thành công! Chúng tôi sẽ xem xét và phản hồi sớm nhất.',
+                'message' => 'Gửi khiếu nại thành công! Chuyến đi đã được đưa vào trạng thái tranh chấp để CSKH xác minh và xử lý.',
                 'data' => $report
             ], 201);
 
@@ -124,7 +151,7 @@ class ReportController extends Controller
             }
 
             // Only the reporter can revoke the report
-            if ($report->reporter_id !== $user->id) {
+            if ($report->reporter_id != $user->id) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Bạn không có quyền thu hồi khiếu nại này.'
@@ -132,7 +159,7 @@ class ReportController extends Controller
             }
 
             // Check if report status is Pending
-            if ($report->status !== ReportStatus::Pending) {
+            if ($report->status != ReportStatus::Pending) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Khiếu nại này không ở trạng thái chờ xử lý nên không thể thu hồi.'
@@ -144,22 +171,29 @@ class ReportController extends Controller
                 'status' => ReportStatus::Cancelled,
             ]);
 
-            // Create notification for the car owner
+            // Restore trip status from previous_trip_status if trip is currently Disputed
             $trip = $report->trip;
-            if ($trip && $trip->car) {
-                $ownerId = $trip->car->user_id;
-                if ($ownerId) {
-                    Notification::create([
-                        'user_id' => $ownerId,
-                        'message' => "Khách hàng đã thu hồi khiếu nại đối với chuyến đi #{$trip->id}.",
-                        'is_read' => '0',
-                    ]);
-                }
+            $tripCode = $trip->trip_code ?? ('#' . $trip->id);
+
+            if ($trip && (int) $trip->status == TripStatus::Disputed->value && $report->previous_trip_status !== null) {
+                $trip->update([
+                    'status' => $report->previous_trip_status
+                ]);
+            }
+
+            // Notify opposite party
+            $targetUserId = ($user->id == $trip->user_id) ? $trip->car?->user_id : $trip->user_id;
+            if ($targetUserId) {
+                Notification::create([
+                    'user_id' => $targetUserId,
+                    'message' => "Đối phương đã thu hồi khiếu nại đối với chuyến đi {$tripCode}. Chuyến đi tiếp tục bình thường.",
+                    'is_read' => '0',
+                ]);
             }
 
             return response()->json([
                 'success' => true,
-                'message' => 'Thu hồi khiếu nại thành công.',
+                'message' => 'Thu hồi khiếu nại thành công. Chuyến đi đã được khôi phục trạng thái.',
                 'data' => $report->fresh('images')
             ], 200);
 

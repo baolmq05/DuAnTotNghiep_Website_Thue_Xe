@@ -8,6 +8,7 @@ export enum TripStatus {
   OwnerCancel = 6,
   WaitingExtension = 7,
   WaitingReturn = 8,
+  Disputed = 9,
 }
 
 export const TripStatusLabel: Record<TripStatus, string> = {
@@ -20,6 +21,7 @@ export const TripStatusLabel: Record<TripStatus, string> = {
   [TripStatus.OwnerCancel]: 'Chủ xe hủy',
   [TripStatus.WaitingExtension]: 'Chờ gia hạn',
   [TripStatus.WaitingReturn]: 'Chờ trả xe',
+  [TripStatus.Disputed]: 'Đang tranh chấp',
 };
 
 export const TripStatusBadgeClass: Record<TripStatus, string> = {
@@ -32,6 +34,7 @@ export const TripStatusBadgeClass: Record<TripStatus, string> = {
   [TripStatus.OwnerCancel]: 'bg-rose-50 text-rose-500 border border-rose-100',
   [TripStatus.WaitingExtension]: 'bg-indigo-50 text-indigo-600 border border-indigo-200',
   [TripStatus.WaitingReturn]: 'bg-sky-50 text-sky-600 border border-sky-200',
+  [TripStatus.Disputed]: 'bg-amber-100 text-amber-800 border border-amber-300 font-bold',
 };
 
 export const TripStatusOptions = [
@@ -44,4 +47,5 @@ export const TripStatusOptions = [
   { value: TripStatus.OwnerCancel, label: TripStatusLabel[TripStatus.OwnerCancel] },
   { value: TripStatus.WaitingExtension, label: TripStatusLabel[TripStatus.WaitingExtension] },
   { value: TripStatus.WaitingReturn, label: TripStatusLabel[TripStatus.WaitingReturn] },
+  { value: TripStatus.Disputed, label: TripStatusLabel[TripStatus.Disputed] },
 ] as const;

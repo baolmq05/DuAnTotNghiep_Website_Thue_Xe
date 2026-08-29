@@ -740,7 +740,7 @@ const chatService = new ChatService();
 const { showToast } = useToast();
 const loading = ref(true);
 const ownerTrips = ref<any[]>([]);
-const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'waiting_extension' | 'waiting_return' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
+const activeFilter = ref<'pending' | 'waiting_payment' | 'confirmed' | 'active' | 'waiting_extension' | 'waiting_return' | 'disputed' | 'completed' | 'cancelled_renter' | 'cancelled_owner'>('pending');
 
 // Modal States
 const showRejectModal = ref(false);
@@ -779,6 +779,11 @@ const filterTabs = computed(() => {
       value: 'waiting_return' as const,
       label: 'Chờ trả xe',
       count: ownerTrips.value.filter(t => t.status === TripStatus.WaitingReturn).length,
+    },
+    {
+      value: 'disputed' as const,
+      label: 'Đang tranh chấp',
+      count: ownerTrips.value.filter(t => t.status === TripStatus.Disputed).length,
     },
     {
       value: 'completed' as const,
@@ -855,6 +860,8 @@ const filteredTrips = computed(() => {
     return ownerTrips.value.filter(t => t.status === TripStatus.WaitingExtension || (t.latest_extension && (t.latest_extension.status === 1 || t.latest_extension.status === 2)));
   } else if (activeFilter.value === 'waiting_return') {
     return ownerTrips.value.filter(t => t.status === TripStatus.WaitingReturn);
+  } else if (activeFilter.value === 'disputed') {
+    return ownerTrips.value.filter(t => t.status === TripStatus.Disputed);
   } else if (activeFilter.value === 'completed') {
     return ownerTrips.value.filter(t => t.status === TripStatus.Complete);
   } else if (activeFilter.value === 'cancelled_renter') {

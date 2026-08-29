@@ -20,8 +20,12 @@ class CancelTripByOwnerAction
             throw new InvalidArgumentException('Không tìm thấy thông tin chuyến đi.');
         }
 
-        if ($trip->car->user_id !== $user->id) {
+        if ($trip->car->user_id != $user->id) {
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
+        }
+
+        if ($trip->status == TripStatus::Disputed->value) {
+            throw new InvalidArgumentException('Chuyến đi đang trong quá trình xử lý khiếu nại (Tranh chấp). Vui lòng chờ phản hồi từ bộ phận CSKH trước khi thao tác.');
         }
 
         if (!in_array($trip->status, [
