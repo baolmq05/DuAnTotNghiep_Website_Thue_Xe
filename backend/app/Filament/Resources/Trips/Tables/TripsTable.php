@@ -3,14 +3,17 @@
 namespace App\Filament\Resources\Trips\Tables;
 
 use App\Enum\TripStatus;
+use App\Filament\Resources\Trips\TripResource;
+use App\Models\Trip;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
 use Filament\Forms\Components\DatePicker;
+
 class TripsTable
 {
     public static function configure(Table $table): Table
@@ -29,60 +32,37 @@ class TripsTable
                     ->label('Khách hàng')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('cost')
-                    ->label('Chi phí chuyến đi')
-                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' VNĐ')
+                TextColumn::make('trip_code')
+                    ->label('Mã chuyến đi')
+                    ->getStateUsing(fn ($record) => $record->trip_code ?: ('#' . $record->id))
+                    ->searchable()
                     ->sortable(),
-                TextColumn::make('discount_amount')
-                    ->label('Giảm giá')
-                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' VNĐ')
+                TextColumn::make('cost')
+                    ->label('Chi phí')
+                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.') . ' VND')
                     ->sortable(),
                 TextColumn::make('trip_type')
                     ->label('Loại thuê')
-                    ->formatStateUsing(fn ($state): string => match ((int) $state) {
-                        0 => 'Thuê theo ngày',
-                        1 => 'Thuê theo km',
-                        default => 'Không xác định',
-                    })
-                    ->color(fn ($state): string => match ((int) $state) {
-                        0 => 'info',
-                        1 => 'warning',
-                        default => 'gray',
-                    })
+                    ->formatStateUsing(fn ($state) => $state == 1 ? 'Thuê theo km' : 'Thuê theo ngày')
                     ->badge()
+                    ->color('info')
                     ->sortable(),
                 TextColumn::make('status')
                     ->label('Trạng thái')
-                    ->formatStateUsing(fn ($state): string => TripStatus::tryFrom((int) $state)?->label() ?? 'Không xác định')
-                    ->color(fn ($state): string => match ((int) $state) {
-                        TripStatus::Pending->value => 'warning',
-                        TripStatus::WaitingPayment->value => 'info',
-                        TripStatus::Confirmed->value => 'gray',
-                        TripStatus::Ongoing->value => 'primary',
-                        TripStatus::Complete->value => 'success',
-                        TripStatus::UserCancel->value, TripStatus::OwnerCancel->value => 'danger',
-                        TripStatus::WaitingExtension->value => 'info',
-                        TripStatus::WaitingReturn->value => 'warning',
-                        default => 'gray',
-                    })
                     ->badge()
                     ->sortable(),
                 TextColumn::make('start_at')
-                    ->label('Thời gian bắt đầu')
-                    ->dateTime('H:i d/m/Y')
+                    ->dateTime()
                     ->sortable(),
                 TextColumn::make('end_at')
-                    ->label('Thời gian kết thúc')
-                    ->dateTime('H:i d/m/Y')
+                    ->dateTime()
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->label('Ngày tạo')
-                    ->dateTime('H:i d/m/Y')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('updated_at')
-                    ->label('Ngày cập nhật')
-                    ->dateTime('H:i d/m/Y')
+                    ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -105,6 +85,7 @@ class TripsTable
                         TripStatus::OwnerCancel->value => 'Chủ xe hủy',
                         TripStatus::WaitingExtension->value => 'Chờ gia hạn',
                         TripStatus::WaitingReturn->value => 'Chờ trả xe',
+                        TripStatus::Disputed->value => 'Đang tranh chấp',
                     ]),
                 SelectFilter::make('trip_type')
                     ->label('Loại thuê')
@@ -126,9 +107,15 @@ class TripsTable
                             ->when($data['end_at'], fn($q) => $q->whereDate('end_at', '<=', $data['end_at']));
                     }),
             ])
-            // ->recordActions([
-            //     EditAction::make(),
-            // ])
+            ->recordActions([
+                Action::make('view_trip')
+                    ->label('Xem chi tiết')
+                    ->icon('heroicon-o-eye')
+                    ->url(fn (Trip $record): string => TripResource::getUrl('view', ['record' => $record])),
+            ])
+            ->recordUrl(
+                fn (Trip $record): string => TripResource::getUrl('view', ['record' => $record])
+            )
             ->toolbarActions([
                 //
             ]);

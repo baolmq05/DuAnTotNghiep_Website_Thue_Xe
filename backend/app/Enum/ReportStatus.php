@@ -30,7 +30,7 @@ enum ReportStatus: int implements HasLabel, HasColor, HasIcon
     public function getColor(): array|string|null
     {
         return match ($this) {
-            self::Pending => 'gray',
+            self::Pending => 'warning',
             self::Resolved => 'success',
             self::Rejected => 'danger',
             self::Cancelled => 'gray',

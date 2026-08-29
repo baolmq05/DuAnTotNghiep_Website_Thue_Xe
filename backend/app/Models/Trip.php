@@ -29,6 +29,15 @@ class Trip extends Model
         'trip_code'
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'status' => TripStatus::class,
+            'start_at' => 'datetime',
+            'end_at' => 'datetime',
+        ];
+    }
+
     protected $appends = ['payment_held', 'owner_payment_note', 'owner_gross_revenue'];
 
     public function getOwnerGrossRevenueAttribute(): float

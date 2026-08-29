@@ -33,7 +33,8 @@ class TransactionForm
                     ->required(),
                 Select::make('trip_id')
                     ->label('Mã chuyến đi')
-                    ->relationship('trip', 'id')
+                    ->relationship('trip', 'trip_code')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => $record->trip_code ? "{$record->trip_code} (#{$record->id})" : "#{$record->id}")
                     ->searchable()
                     ->preload()
                     ->default(null),

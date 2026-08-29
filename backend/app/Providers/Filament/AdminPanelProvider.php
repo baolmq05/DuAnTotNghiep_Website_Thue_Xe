@@ -63,6 +63,11 @@ class AdminPanelProvider extends PanelProvider
                     ->label('Quản lý Người dùng')
                     ->icon('heroicon-o-users')
                     ->collapsible(true),
+
+                NavigationGroup::make()
+                    ->label('Cấu hình Hệ thống')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->collapsible(true),
             ])
             ->middleware([
                 EncryptCookies::class,

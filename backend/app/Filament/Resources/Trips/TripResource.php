@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\Trips;
 
 use App\Filament\Resources\Trips\Pages\ListTrips;
+use App\Filament\Resources\Trips\Pages\ViewTrip;
 use App\Filament\Resources\Trips\Schemas\TripForm;
+use App\Filament\Resources\Trips\Schemas\TripInfolist;
 use App\Filament\Resources\Trips\Tables\TripsTable;
 use App\Models\Trip;
 use BackedEnum;
@@ -46,6 +48,11 @@ class TripResource extends Resource
         return TripForm::configure($schema);
     }
 
+    public static function infolist(Schema $schema): Schema
+    {
+        return TripInfolist::configure($schema);
+    }
+
     public static function table(Table $table): Table
     {
         return TripsTable::configure($table);
@@ -62,6 +69,7 @@ class TripResource extends Resource
     {
         return [
             'index' => ListTrips::route('/'),
+            'view' => ViewTrip::route('/{record}'),
         ];
     }
 }

@@ -9,7 +9,6 @@ use App\Services\ReportService;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
-use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 
@@ -46,8 +45,8 @@ class ViewReport extends ViewRecord
                         ->label('3. Lý do vi phạm (Lưu thông tin phạt chủ xe)')
                         ->rows(3)
                         ->placeholder('Nhập lý do vi phạm để ghi nhận phạt chủ xe...')
-                        ->visible(fn (Get $get): bool => $get('fault_side') == 'owner')
-                        ->required(fn (Get $get): bool => $get('fault_side') == 'owner'),
+                        ->visible(fn ($get): bool => $get('fault_side') == 'owner')
+                        ->required(fn ($get): bool => $get('fault_side') == 'owner'),
 
                     Select::make('penalty_type')
                         ->label('4. Hình thức xử phạt chủ xe (Tự động theo strike 90 ngày)')
@@ -59,7 +58,7 @@ class ViewReport extends ViewRecord
                             $ownerId = $this->record->trip?->car?->user_id;
                             return ReportService::getPenaltyTypeForOwner($ownerId)->value;
                         })
-                        ->visible(fn (Get $get): bool => $get('fault_side') == 'owner')
+                        ->visible(fn ($get): bool => $get('fault_side') == 'owner')
                         ->disabled()
                         ->dehydrated(),
                 ])

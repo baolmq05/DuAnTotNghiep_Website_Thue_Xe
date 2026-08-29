@@ -6,6 +6,7 @@ use App\Filament\Resources\Transactions\Pages\CreateTransaction;
 use App\Filament\Resources\Transactions\Pages\EditTransaction;
 use App\Filament\Resources\Transactions\Pages\ListTransactions;
 use App\Filament\Resources\Transactions\Schemas\TransactionForm;
+use App\Filament\Resources\Transactions\Schemas\TransactionInfolist;
 use App\Filament\Resources\Transactions\Tables\TransactionsTable;
 use App\Models\Transaction;
 use BackedEnum;
@@ -23,9 +24,34 @@ class TransactionResource extends Resource
     protected static ?string $recordTitleAttribute = 'transaction_code';
     protected static \UnitEnum|string|null $navigationGroup = 'Quản lý Vận hành';
 
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return TransactionForm::configure($schema);
+    }
+
+    public static function infolist(Schema $schema): Schema
+    {
+        return TransactionInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
@@ -44,7 +70,6 @@ class TransactionResource extends Resource
     {
         return [
             'index' => ListTransactions::route('/'),
-            'edit' => EditTransaction::route('/{record}/edit'),
         ];
     }
 }
