@@ -64,11 +64,13 @@ class Trip extends Model
             return 'Tiền thuê xe đã được giải ngân thành công vào ví của bạn.';
         }
 
-        if ($this->status == TripStatus::WaitingPayment->value) {
+        $statusVal = $this->status instanceof TripStatus ? $this->status->value : (int) $this->status;
+
+        if ($statusVal === TripStatus::WaitingPayment->value) {
             return 'Chuyến đi đang chờ khách hàng thanh toán.';
         }
 
-        if ($this->status == TripStatus::Pending->value) {
+        if ($statusVal === TripStatus::Pending->value) {
             return 'Đang chờ bạn duyệt yêu cầu thuê xe.';
         }
 
@@ -86,11 +88,13 @@ class Trip extends Model
         });
 
         static::updated(function ($trip) {
-            if (in_array((int) $trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+            $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+
+            if (in_array($statusVal, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
                 PromotionUsage::where('trip_id', $trip->id)->delete();
             }
 
-            if (in_array((int) $trip->status, [TripStatus::Complete->value, TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+            if (in_array($statusVal, [TripStatus::Complete->value, TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
                 if ($trip->conversation) {
                     $trip->conversation->update(['status' => 0]);
                 }

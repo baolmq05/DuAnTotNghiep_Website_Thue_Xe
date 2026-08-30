@@ -25,12 +25,14 @@ class CancelTripByRenterAction
             throw new InvalidArgumentException('Bạn không có quyền hủy chuyến đi này.');
         }
 
-        if ($trip->status == TripStatus::Disputed->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+
+        if ($statusVal === TripStatus::Disputed->value) {
             throw new InvalidArgumentException('Chuyến đi đang trong quá trình xử lý khiếu nại (Tranh chấp). Vui lòng chờ phản hồi từ bộ phận CSKH trước khi thao tác.');
         }
 
         // Chỉ cho phép hủy khi trạng thái ở 0 (Pending), 1 (WaitingPayment), 2 (Confirmed)
-        if (!in_array($trip->status, [
+        if (!in_array($statusVal, [
             TripStatus::Pending->value,
             TripStatus::WaitingPayment->value,
             TripStatus::Confirmed->value

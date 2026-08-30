@@ -58,7 +58,8 @@ class ReportService
         ]);
 
         // 2. Xử lý hủy chuyến & hoàn tiền nếu chuyến đi đang ở trạng thái Tranh chấp hoặc chưa hoàn thành
-        if ($report->trip && (int) $report->trip->status == TripStatus::Disputed->value) {
+        $tripStatusVal = $report->trip?->status instanceof TripStatus ? $report->trip->status->value : (int) ($report->trip?->status ?? 0);
+        if ($report->trip && $tripStatusVal === TripStatus::Disputed->value) {
             $adminCancelAction = resolve(AdminCancelTripAction::class);
             $adminCancelAction->execute(
                 $report->trip_id,
@@ -142,7 +143,8 @@ class ReportService
 
         // 2. Khôi phục trạng thái chuyến đi nếu chuyến đi đang ở trạng thái Tranh chấp
         $trip = $report->trip;
-        if ($trip && (int) $trip->status == TripStatus::Disputed->value) {
+        $tripStatusVal = $trip?->status instanceof TripStatus ? $trip->status->value : (int) ($trip?->status ?? 0);
+        if ($trip && $tripStatusVal === TripStatus::Disputed->value) {
             $restoredStatus = $report->previous_trip_status ?? TripStatus::Confirmed->value;
             $trip->update(['status' => $restoredStatus]);
 

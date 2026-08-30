@@ -50,7 +50,8 @@ class ReportController extends Controller
                 TripStatus::WaitingExtension->value,
                 TripStatus::Complete->value,
             ];
-            if (!in_array((int) $trip->status, $allowedStatuses)) {
+            $tripStatusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+            if (!in_array($tripStatusVal, $allowedStatuses)) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Chỉ có thể khiếu nại đối với các chuyến đi đã thanh toán, đang diễn ra hoặc đã hoàn thành.'
@@ -63,7 +64,7 @@ class ReportController extends Controller
             $tripCode = $trip->trip_code ?? ('#' . $trip->id);
             $title = "Khiếu nại chuyến đi " . $tripCode . " - " . $reportTypeLabel;
 
-            $previousStatus = (int) $trip->status;
+            $previousStatus = $tripStatusVal;
 
             // Create Report
             $report = Report::create([
@@ -175,7 +176,8 @@ class ReportController extends Controller
             $trip = $report->trip;
             $tripCode = $trip->trip_code ?? ('#' . $trip->id);
 
-            if ($trip && (int) $trip->status == TripStatus::Disputed->value && $report->previous_trip_status !== null) {
+            $tripStatusVal = $trip?->status instanceof TripStatus ? $trip->status->value : (int) ($trip?->status ?? 0);
+            if ($trip && $tripStatusVal === TripStatus::Disputed->value && $report->previous_trip_status !== null) {
                 $trip->update([
                     'status' => $report->previous_trip_status
                 ]);

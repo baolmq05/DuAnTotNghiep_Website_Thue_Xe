@@ -67,7 +67,8 @@ class MyTripController extends Controller
         $trips = $tripQuery->get();
 
         foreach ($trips as $trip) {
-            switch ($trip->status) {
+            $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+            switch ($statusVal) {
                 case TripStatus::Pending->value:
                     $trip->status_text = 'Chờ duyệt';
                     break;

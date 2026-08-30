@@ -37,8 +37,10 @@ class ChatConversation extends Model
             return null;
         }
 
+        $tripStatus = $trip->status instanceof TripStatus ? $trip->status->value : (int)$trip->status;
+
         // Không tạo chat nếu chuyến đi chưa được xác nhận (Pending = 0) hoặc đã bị hủy (UserCancel = 5, OwnerCancel = 6)
-        if (in_array((int)$trip->status, [
+        if (in_array($tripStatus, [
             TripStatus::Pending->value,
             TripStatus::UserCancel->value,
             TripStatus::OwnerCancel->value

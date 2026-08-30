@@ -53,7 +53,8 @@ class AutoTimeoutReportsCommand extends Command
             ]);
 
             $trip = $report->trip;
-            if ($trip && (int) $trip->status == TripStatus::Disputed->value) {
+            $tripStatusVal = $trip?->status instanceof TripStatus ? $trip->status->value : (int) ($trip?->status ?? 0);
+            if ($trip && $tripStatusVal === TripStatus::Disputed->value) {
                 $restoredStatus = $report->previous_trip_status ?? TripStatus::Confirmed->value;
                 $trip->update(['status' => $restoredStatus]);
 

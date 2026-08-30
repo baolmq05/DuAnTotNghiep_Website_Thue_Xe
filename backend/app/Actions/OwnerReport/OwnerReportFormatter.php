@@ -41,8 +41,8 @@ class OwnerReportFormatter
                 'start_at' => $trip->start_at,
                 'end_at' => $trip->end_at,
                 'cost' => $trip->cost,
-                'status' => (int) $trip->status,
-                'status_text' => self::getTripStatusText((int) $trip->status),
+                'status' => $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status,
+                'status_text' => self::getTripStatusText($trip->status),
             ] : null,
             'car' => $car ? [
                 'id' => $car->id,
@@ -103,8 +103,8 @@ class OwnerReportFormatter
                 'discount_amount' => $trip->discount_amount,
                 'delivery_address' => $trip->delivery_address,
                 'delivery_location' => $trip->delivery_location,
-                'status' => (int) $trip->status,
-                'status_text' => self::getTripStatusText((int) $trip->status),
+                'status' => $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status,
+                'status_text' => self::getTripStatusText($trip->status),
                 'renter' => $trip->user ? [
                     'id' => $trip->user->id,
                     'name' => $trip->user->name,
@@ -177,9 +177,10 @@ class OwnerReportFormatter
     /**
      * Helper to get Vietnamese text for trip status.
      */
-    public static function getTripStatusText(int $status): string
+    public static function getTripStatusText(int|TripStatus|null $status): string
     {
-        return match ($status) {
+        $statusVal = $status instanceof TripStatus ? $status->value : (int) ($status ?? 0);
+        return match ($statusVal) {
             TripStatus::Pending->value => 'Chờ duyệt',
             TripStatus::WaitingPayment->value => 'Chờ thanh toán',
             TripStatus::Confirmed->value => 'Chưa bắt đầu',

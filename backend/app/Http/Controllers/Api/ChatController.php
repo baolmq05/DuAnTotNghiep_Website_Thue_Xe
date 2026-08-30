@@ -131,8 +131,8 @@ class ChatController extends Controller
             $conversation = ChatConversation::where('trip_id', $request->trip_id)->first();
             if (!$conversation) {
                 $trip = \App\Models\Trip::find($request->trip_id);
-                $status = 1;
-                if ($trip && in_array((int)$trip->status, [
+                $tripStatusVal = $trip?->status instanceof \App\Enum\TripStatus ? $trip->status->value : (int) ($trip?->status ?? 0);
+                if ($trip && in_array($tripStatusVal, [
                     \App\Enum\TripStatus::Complete->value,
                     \App\Enum\TripStatus::UserCancel->value,
                     \App\Enum\TripStatus::OwnerCancel->value

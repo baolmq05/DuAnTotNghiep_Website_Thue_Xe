@@ -21,7 +21,8 @@ class RequestReturnTripAction
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
         }
 
-        if ($trip->status !== TripStatus::Ongoing->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::Ongoing->value) {
             throw new InvalidArgumentException('Chuyến đi không ở trạng thái Đang diễn ra.');
         }
 

@@ -23,7 +23,8 @@ class StoreTripReviewAction
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
         }
 
-        if ($trip->status !== TripStatus::Complete->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::Complete->value) {
             throw new InvalidArgumentException('Chuyến đi phải hoàn thành mới có thể đánh giá.');
         }
 

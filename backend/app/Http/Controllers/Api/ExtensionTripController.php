@@ -42,7 +42,8 @@ class ExtensionTripController extends Controller
         }
 
         // Chuyến đi phải đang diễn ra (status = 3 - Ongoing)
-        if ($trip->status !== TripStatus::Ongoing->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::Ongoing->value) {
             return response()->json([
                 'success' => false,
                 'message' => 'Chuyến đi không ở trạng thái hợp lệ để yêu cầu gia hạn.'

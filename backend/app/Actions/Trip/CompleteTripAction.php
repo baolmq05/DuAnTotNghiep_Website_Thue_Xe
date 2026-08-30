@@ -24,7 +24,8 @@ class CompleteTripAction
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
         }
 
-        if ($trip->status !== TripStatus::WaitingReturn->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::WaitingReturn->value) {
             throw new InvalidArgumentException('Chuyến đi không ở trạng thái Chờ trả xe để hoàn thành.');
         }
 

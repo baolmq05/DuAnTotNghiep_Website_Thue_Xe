@@ -21,7 +21,8 @@ class ConfirmTripAction
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
         }
 
-        if ($trip->status !== TripStatus::Pending->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::Pending->value) {
             throw new InvalidArgumentException('Chuyến đi không ở trạng thái Chờ xác nhận.');
         }
 

@@ -23,7 +23,8 @@ class StartTripAction
             throw new InvalidArgumentException('Bạn không có quyền thực hiện hành động này.');
         }
 
-        if ($trip->status !== TripStatus::Confirmed->value) {
+        $statusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+        if ($statusVal !== TripStatus::Confirmed->value) {
             throw new InvalidArgumentException('Chuyến đi không ở trạng thái Đang xác nhận để bắt đầu.');
         }
 

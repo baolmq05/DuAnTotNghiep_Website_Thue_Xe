@@ -280,9 +280,10 @@ class WalletController extends Controller
             if ($isCurrentMonth) {
                 if ($txn->trip_id && $txn->trip) {
                     $trip = $txn->trip;
-                    if ((int)$trip->status == TripStatus::Complete->value) {
+                    $tripStatusVal = $trip->status instanceof TripStatus ? $trip->status->value : (int) $trip->status;
+                    if ($tripStatusVal === TripStatus::Complete->value) {
                         $completedTripsChange += $txn->amount;
-                    } elseif (in_array((int)$trip->status, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
+                    } elseif (in_array($tripStatusVal, [TripStatus::UserCancel->value, TripStatus::OwnerCancel->value])) {
                         $cancelledTripsChange += $txn->amount;
                     }
                 } else {
