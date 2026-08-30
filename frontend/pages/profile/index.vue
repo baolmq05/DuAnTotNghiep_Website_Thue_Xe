@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
     <!-- Account Information -->
     <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm">
@@ -542,17 +542,17 @@ const handleUpdateProfile = async () => {
     return
   }
   const phoneTrimmed = (editForm.phone || '').trim()
-  if (!phoneTrimmed) {
-    showToast("Số điện thoại không được để trống.", "error")
-    return
-  }
-  if (!phoneTrimmed.startsWith('0')) {
-    showToast("Số điện thoại phải bắt đầu bằng số 0.", "error")
-    return
-  }
-  if (!/^\d+$/.test(phoneTrimmed) || phoneTrimmed.length !== 10) {
-    showToast("Số điện thoại phải có đúng 10 số.", "error")
-    return
+  let phoneValue = null
+  if (phoneTrimmed) {
+    if (!phoneTrimmed.startsWith('0')) {
+      showToast("Số điện thoại phải bắt đầu bằng số 0.", "error")
+      return
+    }
+    if (!/^\d+$/.test(phoneTrimmed) || phoneTrimmed.length !== 10) {
+      showToast("Số điện thoại phải có đúng 10 số.", "error")
+      return
+    }
+    phoneValue = phoneTrimmed
   }
   if (editForm.DOB && editForm.DOB > todayDate.value) {
     showToast("Ngày sinh không được lớn hơn ngày hiện tại.", "error")
@@ -563,7 +563,7 @@ const handleUpdateProfile = async () => {
   try {
     const res = await updateProfile({
       name: editForm.name,
-      phone: phoneTrimmed,
+      phone: phoneValue,
       gender: editForm.gender,
       DOB: editForm.DOB
     })
@@ -850,7 +850,7 @@ const handleUpdateAvatar = async () => {
     // 2. Gọi API cập nhật profile lên backend database (dùng chung hàm updateProfile có sẵn của bạn)
     const res = await updateProfile({
       name: user.value?.name || '',
-      phone: user.value?.phone || '',
+      phone: user.value?.phone || null,
       gender: user.value?.gender !== undefined ? user.value?.gender : 1,
       DOB: user.value?.DOB || '',
       avatar: finalAvatarUrl // Truyền field avatar mới lên Server DB
@@ -932,7 +932,7 @@ const handleUpdateBank = async () => {
   try {
     const res = await updateProfile({
       name: user.value?.name || '',
-      phone: user.value?.phone || '',
+      phone: user.value?.phone || null,
       gender: user.value?.gender !== undefined ? user.value?.gender : 1,
       DOB: user.value?.DOB || '',
       bank_name: bankForm.bank_name,

@@ -18,6 +18,13 @@ class UpdateProfileRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('phone') && (trim((string) $this->input('phone')) === '' || $this->input('phone') === null)) {
+            $this->merge(['phone' => null]);
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -28,9 +35,9 @@ class UpdateProfileRequest extends FormRequest
         $userId = auth('api')->id() ?? $this->user('api')?->id ?? $this->user()?->id;
 
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'sometimes|required|string|max:255',
             'phone' => [
-                'required',
+                'nullable',
                 'starts_with:0',
                 'digits:10',
                 Rule::unique('users', 'phone')->ignore($userId),
@@ -47,7 +54,6 @@ class UpdateProfileRequest extends FormRequest
     {
         return [
             'name.required' => 'Họ và tên không được để trống.',
-            'phone.required' => 'Số điện thoại không được để trống.',
             'phone.starts_with' => 'Số điện thoại phải bắt đầu bằng số 0.',
             'phone.digits' => 'Số điện thoại phải có đúng 10 số.',
             'phone.unique' => 'Số điện thoại này đã được sử dụng.',

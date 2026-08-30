@@ -111,7 +111,7 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Cập nhật thông tin tài khoản thành công.',
-            'user' => $user
+            'user' => $user->fresh()->load('drivingLicense')
         ]);
     }
 
