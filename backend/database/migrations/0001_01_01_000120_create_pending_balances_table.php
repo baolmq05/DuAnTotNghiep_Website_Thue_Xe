@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('trip_id')->comment('đơn thuê xe');
             $table->unsignedBigInteger('payer_id')->comment('người thuê');
             $table->unsignedBigInteger('receiver_id')->comment('chủ xe');
-            $table->decimal('amount', 10, 2)->comment('tiền đang giữ');
+            $table->decimal('amount', 15, 2)->comment('tiền đang giữ');
             $table->string('status')->default('1')->comment('1 - holding, 2 - released, 3 - cancelled');
             $table->timestamp('expired_at')->nullable()->comment('quá hạn');
             $table->timestamp('released_at')->nullable()->comment('thời điểm giải ngân');

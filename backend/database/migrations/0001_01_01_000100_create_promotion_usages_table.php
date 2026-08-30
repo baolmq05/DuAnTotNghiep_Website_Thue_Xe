@@ -16,7 +16,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id')->comment('ID của người dùng');
             $table->unsignedBigInteger('promotion_id')->comment('ID của khuyến mãi');
-            $table->integer('discount_amount')->comment('Số tiền được giảm');
+            $table->decimal('discount_amount', 15, 2)->comment('Số tiền được giảm');
             $table->dateTime('used_at')->comment('Thời gian sử dụng khuyến mãi');
             $table->unsignedBigInteger('trip_id')->nullable()->comment('ID của chuyến đi nếu có');
             $table->foreign('trip_id')->references('id')->on('trips')->onDelete('set null');

@@ -14,8 +14,8 @@ return new class extends Migration {
             $table->engine = 'InnoDB';
             $table->id();
             $table->string('trip_code')->nullable()->unique()->comment('Mã chuyến đi hiển thị cho người dùng');
-            $table->decimal('cost', 10, 2)->comment('chi phí chuyến đi');
-            $table->decimal('discount_amount', 10, 2)->comment('số tiền giảm giá')->default(0);
+            $table->decimal('cost', 15, 2)->comment('chi phí chuyến đi');
+            $table->decimal('discount_amount', 15, 2)->comment('số tiền giảm giá')->default(0);
             $table->tinyInteger('status')->comment('trạng thái chuyến đi:	0 - Chờ duyệt, 1 - Chờ thanh toán, 2 - Đã xác nhận, 3 - Đang diễn ra, 4 - Đã hoàn thành, 5 - Người dùng hủy, 6 - Chủ xe hủy')->default(0);
             $table->tinyInteger('trip_type')->comment('loại chuyến đi: 0 - thuê theo ngày, 1 - thuê theo km')->default(0);
             $table->dateTime('start_at')->comment('thời gian bắt đầu chuyến đi');

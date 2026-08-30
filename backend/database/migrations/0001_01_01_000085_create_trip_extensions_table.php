@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('trip_extensions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('trip_id')->constrained('trips')->cascadeOnDelete();
-            $table->decimal('extension_amount', 10, 2)->default(0)->comment('Phí gia hạn thêm');
+            $table->decimal('extension_amount', 15, 2)->default(0)->comment('Phí gia hạn thêm');
             $table->tinyInteger('status')->default(0)->comment('0: Chưa gia hạn, 1: Đã gửi yêu cầu, 2: Chờ thanh toán, 3: Đã gia hạn, 4: Bị từ chối');
             $table->dateTime('start_date')->nullable()->comment('Thời gian kết thúc cũ trước khi gia hạn');
             $table->dateTime('end_date')->nullable()->comment('Thời gian kết thúc mới đề xuất');

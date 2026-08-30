@@ -13,13 +13,13 @@ return new class extends Migration
     {
         Schema::table('trips', function (Blueprint $table) {
             if (!Schema::hasColumn('trips', 'car_discount_amount')) {
-                $table->decimal('car_discount_amount', 10, 2)
+                $table->decimal('car_discount_amount', 15, 2)
                     ->default(0)
                     ->after('cost')
                     ->comment('Số tiền giảm giá của chủ xe (car.discount_value * days)');
             }
             if (!Schema::hasColumn('trips', 'promo_discount_amount')) {
-                $table->decimal('promo_discount_amount', 10, 2)
+                $table->decimal('promo_discount_amount', 15, 2)
                     ->default(0)
                     ->after('car_discount_amount')
                     ->comment('Số tiền mã giảm giá khuyến mãi của sàn/admin');

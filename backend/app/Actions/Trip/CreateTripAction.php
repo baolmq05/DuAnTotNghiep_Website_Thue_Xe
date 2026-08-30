@@ -30,6 +30,10 @@ class CreateTripAction
             throw new InvalidArgumentException('Bạn không thể thuê xe của chính mình!');
         }
 
+        if ($car->unit_price > 100000000) {
+            throw new InvalidArgumentException('Đơn giá thuê xe vượt quá mức cho phép tối đa (100.000.000 đ/ngày).');
+        }
+
         // Kiểm tra tránh tạo nhiều chuyến đi trùng lặp khi người dùng nhấn nhanh liên tục
         $existingTrip = Trip::where('user_id', $user->id)
             ->where('car_id', $data['car_id'])

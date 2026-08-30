@@ -51,7 +51,7 @@ class StoreCarRequest extends FormRequest
             'address'                => 'required|string',
 
             // Pricing & Discount
-            'unit_price'             => 'required|numeric|gt:0',
+            'unit_price'             => 'required|numeric|gt:0|max:100000000',
             'discount_value'         => 'nullable|numeric|min:0',
 
             // Delivery options
@@ -101,6 +101,7 @@ class StoreCarRequest extends FormRequest
             'fuel_consumption.min'      => 'Mức tiêu thụ nhiên liệu phải lớn hơn 0 (L/100km).',
             'unit_price.required'       => 'Đơn giá thuê xe không được để trống.',
             'unit_price.gt'             => 'Đơn giá thuê xe phải lớn hơn 0.',
+            'unit_price.max'            => 'Đơn giá thuê xe tối đa là 100.000.000 đ/ngày.',
             'address.required'          => 'Vui lòng nhập địa chỉ xe.',
             'images.required'           => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',
             'images.min'                => 'Bạn cần tải lên ít nhất 1 hình ảnh xe.',

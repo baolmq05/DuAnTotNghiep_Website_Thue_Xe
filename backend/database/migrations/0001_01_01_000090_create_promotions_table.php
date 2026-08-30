@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name')->comment('Tên khuyến mãi');
             $table->text('description')->comment('Mô tả khuyến mãi');
             $table->enum('discount_type', [0, 1])->comment('Loại giảm giá 0: phần trăm, 1: số tiền');
-            $table->integer('discount_value')->comment('Giá trị giảm giá');
+            $table->decimal('discount_value', 15, 2)->comment('Giá trị giảm giá');
             $table->date('start_date')->comment('Ngày bắt đầu');
             $table->date('end_date')->comment('Ngày kết thúc');
             $table->integer('usage_limit')->nullable()->comment('Giới hạn số lần sử dụng');
