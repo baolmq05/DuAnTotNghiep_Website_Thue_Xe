@@ -280,4 +280,28 @@ class AuthController extends Controller
             'message' => 'Mật khẩu của bạn đã được thay đổi thành công. Vui lòng đăng nhập bằng mật khẩu mới.'
         ]);
     }
+
+    /**
+     * Update FCM Token for push notifications.
+     */
+    public function updateFcmToken(Request $request)
+    {
+        $request->validate([
+            'fcm_token' => 'required|string',
+        ]);
+
+        $user = auth('api')->user();
+        if ($user) {
+            $user->update(['fcm_token' => $request->input('fcm_token')]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Cập nhật FCM Token thành công.'
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Người dùng chưa đăng nhập.'
+        ], 401);
+    }
 }

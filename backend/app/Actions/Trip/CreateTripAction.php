@@ -4,6 +4,7 @@ namespace App\Actions\Trip;
 
 use App\Enum\TripStatus;
 use App\Models\Car;
+use App\Models\Notification;
 use App\Models\Trip;
 use App\Models\Promotion;
 use App\Models\PromotionUsage;
@@ -121,6 +122,20 @@ class CreateTripAction
             // Tự động tạo cuộc trò chuyện cho chuyến đi
             $trip->load('car');
             \App\Models\ChatConversation::createForTrip($trip);
+
+            // Tạo thông báo cho Chủ xe
+            Notification::create([
+                'user_id' => $car->user_id,
+                'message' => "Bạn nhận được yêu cầu thuê xe mới cho xe '{$car->name}' từ khách hàng {$user->name}. Vui lòng kiểm tra và duyệt chuyến đi #{$trip->id}.",
+                'is_read' => '0',
+            ]);
+
+            // Tạo thông báo cho Khách thuê
+            Notification::create([
+                'user_id' => $user->id,
+                'message' => "Yêu cầu thuê xe '{$car->name}' (#{$trip->id}) của bạn đã được gửi thành công. Vui lòng chờ chủ xe xác nhận.",
+                'is_read' => '0',
+            ]);
 
             DB::commit();
 

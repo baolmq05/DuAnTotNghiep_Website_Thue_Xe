@@ -113,7 +113,8 @@ class User extends Authenticatable implements JWTSubject, FilamentUser
         'wallet_id',
         'driving_license_id',
         'bank_name',
-        'bank_account_number'
+        'bank_account_number',
+        'fcm_token'
     ];
 
     protected $hidden = [

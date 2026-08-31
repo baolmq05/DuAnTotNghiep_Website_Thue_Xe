@@ -83,6 +83,7 @@ Route::group(['middleware' => 'auth:api', 'prefix' => 'auth'], function () {
     Route::put('profile', [AuthController::class, 'updateProfile']);
     Route::post('profile/driving-license', [DrivingLicenseController::class, 'store']);
     Route::post('change-password', [AuthController::class, 'changePassword']);
+    Route::post('fcm-token', [AuthController::class, 'updateFcmToken']);
 
     // Addresses
     Route::get('addresses', [AddressController::class, 'index']);

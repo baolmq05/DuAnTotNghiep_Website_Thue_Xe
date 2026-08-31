@@ -3,6 +3,7 @@
 namespace App\Actions\Trip;
 
 use App\Enum\TripStatus;
+use App\Models\Notification;
 use App\Models\Trip;
 use App\Models\TripImage;
 use App\Models\User;
@@ -41,6 +42,12 @@ class StartTripAction
             }
 
             $trip->update(['status' => TripStatus::Ongoing->value]);
+
+            Notification::create([
+                'user_id' => $trip->user_id,
+                'message' => "Chủ xe đã bàn giao xe và bắt đầu chuyến đi #{$trip->id} (xe {$trip->car->name}). Chúc bạn có một hành trình an toàn!",
+                'is_read' => '0',
+            ]);
 
             DB::commit();
 
