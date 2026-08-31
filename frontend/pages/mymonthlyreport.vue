@@ -66,25 +66,16 @@
                     </button>
 
                     <!-- Khối thông tin đối tác/người dùng -->
-                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 flex items-center justify-between gap-6 max-w-md">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-[#1e4e57]/10 text-[#1e4e57] flex items-center justify-center font-bold">
-                                <Icon :name="user?.role_id === 2 ? 'lucide:user' : 'lucide:car'" class="w-5 h-5" />
-                            </div>
-                            <div>
-                                <div class="text-[11px] font-bold tracking-wide uppercase text-slate-400">
-                                    {{ user?.role_id === 2 ? 'Tài khoản Khách hàng' : 'Tài khoản Chủ xe' }}
-                                </div>
-                                <div class="text-sm font-bold text-slate-800">
-                                    {{ userName }}
-                                </div>
-                            </div>
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-4 flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-[#1e4e57]/10 text-[#1e4e57] flex items-center justify-center font-bold">
+                            <Icon :name="user?.role_id === 2 ? 'lucide:user' : 'lucide:car'" class="w-5 h-5" />
                         </div>
-
-                        <div class="text-right border-l border-slate-100 pl-4">
-                            <div class="text-[11px] font-bold tracking-wide uppercase text-slate-400">Mã định danh</div>
-                            <div class="text-xs font-mono font-bold text-[#1e4e57] bg-slate-100 px-2 py-0.5 rounded">
-                                {{ userCode }}
+                        <div>
+                            <div class="text-[11px] font-bold tracking-wide uppercase text-slate-400">
+                                {{ user?.role_id === 2 ? 'Tài khoản Khách hàng' : 'Tài khoản Chủ xe' }}
+                            </div>
+                            <div class="text-sm font-bold text-slate-800">
+                                {{ userName }}
                             </div>
                         </div>
                     </div>
@@ -225,7 +216,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden max-w-4xl">
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden max-w-5xl">
                         <div class="overflow-x-auto">
                             <table class="w-full text-left text-sm border-collapse">
                                 <thead>
@@ -233,6 +224,7 @@
                                         <th class="py-3.5 px-4 w-44 whitespace-nowrap">Ngày giao dịch</th>
                                         <th class="py-3.5 px-4 w-36 text-center whitespace-nowrap">Loại giao dịch</th>
                                         <th class="py-3.5 px-4">Nội dung diễn giải</th>
+                                        <th class="py-3.5 px-4 w-36 text-center whitespace-nowrap">Trạng thái</th>
                                         <th class="py-3.5 px-4 text-right w-48 whitespace-nowrap">Thay đổi số dư</th>
                                     </tr>
                                 </thead>
@@ -253,13 +245,21 @@
                                             <td class="py-4 px-4 font-semibold text-slate-800">
                                                 {{ item.description || ('Giao dịch ' + (item.amount > 0 ? 'Nạp tiền vào ví' : 'Rút tiền từ ví')) }}
                                             </td>
+                                            <td class="py-4 px-4 text-center whitespace-nowrap">
+                                                <span
+                                                    :class="getStatusConfig(item).class"
+                                                    class="inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full border">
+                                                    <Icon :name="getStatusConfig(item).icon" class="w-3.5 h-3.5" :class="{ 'animate-spin': Number(item.status) === 1 }" />
+                                                    {{ getStatusConfig(item).label }}
+                                                </span>
+                                            </td>
                                             <td class="py-4 px-4 font-mono font-black text-right text-base whitespace-nowrap" :class="item.amount > 0 ? 'text-emerald-600' : 'text-rose-600'">
                                                 {{ item.amount > 0 ? '+' : '' }}{{ formatCurrency(item.amount) }}
                                             </td>
                                         </tr>
                                     </template>
                                     <tr v-else>
-                                        <td colspan="4" class="py-8 text-slate-400 text-center font-medium bg-slate-50/30">
+                                        <td colspan="5" class="py-8 text-slate-400 text-center font-medium bg-slate-50/30">
                                             Không có giao dịch rút hoặc nộp tiền trong tháng này.
                                         </td>
                                     </tr>
@@ -596,9 +596,58 @@ const cancelledTrips = computed(() => {
     })
 })
 
-// 3. Hàm trợ giúp định dạng tiền tệ VND
+// 3. Hàm trợ giúp định dạng tiền tệ & trạng thái
 const formatCurrency = (amount: number = 0) => {
     return new Intl.NumberFormat('vi-VN').format(amount) + 'đ'
+}
+
+const getStatusConfig = (item: any) => {
+    if (item.status !== undefined && item.status !== null) {
+        const s = Number(item.status)
+        switch (s) {
+            case 0:
+                return {
+                    label: item.status_label || 'Chờ xử lý',
+                    class: 'bg-amber-50 text-amber-700 border-amber-200',
+                    icon: 'lucide:clock'
+                }
+            case 1:
+                return {
+                    label: item.status_label || 'Đang xử lý',
+                    class: 'bg-blue-50 text-blue-700 border-blue-200',
+                    icon: 'lucide:loader-2'
+                }
+            case 2:
+                return {
+                    label: item.status_label || 'Hoàn thành',
+                    class: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+                    icon: 'lucide:check-circle-2'
+                }
+            case 3:
+                return {
+                    label: item.status_label || 'Thất bại',
+                    class: 'bg-rose-50 text-rose-700 border-rose-200',
+                    icon: 'lucide:x-circle'
+                }
+            case 4:
+                return {
+                    label: item.status_label || 'Đã hủy',
+                    class: 'bg-slate-100 text-slate-600 border-slate-200',
+                    icon: 'lucide:ban'
+                }
+            default:
+                return {
+                    label: item.status_label || 'Chờ xử lý',
+                    class: 'bg-slate-50 text-slate-700 border-slate-200',
+                    icon: 'lucide:help-circle'
+                }
+        }
+    }
+    return {
+        label: 'Hoàn thành',
+        class: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        icon: 'lucide:check-circle-2'
+    }
 }
 
 // 4. Hàm bất đồng bộ (async) gọi API lấy dữ liệu từ Service theo Tháng/Năm được chọn
@@ -683,6 +732,7 @@ const exportToExcel = async () => {
                 'Ngày giao dịch': item.created_at,
                 'Loại giao dịch': item.amount > 0 ? 'Nạp tiền' : 'Rút tiền',
                 'Nội dung diễn giải': item.description || ('Giao dịch ' + (item.amount > 0 ? 'Nạp tiền' : 'Rút tiền')),
+                'Trạng thái': getStatusConfig(item).label,
                 'Thay đổi số dư (VNĐ)': item.amount || 0
             }))
             const wsDeposit = XLSXModule.utils.json_to_sheet(depositData.length > 0 ? depositData : [{ 'Thông báo': 'Không có dữ liệu rút/nộp tiền' }])
@@ -708,7 +758,6 @@ const exportToExcel = async () => {
             // 4. Sheet Tổng hợp
             const summaryData = [
                 { 'Chỉ tiêu': 'Họ và tên người dùng', 'Giá trị': userName.value },
-                { 'Chỉ tiêu': 'Mã định danh', 'Giá trị': userCode.value },
                 { 'Chỉ tiêu': 'Kỳ sao kê', 'Giá trị': `Tháng ${selectedMonth.value}/${selectedYear.value}` },
                 { 'Chỉ tiêu': 'Tổng tiền chuyến đi hoàn thành', 'Giá trị': summary.value.completed_trips_change },
                 { 'Chỉ tiêu': `Thuế kinh doanh (${summary.value.tax_rate || 25}%)`, 'Giá trị': summary.value.tax_deducted },

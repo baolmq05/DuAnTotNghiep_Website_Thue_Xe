@@ -93,6 +93,7 @@ class WalletController extends Controller
                             'transaction_code' => 'RF' . sprintf('%06d', $ref->id),
                             'amount'           => -$ref->amount,
                             'status'           => $ref->status->value,
+                            'status_label'     => $ref->status->getLabel(),
                             'description'      => $ref->description ?: ('Yêu cầu rút tiền #' . $ref->id),
                             'created_at'       => $ref->created_at ? (is_string($ref->created_at) ? date('d/m/Y H:i', strtotime($ref->created_at)) : $ref->created_at->format('d/m/Y H:i')) : null,
                         ];
