@@ -31,13 +31,7 @@ class UsersTable
                         '0' => 'Nữ',
                         '1' => 'Nam',
                         default => 'Khác',
-                    })
-                    ->color(fn ($state): string => match ((string) $state) {
-                        '0' => 'danger',
-                        '1' => 'info',
-                        default => 'gray',
-                    })
-                    ->badge(),
+                    }),
                 TextColumn::make('role.name')
                     ->label('Vai trò')
                     ->formatStateUsing(fn ($state): string => match ((string) $state) {

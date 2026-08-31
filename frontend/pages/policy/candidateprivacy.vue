@@ -16,17 +16,17 @@
                         </h1>
                     </div>
                     <div class="main-content text-justify">
-                        <p>Bằng việc nộp hồ sơ ứng tuyển cho Công ty Cổ phần Mioto Asia (“Mioto”) thông qua bất kỳ hình
+                        <p>Bằng việc nộp hồ sơ ứng tuyển cho Công ty Cổ phần DRIVIO (“DRIVIO”) thông qua bất kỳ hình
                             thức và phương tiện nào (tại trụ sở Công ty/ website của Công ty/ thư điện tử/ mạng xã hội/
                             website tuyển dụng/ đường bưu điện,….), ứng viên xác nhận hiểu rõ các nội dung liên quan tới
                             Thông báo về việc xử lý dữ liệu cá nhân này (“Thông báo”) và tự nguyện đồng ý với việc Công
                             ty và các bên có liên quan khác xử lý dữ liệu cá nhân của ứng viên.</p>
                         <h6 class="font-bold mb-3">1. Bên kiểm soát và xử lý Dữ liệu cá nhân</h6>
-                        <p>Bên kiểm soát và xử lý DLCN là Công ty Cổ phần Mioto Asia, địa chỉ: Số 561A Điện Biên Phủ,
+                        <p>Bên kiểm soát và xử lý DLCN là Công ty Cổ phần DRIVIO, địa chỉ: Số 561A Điện Biên Phủ,
                             Phường Thạnh Mỹ Tây, Thành phố Hồ Chí Minh; số điện thoại: 028 6286 1989. Để biết thêm chi
-                            tiết về Mioto, vui lòng truy cập website của chúng tôi: https://www.mioto.vn</p>
+                            tiết về DRIVIO, vui lòng truy cập website của chúng tôi: https://drivio.vn</p>
                         <h6 class="font-bold mb-3">2. Loại Dữ liệu cá nhân được xử lý</h6>
-                        <p>Loại DLCN mà Mioto có thể xử lý tùy theo vị trí ứng tuyển và quy định pháp luật bao gồm:</p>
+                        <p>Loại DLCN mà DRIVIO có thể xử lý tùy theo vị trí ứng tuyển và quy định pháp luật bao gồm:</p>
                         <h6 class="font-bold mb-3">2.1. DLCN cơ bản</h6>
                         <p>Họ, chữ đệm và tên khai sinh, tên gọi khác (nếu có); Ngày, tháng, năm sinh; Giới tính; Nơi
                             sinh, nơi đăng ký khai sinh, nơi đăng ký thường trú, nơi đăng ký tạm trú, nơi ở hiện tại,
@@ -41,18 +41,18 @@
                             định cần giữ bí mật hoặc cần có biện pháp bảo vệ chặt chẽ.</p>
                         <h6 class="font-bold mb-3">3. Cách thức thu thập và xử lý</h6>
                         <p>DLCN của ứng viên được thu thập từ các nguồn sau:</p>
-                        <p>- Từ ứng viên cung cấp cho chúng tôi qua email: contact@mioto.vn hoặc website:
-                            https://www.mioto.vn hoặc đến địa chỉ trụ sở, chi nhánh, văn phòng đại diện, địa điểm kinh
-                            doanh của Mioto.</p>
+                        <p>- Từ ứng viên cung cấp cho chúng tôi qua email: driviovietnam@gmail.com hoặc website:
+                            https://drivio.vn hoặc đến địa chỉ trụ sở, chi nhánh, văn phòng đại diện, địa điểm kinh
+                            doanh của DRIVIO.</p>
                         <p>- Từ các đơn vị cung cấp dịch vụ như bên cung cấp dịch vụ tuyển dụng, bên cung cấp dịch vụ
                             quảng cáo/đăng tin tuyển dụng, từ doanh nghiệp mà ứng viên đã/đang làm việc.</p>
                         <p>- Từ các cá nhân giới thiệu/kết nối ứng viên với chúng tôi.</p>
                         <p>- Từ các nguồn dữ liệu công khai sẵn có và/hoặc từ các nguồn và các bên thứ ba khác được ứng
                             viên đồng ý tiết lộ dữ liệu cho chúng tôi.</p>
                         <h6 class="font-bold mb-3">4. Mục đích xử lý</h6>
-                        <p>Mioto sẽ chỉ xử lý DLCN của ứng viên mà chúng tôi tiếp nhận, thu thập được trong giới hạn cần
+                        <p>DRIVIO sẽ chỉ xử lý DLCN của ứng viên mà chúng tôi tiếp nhận, thu thập được trong giới hạn cần
                             thiết để trao đổi với ứng viên về cơ hội nghề nghiệp, xem xét việc tuyển dụng ứng viên cho
-                            các vai trò, vị trí cụ thể tại Mioto, bao gồm:</p>
+                            các vai trò, vị trí cụ thể tại DRIVIO, bao gồm:</p>
                         <p>- Đánh giá và sàng lọc hồ sơ ứng tuyển;</p>
                         <p>- Liên hệ với ứng viên để đặt lịch phỏng vấn, trao đổi thông tin, thông báo kết quả tuyển
                             dụng;</p>
@@ -67,7 +67,7 @@
                             tuyển dụng;</p>
                         <p>- Bất kỳ mục đích nào khác liên quan đến hoặc phát sinh từ những nội dung nêu trên.</p>
                         <h6 class="font-bold mb-3">5. Dữ liệu cá nhân của ứng viên có thể được chia sẻ cho đối tượng nào</h6>
-                        <p>Để thực hiện một hay nhiều mục đích nêu tại mục 4 của Thông báo này, Mioto có thể cần phải
+                        <p>Để thực hiện một hay nhiều mục đích nêu tại mục 4 của Thông báo này, DRIVIO có thể cần phải
                             chia sẻ DLCN của ứng viên cho Bên xử lý dữ liệu, và việc chia sẻ này sẽ được thực hiện trong
                             phạm vi nhất định, cần thiết, theo đúng quy định của pháp luật tại từng thời điểm. Bên xử lý
                             DLCN tại mục này bao gồm:</p>
@@ -84,7 +84,7 @@
                             ứng viên đồng ý.</p>
                         <h6 class="font-bold mb-3">6. Thời hạn lưu trữ dữ liệu cá nhân</h6>
                         <p>DLCN của ứng viên sẽ được lưu trữ trong thời hạn cần thiết cho các mục đích nêu tại Thông báo
-                            này và/hoặc Chính sách bảo vệ DLCN của Mioto áp dụng cho nhân viên (trong trường hợp ứng
+                            này và/hoặc Chính sách bảo vệ DLCN của DRIVIO áp dụng cho nhân viên (trong trường hợp ứng
                             viên được lựa chọn cho vị trí tuyển dụng).</p>
                         <p>Sau khi quy trình tuyển dụng kết thúc (ví dụ: từ chối từ phía chúng tôi hoặc ứng viên không
                             tiếp tục ứng tuyển), DLCN của ứng viên sẽ được xóa trong vòng 06 tháng.</p>
@@ -95,9 +95,9 @@
                         <p>- Đồng ý hoặc không đồng ý, yêu cầu rút lại sự đồng ý: Ứng viên có thể rút lại sự đồng ý về
                             DLCN đã cung cấp. Rút lại sự đồng ý không làm ảnh hưởng tính hợp pháp của hoạt động xử lý đã
                             thực hiện trước thời điểm rút lại.</p>
-                        <p>- Xem, chỉnh sửa hoặc yêu cầu chỉnh sửa dữ liệu cá nhân: Ứng viên có thể yêu cầu Mioto cung
-                            cấp bản sao DLCN mà Mioto đang lưu giữ; có quyền yêu cầu sửa, cập nhật hoặc bổ sung dữ liệu
-                            sai lệch, không đầy đủ. Mioto sẽ hỗ trợ cập nhật kịp thời sau khi nhận được yêu cầu và tài
+                        <p>- Xem, chỉnh sửa hoặc yêu cầu chỉnh sửa dữ liệu cá nhân: Ứng viên có thể yêu cầu DRIVIO cung
+                            cấp bản sao DLCN mà DRIVIO đang lưu giữ; có quyền yêu cầu sửa, cập nhật hoặc bổ sung dữ liệu
+                            sai lệch, không đầy đủ. DRIVIO sẽ hỗ trợ cập nhật kịp thời sau khi nhận được yêu cầu và tài
                             liệu liên quan.</p>
                         <p>- Yêu cầu cung cấp, xóa, hạn chế xử lý dữ liệu cá nhân; gửi yêu cầu phản đối xử lý dữ liệu cá
                             nhân.</p>
@@ -108,14 +108,14 @@
                         <h6 class="font-bold mb-3">8. Thông tin liên hệ</h6>
                         <p>Nếu có thắc mắc hoặc yêu cầu/khiếu nại nào liên quan đến quyền của mình như trên, ứng viên
                             vui lòng liên hệ với chúng tôi qua thông tin được cung cấp dưới đây:</p>
-                        <p>Công ty Cổ phần Mioto Asia</p>
+                        <p>Công ty Cổ phần DRIVIO</p>
                         <p>Địa chỉ: Văn phòng 01, Tầng 09, Tòa nhà Pearl Plaza, Số 561A Điện Biên Phủ, Phường
                             Thạnh Mỹ Tây, Thành phố Hồ Chí Minh, Việt Nam.</p>
-                        <p>Số điện thoại: 028 6286 1989; Email: contact@mioto.vn; Website: https://www.mioto.vn</p>
+                        <p>Số điện thoại: 028 6286 1989; Email: driviovietnam@gmail.com; Website: https://drivio.vn</p>
                         <h6 class="font-bold mb-3">9. Điều chỉnh Thông báo về về việc xử lý và bảo vệ dữ liệu cá nhân</h6>
                         <p>Chúng tôi có thể cập nhật, sửa đổi Thông báo về bảo vệ DLCN này tại từng thời điểm. Phiên bản
                             mới nhất của Thông báo này sẽ được chúng tôi niêm yết công khai tại website:
-                            https://www.mioto.vn</p>
+                            https://drivio.vn</p>
                     </div>
                 </div>
             </div>

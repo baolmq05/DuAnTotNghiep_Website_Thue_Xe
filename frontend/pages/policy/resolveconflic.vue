@@ -24,7 +24,7 @@
                             Thành viên vào chất lượng dịch vụ của Sàn giao dịch. Khách hàng có thể thực hiện theo các
                             bước sau:</p>
                         <p><strong>Bước 1: </strong>Khách hàng khiếu nại về dịch vụ qua số điện thoại 1900 9217 hoặc gửi
-                            mail cho Bộ phận Chăm sóc Khách hàng tại địa chỉ support@mioto.vn. Thời gian để Công ty tiếp
+                            mail cho Bộ phận Chăm sóc Khách hàng tại địa chỉ driviovietnam@gmail.com. Thời gian để Công ty tiếp
                             nhận khiếu nại là 3 ngày kể từ ngày sử dụng dịch vụ hoặc từ ngày phát sinh sự việc.</p>
                         <p><strong>Bước 2: </strong>Trong thời hạn (3) ngày làm việc kể từ khi tiếp nhận thông tin khiếu
                             nại của Khách hàng, Bộ phận Chăm sóc Khách hàng xác nhận thông tin khiếu nại, tiến hành phân
@@ -37,7 +37,7 @@
                             cụ thể để hỗ trợ Khách hàng giải quyết tranh chấp đó.<br>3a. Chuyển các vấn đề có liên quan
                             trực tiếp đến Công ty cho các Bộ phận có liên quan kiểm tra và đối chiếu.<br>3b. Chuyển các
                             vấn đề có liên quan cho Chủ xe giải quyết.<br>Trong thời hạn ba (3) ngày làm việc kể từ khi
-                            tiếp nhận thông báo về khiếu nại, Chủ xe có trách nhiệm phối hợp với Mioto để giải quyết, xử
+                            tiếp nhận thông báo về khiếu nại, Chủ xe có trách nhiệm phối hợp với DRIVIO để giải quyết, xử
                             lý khiếu nại. Chủ xe sẽ thông báo cho Khách hàng biện pháp xử lý hoặc ủy quyền thông báo cho
                             Công ty.</p>
                         <p><strong>Bước 4: </strong>Đóng khiếu nại<br>4a. Khách hàng đồng ý với các phản hồi của Bộ phận
