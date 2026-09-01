@@ -241,10 +241,10 @@
                   v-if="car.status !== 4"
                   @click.stop="requestDelete(car)"
                   :disabled="car.statusChanging"
-                  class="p-2 text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100 transition duration-200 disabled:opacity-50 cursor-pointer"
+                  class="px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl border border-rose-100 transition duration-200 disabled:opacity-50 cursor-pointer"
                   title="Yêu cầu xóa xe"
                 >
-                  <Icon name="lucide:trash-2" class="w-4.5 h-4.5" />
+                Xóa
                 </button>
                 <span v-else class="text-xs text-rose-500 font-bold bg-rose-50 px-2.5 py-1 rounded-xl border border-rose-100">
                   Chờ duyệt xóa
