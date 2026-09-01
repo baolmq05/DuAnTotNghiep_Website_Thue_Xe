@@ -91,7 +91,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <!-- <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> -->
                             <h2 class="text-base font-bold text-slate-900">
                                 1. Chuyến đi hoàn thành trong tháng
                             </h2>
@@ -206,7 +206,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                            <!-- <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> -->
                             <h2 class="text-base font-bold text-slate-900">
                                 2. Giao dịch rút / nộp tiền trong tháng
                             </h2>
@@ -273,7 +273,7 @@
                 <div class="space-y-3">
                     <div class="flex items-center justify-between px-1">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span>
+                            <!-- <span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> -->
                             <h2 class="text-base font-bold text-slate-900">
                                 3. Giao dịch hủy chuyến trong tháng
                             </h2>
