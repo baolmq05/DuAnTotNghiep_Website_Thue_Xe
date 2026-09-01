@@ -844,6 +844,8 @@ const onSubmit = async () => {
   const plate = licensePlate.value?.trim().toUpperCase() || ''
   if (!plate) {
     validationErrors.push({ step: 1, message: 'Vui lòng nhập biển số xe.' })
+  } else if (!/^[A-Za-z0-9]+$/.test(plate)) {
+    validationErrors.push({ step: 1, message: 'Biển số xe chỉ được chứa chữ cái và số, không chứa dấu (-), dấu (.), khoảng trắng hay ký tự đặc biệt.' })
   } else if (plate.length > 12) {
     validationErrors.push({ step: 1, message: 'Biển số xe không được vượt quá 12 ký tự.' })
   }

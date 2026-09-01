@@ -73,7 +73,7 @@
                                         Biển số xe
                                     </label>
                                     <input type="text" v-model="licensePlate" maxlength="12"
-                                        placeholder="Nhập biển số xe (VD: 51H-123.45)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
+                                        placeholder="Nhập biển số xe (VD: 51H12345)" class="w-full rounded-2xl border border-slate-300 px-4 py-3 outline-none transition
                    focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
                                 </div>
 
@@ -313,7 +313,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Mức giảm đề xuất: <strong class="text-slate-800">{{ discountVal
-                                                    }}%</strong></span>
+                                            }}%</strong></span>
                                             <span class="font-bold">50%</span>
                                         </div>
                                     </div>
@@ -413,7 +413,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ maxDistVal
-                                            }}km</strong></span>
+                                                    }}km</strong></span>
                                             <span class="font-bold">50km</span>
                                         </div>
                                     </div>
@@ -424,7 +424,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ feeVal
-                                            }}K/km</strong></span>
+                                                    }}K/km</strong></span>
                                             <span class="font-bold">30K</span>
                                         </div>
                                     </div>
@@ -435,7 +435,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ freeLimitVal
-                                            }}km</strong></span>
+                                                    }}km</strong></span>
                                             <span class="font-bold">15km</span>
                                         </div>
                                     </div>
@@ -469,7 +469,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ kmLimitVal
-                                            }}km</strong></span>
+                                                    }}km</strong></span>
                                             <span class="font-bold">500km</span>
                                         </div>
                                     </div>
@@ -480,7 +480,7 @@
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
                                             <span>Đề xuất: <strong class="text-slate-800">{{ overFeeVal
-                                            }}K/km</strong></span>
+                                                    }}K/km</strong></span>
                                             <span class="font-bold">10K</span>
                                         </div>
                                     </div>
@@ -534,20 +534,25 @@
                         </div>
 
                         <!-- BANNER TỔNG HỢP LỖI VALIDATE NẾU THIẾU NHIỀU TRƯỜNG -->
-                        <div v-if="formValidationErrors.length > 0" class="mt-6 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 transition-all">
+                        <div v-if="formValidationErrors.length > 0"
+                            class="mt-6 rounded-2xl border border-rose-200 bg-rose-50/90 p-4 transition-all">
                             <div class="flex items-start gap-3">
-                                <Icon name="heroicons:exclamation-circle" class="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+                                <Icon name="heroicons:exclamation-circle"
+                                    class="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
                                 <div class="flex-1 min-w-0">
                                     <h4 class="text-xs font-bold uppercase tracking-wider text-rose-800">
                                         Vui lòng bổ sung đầy đủ thông tin ({{ formValidationErrors.length }} mục):
                                     </h4>
-                                    <ul class="mt-2 space-y-1 text-xs font-semibold text-rose-700 list-disc list-inside">
+                                    <ul
+                                        class="mt-2 space-y-1 text-xs font-semibold text-rose-700 list-disc list-inside">
                                         <li v-for="(err, idx) in formValidationErrors" :key="idx">
-                                            <span class="text-rose-500 font-bold">[Bước {{ err.step }}]</span> {{ err.message }}
+                                            <span class="text-rose-500 font-bold">[Bước {{ err.step }}]</span> {{
+                                            err.message }}
                                         </li>
                                     </ul>
                                 </div>
-                                <button type="button" @click="formValidationErrors = []" class="text-rose-400 hover:text-rose-600 p-1 cursor-pointer">
+                                <button type="button" @click="formValidationErrors = []"
+                                    class="text-rose-400 hover:text-rose-600 p-1 cursor-pointer">
                                     <Icon name="heroicons:x-mark" class="w-4 h-4" />
                                 </button>
                             </div>
@@ -583,10 +588,12 @@
                 <div v-if="isProfileModalOpen"
                     class="fixed inset-0 z-[90000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm"
                     @click.self="isProfileModalOpen = false">
-                    <div class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-7 border border-slate-100 overflow-hidden">
+                    <div
+                        class="relative w-full max-w-md bg-white rounded-3xl shadow-2xl p-6 sm:p-7 border border-slate-100 overflow-hidden">
                         <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-2xl bg-[#1e4e57]/10 flex items-center justify-center text-[#1e4e57]">
+                                <div
+                                    class="w-10 h-10 rounded-2xl bg-[#1e4e57]/10 flex items-center justify-center text-[#1e4e57]">
                                     <Icon name="solar:phone-calling-rounded-bold" class="w-5 h-5 text-[#1e4e57]" />
                                 </div>
                                 <div>
@@ -602,26 +609,33 @@
 
                         <form @submit.prevent="submitProfileUpdate" class="mt-5 space-y-4">
                             <div class="space-y-1.5">
-                                <label class="block text-xs font-bold text-slate-700">Họ và tên <span class="text-rose-500">*</span></label>
-                                <input type="text" v-model="profileForm.name" @input="profileErrors.name = ''" placeholder="Nhập họ và tên đầy đủ"
+                                <label class="block text-xs font-bold text-slate-700">Họ và tên <span
+                                        class="text-rose-500">*</span></label>
+                                <input type="text" v-model="profileForm.name" @input="profileErrors.name = ''"
+                                    placeholder="Nhập họ và tên đầy đủ"
                                     class="w-full px-4 py-3 bg-slate-50 border rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 transition-all"
                                     :class="profileErrors.name ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 focus:border-[#1e4e57] focus:ring-[#1e4e57]/10'" />
-                                <p v-if="profileErrors.name" class="text-xs text-rose-500 font-medium mt-1">{{ profileErrors.name }}</p>
+                                <p v-if="profileErrors.name" class="text-xs text-rose-500 font-medium mt-1">{{
+                                    profileErrors.name }}</p>
                             </div>
 
                             <div class="space-y-1.5">
-                                <label class="block text-xs font-bold text-slate-700">Số điện thoại liên hệ <span class="text-rose-500">*</span></label>
+                                <label class="block text-xs font-bold text-slate-700">Số điện thoại liên hệ <span
+                                        class="text-rose-500">*</span></label>
                                 <div class="relative">
                                     <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none"
                                         :class="profileErrors.phone ? 'text-rose-400' : 'text-slate-400'">
                                         <Icon name="solar:phone-calling-rounded-linear" class="w-4 h-4" />
                                     </div>
-                                    <input type="tel" v-model="profileForm.phone" @input="profileErrors.phone = ''" placeholder="VD: 0912345678"
+                                    <input type="tel" v-model="profileForm.phone" @input="profileErrors.phone = ''"
+                                        placeholder="VD: 0912345678"
                                         class="w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-2xl text-sm font-semibold text-slate-800 focus:outline-none focus:bg-white focus:ring-4 transition-all"
                                         :class="profileErrors.phone ? 'border-rose-400 focus:border-rose-500 focus:ring-rose-500/10' : 'border-slate-200 focus:border-[#1e4e57] focus:ring-[#1e4e57]/10'" />
                                 </div>
-                                <p v-if="profileErrors.phone" class="text-xs text-rose-500 font-medium mt-1">{{ profileErrors.phone }}</p>
-                                <p v-else class="text-[11px] text-slate-400">Số điện thoại gồm 10 chữ số (VD: 0912345678).</p>
+                                <p v-if="profileErrors.phone" class="text-xs text-rose-500 font-medium mt-1">{{
+                                    profileErrors.phone }}</p>
+                                <p v-else class="text-[11px] text-slate-400">Số điện thoại gồm 10 chữ số (VD:
+                                    0912345678).</p>
                             </div>
 
                             <div class="pt-3 flex items-center justify-end gap-3">
@@ -645,19 +659,19 @@
 
 <script setup lang="ts">
 useSeoMeta({
-  title: 'Đăng Ký Cho Thuê Xe — Kiếm Thu Nhập Thụ Động | DRIVIO',
-  description: 'Đăng ký cho thuê xe trên DRIVIO — kiếm thu nhập thụ động từ xe nhàn rỗi. Bảo hiểm toàn diện, hỗ trợ quản lý xe, thanh toán nhanh chóng.',
-  keywords: 'đăng ký cho thuê xe, cho thuê xe kiếm tiền, chủ xe drivio, thu nhập thụ động xe ô tô, đăng xe cho thuê',
-  ogTitle: 'Trở Thành Chủ Xe Trên DRIVIO',
-  ogDescription: 'Cho thuê xe nhàn rỗi, kiếm thu nhập thụ động với DRIVIO.',
-  ogImage: '/images/og/car-register.jpg',
-  twitterCard: 'summary_large_image',
+    title: 'Đăng Ký Cho Thuê Xe — Kiếm Thu Nhập Thụ Động | DRIVIO',
+    description: 'Đăng ký cho thuê xe trên DRIVIO — kiếm thu nhập thụ động từ xe nhàn rỗi. Bảo hiểm toàn diện, hỗ trợ quản lý xe, thanh toán nhanh chóng.',
+    keywords: 'đăng ký cho thuê xe, cho thuê xe kiếm tiền, chủ xe drivio, thu nhập thụ động xe ô tô, đăng xe cho thuê',
+    ogTitle: 'Trở Thành Chủ Xe Trên DRIVIO',
+    ogDescription: 'Cho thuê xe nhàn rỗi, kiếm thu nhập thụ động với DRIVIO.',
+    ogImage: '/images/og/car-register.jpg',
+    twitterCard: 'summary_large_image',
 })
 
 useHead({
-  link: [
-    { rel: 'canonical', href: 'https://drivio.vn/car-register' }
-  ]
+    link: [
+        { rel: 'canonical', href: 'https://drivio.vn/car-register' }
+    ]
 })
 
 import { ref, onMounted, onUnmounted, nextTick, computed } from 'vue'
@@ -951,6 +965,8 @@ const onSubmit = async () => {
     const plate = licensePlate.value?.trim().toUpperCase() || '';
     if (!plate) {
         validationErrors.push({ step: 1, message: 'Vui lòng nhập biển số xe.' });
+    } else if (!/^[A-Za-z0-9]+$/.test(plate)) {
+        validationErrors.push({ step: 1, message: 'Biển số xe chỉ chứa chữ cái và số.' });
     } else if (plate.length > 12) {
         validationErrors.push({ step: 1, message: 'Biển số xe không được vượt quá 12 ký tự.' });
     }

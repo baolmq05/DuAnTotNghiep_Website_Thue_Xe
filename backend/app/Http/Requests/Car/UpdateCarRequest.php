@@ -36,7 +36,7 @@ class UpdateCarRequest extends FormRequest
         $carId = $this->route('id');
 
         return [
-            'license_plate'          => ['required', 'string', 'max:12', Rule::unique('cars', 'license_plate')->ignore($carId)],
+            'license_plate'          => ['required', 'string', 'max:12', 'regex:/^[A-Za-z0-9]+$/', Rule::unique('cars', 'license_plate')->ignore($carId)],
             'VIN'                    => ['required', 'string', 'max:17', Rule::unique('cars', 'VIN')->ignore($carId)],
             'engine_number'          => ['required', 'string', 'max:100', Rule::unique('cars', 'engine_number')->ignore($carId)],
             'car_brand_id'           => 'required|exists:car_brands,id',
@@ -84,6 +84,7 @@ class UpdateCarRequest extends FormRequest
         return [
             'license_plate.required'    => 'Biển số xe không được để trống.',
             'license_plate.max'         => 'Biển số xe không được vượt quá 12 ký tự.',
+            'license_plate.regex'       => 'Biển số xe chỉ được chứa chữ cái và số, không chứa dấu (-), dấu (.), khoảng trắng hay ký tự đặc biệt.',
             'license_plate.unique'      => 'Biển số xe này đã được đăng ký trên hệ thống.',
             'VIN.required'              => 'Số khung (VIN) không được để trống.',
             'VIN.max'                   => 'Số khung (VIN) không được vượt quá 17 ký tự.',
