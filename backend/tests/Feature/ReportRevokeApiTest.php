@@ -10,7 +10,6 @@ use App\Models\CarBrand;
 use App\Models\CarDeliveryOption;
 use App\Models\CarLocation;
 use App\Models\CarType;
-use App\Models\CarUsageLimit;
 use App\Models\Notification;
 use App\Models\Report;
 use App\Models\Role;
@@ -50,12 +49,6 @@ class ReportRevokeApiTest extends TestCase
             'free_distance' => 5,
             'status' => 1,
         ]);
-        $limit = CarUsageLimit::firstOrCreate(['id' => 1], [
-            'max_daily_distance' => 300,
-            'extra_distance_fee' => 5000,
-            'status' => 1,
-        ]);
-
         $this->owner = User::factory()->create(['status' => 1, 'role_id' => 2]);
         $this->renter = User::factory()->create(['status' => 1, 'role_id' => 3]);
         $this->otherUser = User::factory()->create(['status' => 1, 'role_id' => 3]);
@@ -76,7 +69,6 @@ class ReportRevokeApiTest extends TestCase
             'car_type_id' => $type->id,
             'car_location_id' => $location->id,
             'delivery_option_id' => $delivery->id,
-            'usage_limit_id' => $limit->id,
             'status' => 1,
         ]);
 

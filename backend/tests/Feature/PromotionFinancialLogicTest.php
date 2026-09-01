@@ -58,12 +58,6 @@ class PromotionFinancialLogicTest extends TestCase
             'free_distance' => 5,
             'status' => 1,
         ]);
-        $limit = \App\Models\CarUsageLimit::firstOrCreate(['id' => 1], [
-            'max_daily_distance' => 300,
-            'extra_distance_fee' => 5000,
-            'status' => 1,
-        ]);
-
         // 2. Tạo xe với đơn giá 1.000.000đ và giảm giá xe 100.000đ/ngày
         $car = Car::create([
             'name' => 'Toyota Camry 2024 Test',
@@ -77,7 +71,6 @@ class PromotionFinancialLogicTest extends TestCase
             'car_type_id' => $type->id,
             'car_location_id' => $location->id,
             'delivery_option_id' => $delivery->id,
-            'usage_limit_id' => $limit->id,
             'unit_price' => 1000000,
             'discount_value' => 100000,
             'status' => 1,
@@ -150,7 +143,6 @@ class PromotionFinancialLogicTest extends TestCase
         $type = \App\Models\CarType::firstOrCreate(['id' => 1], ['type_name' => 'Sedan', 'car_brand_id' => $brand->id]);
         $location = \App\Models\CarLocation::firstOrCreate(['id' => 1], ['location' => 'TP.HCM', 'address' => '123 Nguyen Hue']);
         $delivery = \App\Models\CarDeliveryOption::firstOrCreate(['id' => 1], ['max_distance' => 20, 'fee_distance' => 10000, 'free_distance' => 5, 'status' => 1]);
-        $limit = \App\Models\CarUsageLimit::firstOrCreate(['id' => 1], ['max_daily_distance' => 300, 'extra_distance_fee' => 5000, 'status' => 1]);
 
         $owner = User::firstOrCreate(
             ['email' => 'test_owner_payout@gmail.com'],
@@ -181,7 +173,6 @@ class PromotionFinancialLogicTest extends TestCase
             'car_type_id' => $type->id,
             'car_location_id' => $location->id,
             'delivery_option_id' => $delivery->id,
-            'usage_limit_id' => $limit->id,
             'unit_price' => 1000000,
             'discount_value' => 100000, // Chủ xe giảm 100k/ngày
             'status' => 1,

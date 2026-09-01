@@ -213,7 +213,6 @@ class NotificationApiTest extends TestCase
             'transmission' => 'Automatic',
             'user_id' => $owner->id,
             'delivery_option_id' => 1,
-            'usage_limit_id' => 1,
             'status' => 2 // Chờ duyệt
         ]);
 

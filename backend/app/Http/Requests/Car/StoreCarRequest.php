@@ -60,11 +60,6 @@ class StoreCarRequest extends FormRequest
             'delivery_fee' => 'nullable|numeric|min:0',
             'delivery_free_distance' => 'nullable|numeric|min:0',
 
-            // Usage limit
-            'km_limit_enabled' => 'required|in:0,1',
-            'km_limit_val' => 'nullable|numeric|min:0',
-            'over_fee_val' => 'nullable|numeric|min:0',
-
             // Features
             'features' => 'nullable|array',
             'features.*' => 'integer|exists:features,id',

@@ -33,8 +33,7 @@ class CarSeeder extends Seeder
             'transmission' => 'Tự động',
             'status' => 1,
             'user_id' => 1,
-            'delivery_option_id' => 1,
-            'usage_limit_id' => 1
+            'delivery_option_id' => 1
         ]);
         Car::create([
             'name' => 'Honda Civic',
@@ -55,8 +54,7 @@ class CarSeeder extends Seeder
             'transmission' => 'Tự động',
             'status' => 1,
             'user_id' => 4,
-            'delivery_option_id' => 1,
-            'usage_limit_id' => 1
+            'delivery_option_id' => 1
         ]);
         Car::create([
             'name' => 'Toyota Wigo',
@@ -77,8 +75,7 @@ class CarSeeder extends Seeder
             'transmission' => 'Tự động',
             'status' => 2,
             'user_id' => 4,
-            'delivery_option_id' => 1,
-            'usage_limit_id' => 1
+            'delivery_option_id' => 1
         ]);
         Car::create([
             'name' => 'Toyota Corolla Cross',
@@ -99,8 +96,7 @@ class CarSeeder extends Seeder
             'transmission' => 'Tự động',
             'status' => 0,
             'user_id' => 4,
-            'delivery_option_id' => 1,
-            'usage_limit_id' => 1
+            'delivery_option_id' => 1
         ]);
     }
 }

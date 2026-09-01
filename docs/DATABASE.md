@@ -66,7 +66,6 @@ erDiagram
     car_brands ||--o{ cars : "has many"
     car_locations ||--o{ cars : "has many"
     car_delivery_options ||--o| cars : "belongs to"
-    car_usage_limits ||--o| cars : "belongs to"
 
     cars ||--o{ car_images : "has many"
     cars ||--o{ car_features : "has many"
@@ -254,43 +253,7 @@ erDiagram
 
 ---
 
-#### 🔹 `car_usage_limits` — Giới hạn sử dụng xe
-
-| Cột | Kiểu | Ràng buộc | Mô tả |
-|-----|------|-----------|-------|
-| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Mã giới hạn |
-| `max_daily_distance` | FLOAT(10,2) | UNSIGNED | Khoảng cách tối đa mỗi ngày (km) |
-| `extra_distance_fee` | DECIMAL(10,2) | UNSIGNED | Phí mỗi km vượt giới hạn |
-| `status` | TINYINT | DEFAULT 0 | Trạng thái: `0` - Không áp dụng, `1` - Áp dụng |
-| `created_at` | TIMESTAMP | NULLABLE | Thời gian tạo |
-| `updated_at` | TIMESTAMP | NULLABLE | Thời gian cập nhật |
-
----
-
-#### 🔹 `cars` — Xe cho thuê
-
-| Cột | Kiểu | Ràng buộc | Mô tả |
-|-----|------|-----------|-------|
-| `id` | BIGINT UNSIGNED | PK, AUTO_INCREMENT | Mã xe |
-| `name` | VARCHAR(255) | NOT NULL | Tên xe |
-| `license_plate` | VARCHAR(12) | UNIQUE, NOT NULL | Biển số xe |
-| `VIN` | VARCHAR(17) | UNIQUE, NOT NULL | Số khung (17 ký tự) |
-| `engine_number` | VARCHAR(255) | UNIQUE, NOT NULL | Số máy |
-| `fuel_consumption` | FLOAT(10,2) | UNSIGNED | Mức tiêu thụ nhiên liệu (L/100km) |
-| `unit_price` | BIGINT | UNSIGNED | Đơn giá thuê xe (VNĐ/ngày) |
-| `discount_value` | BIGINT | UNSIGNED, DEFAULT 0 | Giá trị giảm giá |
-| `description` | TEXT | NULLABLE | Mô tả chi tiết |
-| `rental_terms` | TEXT | NULLABLE | Điều khoản thuê xe |
-| `car_location_id` | BIGINT UNSIGNED | FK → `car_locations.id`, ON DELETE CASCADE | Mã vị trí xe |
-| `car_brand_id` | BIGINT UNSIGNED | FK → `car_brands.id`, ON DELETE CASCADE | Mã thương hiệu |
-| `car_type_id` | BIGINT UNSIGNED | FK → `car_types.id`, ON DELETE CASCADE | Mã loại xe |
-| `seat_count` | DECIMAL(2,0) | UNSIGNED | Số chỗ ngồi |
-| `manufacture_year` | DATE | NOT NULL | Năm sản xuất |
-| `fuel_type` | VARCHAR(255) | NOT NULL | Loại nhiên liệu |
-| `transmission` | VARCHAR(255) | NOT NULL | Loại hộp số (Số sàn/Tự động) |
-| `user_id` | BIGINT UNSIGNED | FK → `users.id`, ON DELETE CASCADE | Mã chủ xe |
 | `delivery_option_id` | BIGINT UNSIGNED | FK → `car_delivery_options.id`, ON DELETE CASCADE | Mã tùy chọn giao xe |
-| `usage_limit_id` | BIGINT UNSIGNED | FK → `car_usage_limits.id`, ON DELETE CASCADE | Mã giới hạn sử dụng |
 | `status` | TINYINT | DEFAULT 2 | Trạng thái: `0` - Dừng HĐ, `1` - Đang HĐ, `2` - Chờ duyệt, `3` - Bị từ chối |
 | `created_at` | TIMESTAMP | NULLABLE | Thời gian tạo |
 | `updated_at` | TIMESTAMP | NULLABLE | Thời gian cập nhật |

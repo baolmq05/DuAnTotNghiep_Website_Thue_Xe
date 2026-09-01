@@ -18,7 +18,6 @@ export interface Car {
   transmission: string;
   user_id: number;
   delivery_option_id: number;
-  usage_limit_id: number;
   status: number;
   rejection_reason?: string;
   car_location?: {

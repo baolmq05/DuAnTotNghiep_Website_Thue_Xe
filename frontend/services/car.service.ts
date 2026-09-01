@@ -36,15 +36,6 @@ export interface DeliveryOption {
     updated_at?: string;
 }
 
-export interface UsageLimit {
-    id: number;
-    max_daily_distance: number;
-    extra_distance_fee: number;
-    status: number;
-    created_at?: string;
-    updated_at?: string;
-}
-
 export interface CarBrandRegister {
     id: number;
     brand_name: string;
@@ -90,14 +81,12 @@ export interface Car {
     transmission: string;
     user_id: number;
     delivery_option_id?: number;
-    usage_limit_id?: number;
     status: number;
     rejection_reason?: string;
     created_at?: string;
     updated_at?: string;
     car_location?: CarLocation;
     delivery_option?: DeliveryOption;
-    usage_limit?: UsageLimit;
     car_brand?: CarBrand;
     car_type?: CarType;
     images?: CarImage[];

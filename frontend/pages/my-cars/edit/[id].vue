@@ -280,14 +280,15 @@
                 <div>
                   <h3 class="text-lg font-bold text-slate-900">Đơn giá thuê mặc định</h3>
                   <p class="mt-1 text-sm text-slate-500 leading-relaxed">
-                    Đơn giá thuê xe theo ngày (đơn vị: nghìn đồng).
+                    Đơn giá thuê xe theo ngày (đơn vị: VNĐ).
                   </p>
                 </div>
                 <div class="space-y-1.5">
                   <div class="relative max-w-xs flex items-center">
-                    <input type="number" v-model="basePrice"
-                      class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-10 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
-                    <span class="absolute right-4 font-bold text-slate-400">K/ngày</span>
+                    <input type="text" :value="displayBasePrice" @input="handleBasePriceInput"
+                      placeholder="350.000"
+                      class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-16 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                    <span class="absolute right-4 font-bold text-slate-400">đ/ngày</span>
                   </div>
                 </div>
               </section>
@@ -388,10 +389,10 @@
                   </div>
                   <div class="space-y-2">
                     <label class="block text-sm font-semibold text-slate-700">Phí giao nhận mỗi km</label>
-                    <input type="range" v-model="feeVal" min="1" max="30" class="w-full accent-[#1e4e57]">
+                    <input type="range" v-model="feeVal" min="1000" max="30000" step="1000" class="w-full accent-[#1e4e57]">
                     <div class="flex justify-between text-xs text-slate-500">
-                      <span>Thiết lập: <strong class="text-slate-800">{{ feeVal }}K/km</strong></span>
-                      <span class="font-bold">30K</span>
+                      <span>Thiết lập: <strong class="text-slate-800">{{ Number(feeVal).toLocaleString('vi-VN') }} đ/km</strong></span>
+                      <span class="font-bold">30.000 đ/km</span>
                     </div>
                   </div>
                   <div class="space-y-2">
@@ -407,47 +408,7 @@
 
               <hr class="border-slate-100">
 
-              <!-- SECTION 5: GIỚI HẠN SỐ KM -->
-              <section class="space-y-4">
-                <div class="flex items-center justify-between gap-4">
-                  <div>
-                    <h3 class="text-lg font-bold text-slate-900">Giới hạn số km</h3>
-                    <p class="text-sm text-slate-500">Giới hạn quãng đường khách đi mỗi ngày</p>
-                  </div>
-                  <button type="button" role="switch" :aria-checked="kmLimitEnabled"
-                    @click="kmLimitEnabled = !kmLimitEnabled"
-                    class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#1e4e57]/40 focus:ring-offset-2"
-                    :class="kmLimitEnabled ? 'bg-[#1e4e57]' : 'bg-slate-200'">
-                    <span
-                      class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-300"
-                      :class="kmLimitEnabled ? 'translate-x-5' : 'translate-x-0'" />
-                  </button>
-                </div>
-
-                <div v-if="kmLimitEnabled" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 pt-1">
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-slate-700">Số km tối đa trong 1 ngày</label>
-                    <input type="range" v-model="kmLimitVal" min="100" max="500" step="10"
-                      class="w-full accent-[#1e4e57]">
-                    <div class="flex justify-between text-xs text-slate-500">
-                      <span>Thiết lập: <strong class="text-slate-800">{{ kmLimitVal }}km</strong></span>
-                      <span class="font-bold">500km</span>
-                    </div>
-                  </div>
-                  <div class="space-y-2">
-                    <label class="block text-sm font-semibold text-slate-700">Phí vượt giới hạn (mỗi km)</label>
-                    <input type="range" v-model="overFeeVal" min="1" max="10" class="w-full accent-[#1e4e57]">
-                    <div class="flex justify-between text-xs text-slate-500">
-                      <span>Thiết lập: <strong class="text-slate-800">{{ overFeeVal }}K/km</strong></span>
-                      <span class="font-bold">10K</span>
-                    </div>
-                  </div>
-                </div>
-              </section>
-
-              <hr class="border-slate-100">
-
-              <!-- SECTION 6: ĐIỀU KHOẢN THUÊ XE -->
+              <!-- SECTION 5: ĐIỀU KHOẢN THUÊ XE -->
               <section class="space-y-3">
                 <div>
                   <h3 class="text-lg font-bold text-slate-900">Điều khoản thuê xe</h3>
@@ -622,7 +583,21 @@ const handleFuelConsumptionInput = () => {
   }
 }
 const description = ref('')
-const basePrice = ref(350)
+const basePrice = ref<number>(350000)
+
+const displayBasePrice = computed(() => {
+  if (!basePrice.value) return ''
+  return new Intl.NumberFormat('vi-VN').format(basePrice.value)
+})
+
+const handleBasePriceInput = (e: Event) => {
+  const target = e.target as HTMLInputElement
+  const raw = target.value.replace(/\D/g, '')
+  const num = raw ? parseInt(raw, 10) : 0
+  basePrice.value = num
+  target.value = num ? new Intl.NumberFormat('vi-VN').format(num) : ''
+}
+
 const address = ref('')
 const rentalTerms = ref('')
 
@@ -659,11 +634,8 @@ const discountEnabled = ref(true)
 const discountVal = ref(20)
 const deliveryEnabled = ref(true)
 const maxDistVal = ref(20)
-const feeVal = ref(10)
+const feeVal = ref(10000)
 const freeLimitVal = ref(0)
-const kmLimitEnabled = ref(true)
-const kmLimitVal = ref(400)
-const overFeeVal = ref(3)
 
 const featureItems = ref<any[]>([])
 
@@ -774,7 +746,7 @@ const fetchCarData = async () => {
       selectedFuelType.value = car.fuel_type
       fuelConsumption.value = Number(car.fuel_consumption)
       description.value = car.description || ''
-      basePrice.value = Math.round(Number(car.unit_price) / 1000)
+      basePrice.value = Number(car.unit_price || 0)
 
       discountEnabled.value = Number(car.discount_value) > 0
       if (discountEnabled.value) {
@@ -797,14 +769,8 @@ const fetchCarData = async () => {
       deliveryEnabled.value = car.delivery_option ? car.delivery_option.status === 1 : false
       if (car.delivery_option) {
         maxDistVal.value = Number(car.delivery_option.max_distance)
-        feeVal.value = Math.round(Number(car.delivery_option.fee_distance) / 1000)
+        feeVal.value = Number(car.delivery_option.fee_distance || 0)
         freeLimitVal.value = Number(car.delivery_option.free_distance)
-      }
-
-      kmLimitEnabled.value = car.usage_limit ? car.usage_limit.status === 1 : false
-      if (car.usage_limit) {
-        kmLimitVal.value = Number(car.usage_limit.max_daily_distance)
-        overFeeVal.value = Math.round(Number(car.usage_limit.extra_distance_fee) / 1000)
       }
 
       rentalTerms.value = car.rental_terms || ''
@@ -928,7 +894,7 @@ const onSubmit = async () => {
       .map((f: any) => f.id || null)
       .filter((id: any) => id !== null)
 
-    const unitPriceVal = price * 1000
+    const unitPriceVal = price
     let discountValue = 0
     if (discountEnabled.value) {
       discountValue = Math.round(unitPriceVal * (discountVal.value / 100))
@@ -952,11 +918,8 @@ const onSubmit = async () => {
       location: selectedCoords.value ? `${selectedCoords.value.lat},${selectedCoords.value.lng}` : '',
       delivery_enabled: deliveryEnabled.value ? '1' : '0',
       delivery_max_distance: maxDistVal.value,
-      delivery_fee: feeVal.value * 1000,
+      delivery_fee: feeVal.value,
       delivery_free_distance: freeLimitVal.value,
-      km_limit_enabled: kmLimitEnabled.value ? '1' : '0',
-      km_limit_val: kmLimitVal.value,
-      over_fee_val: overFeeVal.value * 1000,
       rental_terms: rentalTerms.value,
       features: selectedFeatureIds,
       images: imageUrls,

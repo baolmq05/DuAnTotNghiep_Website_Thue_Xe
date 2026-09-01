@@ -227,7 +227,6 @@ interface Car {
     transmission: string
     user_id: number
     delivery_option_id: number
-    usage_limit_id: number
     // UI extras
     image: string
     location: string

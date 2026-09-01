@@ -112,15 +112,6 @@ return new class extends Migration
                 }
             });
         }
-
-        // 10. car_usage_limits table (chứa extra_distance_fee)
-        if (Schema::hasTable('car_usage_limits')) {
-            Schema::table('car_usage_limits', function (Blueprint $table) {
-                if (Schema::hasColumn('car_usage_limits', 'extra_distance_fee')) {
-                    $table->decimal('extra_distance_fee', 15, 2)->change();
-                }
-            });
-        }
     }
 
     /**

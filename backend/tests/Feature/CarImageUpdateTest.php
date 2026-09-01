@@ -9,7 +9,6 @@ use App\Models\CarBrand;
 use App\Models\CarType;
 use App\Models\CarLocation;
 use App\Models\CarDeliveryOption;
-use App\Models\CarUsageLimit;
 use App\Models\CarImage;
 use App\Models\Wallet;
 use Tests\TestCase;
@@ -27,7 +26,6 @@ class CarImageUpdateTest extends TestCase
     protected $type;
     protected $location;
     protected $delivery;
-    protected $usage;
 
     protected function setUp(): void
     {
@@ -56,7 +54,7 @@ class CarImageUpdateTest extends TestCase
             'car_brand_id' => $this->brand->id
         ]);
 
-        // 5. Create Location, Delivery Option & Usage Limit
+        // 5. Create Location & Delivery Option
         $this->location = CarLocation::create([
             'address' => 'Hà Nội',
             'location' => '21.028511,105.804817'
@@ -67,12 +65,6 @@ class CarImageUpdateTest extends TestCase
             'max_distance' => 20,
             'fee_distance' => 10000,
             'free_distance' => 5
-        ]);
-
-        $this->usage = CarUsageLimit::create([
-            'status' => 1,
-            'max_daily_distance' => 400,
-            'extra_distance_fee' => 3000
         ]);
 
         // 6. Create Car
@@ -95,7 +87,6 @@ class CarImageUpdateTest extends TestCase
             'transmission' => 'Số tự động',
             'user_id' => $this->user->id,
             'delivery_option_id' => $this->delivery->id,
-            'usage_limit_id' => $this->usage->id,
             'status' => 1
         ]);
 
@@ -143,9 +134,6 @@ class CarImageUpdateTest extends TestCase
             'delivery_max_distance' => 20,
             'delivery_fee' => 10000,
             'delivery_free_distance' => 5,
-            'km_limit_enabled' => '1',
-            'km_limit_val' => 400,
-            'over_fee_val' => 3000,
             'rental_terms' => 'Giữ xe sạch sẽ',
             'features' => [],
             'images' => $newImages,
@@ -204,9 +192,6 @@ class CarImageUpdateTest extends TestCase
             'delivery_max_distance' => 20,
             'delivery_fee' => 10000,
             'delivery_free_distance' => 5,
-            'km_limit_enabled' => '1',
-            'km_limit_val' => 400,
-            'over_fee_val' => 3000,
             'rental_terms' => 'Giữ xe sạch sẽ',
             'features' => [],
             'images' => [], // Empty images
@@ -262,9 +247,6 @@ class CarImageUpdateTest extends TestCase
             'delivery_max_distance' => 20,
             'delivery_fee' => 10000,
             'delivery_free_distance' => 5,
-            'km_limit_enabled' => '1',
-            'km_limit_val' => 400,
-            'over_fee_val' => 3000,
             'rental_terms' => 'Giữ xe sạch sẽ',
             'features' => [],
             'images' => $newImages,

@@ -150,13 +150,6 @@ class CarInfolist
                                     ->label('Phí giao xe phụ trội')
                                     ->money('VND')
                                     ->suffix('/km'),
-                                TextEntry::make('usageLimit.max_daily_distance')
-                                    ->label('Quãng đường giới hạn / ngày')
-                                    ->suffix(' km'),
-                                TextEntry::make('usageLimit.extra_distance_fee')
-                                    ->label('Phí phụ trội vượt giới hạn')
-                                    ->money('VND')
-                                    ->suffix('/km'),
                             ])->columnSpan(1),
                     ]),
                 ]),

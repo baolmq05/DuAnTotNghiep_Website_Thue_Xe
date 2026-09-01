@@ -278,11 +278,12 @@
                                     </p>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <span class="text-xs text-slate-400">Giá đề xuất: 350.000 ₫/ngày</span>
+                                    <span class="text-xs text-slate-400">Giá đề xuất: 350.000 đ/ngày</span>
                                     <div class="relative max-w-xs flex items-center">
-                                        <input type="number" id="base-price" v-model="basePrice" min="1"
-                                            class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-10 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none">
-                                        <span class="absolute right-4 font-bold text-slate-400">K</span>
+                                        <input type="text" id="base-price" :value="displayBasePrice" @input="handleBasePriceInput"
+                                            placeholder="350.000"
+                                            class="w-full rounded-2xl border border-slate-300 px-4 py-3 pr-16 outline-none transition font-bold text-lg text-slate-800 focus:border-[#1e4e57] focus:ring-4 focus:ring-[#1e4e57]/10">
+                                        <span class="absolute right-4 font-bold text-slate-400">đ/ngày</span>
                                     </div>
                                 </div>
                             </section>
@@ -317,20 +318,8 @@
                                             <span class="font-bold">50%</span>
                                         </div>
                                     </div>
-                                    <div
-                                        class="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 max-w-2xl">
-                                        <i
-                                            class="fa-solid fa-circle-exclamation text-amber-500 mt-0.5 text-base shrink-0"></i>
-                                        <p class="text-amber-800 text-sm leading-relaxed">
-                                            Khi tính năng được thiết lập, hệ thống sẽ tự động nhận chuyến ngay sau khi
-                                            khách thuê đặt xe. Tính năng giúp cải thiện tỷ lệ nhận chuyến từ <strong>80%
-                                                – 120%</strong>.
-                                        </p>
-                                    </div>
                                 </div>
                             </section>
-
-                            <hr class="border-slate-100">
 
                             <!-- SECTION 3: TỐI ƯU NHẬN CHUYẾN -->
                             <!-- <section>
@@ -420,12 +409,12 @@
                                     <div class="space-y-2">
                                         <label class="block text-sm font-semibold text-slate-700">Phí giao nhận mỗi
                                             km</label>
-                                        <input type="range" v-model="feeVal" min="1" max="30"
+                                        <input type="range" v-model="feeVal" min="1000" max="30000" step="1000"
                                             class="w-full accent-[#1e4e57]">
                                         <div class="flex justify-between text-xs text-slate-500">
-                                            <span>Đề xuất: <strong class="text-slate-800">{{ feeVal
-                                                    }}K/km</strong></span>
-                                            <span class="font-bold">30K</span>
+                                            <span>Đề xuất: <strong class="text-slate-800">{{ Number(feeVal).toLocaleString('vi-VN')
+                                                    }} đ/km</strong></span>
+                                            <span class="font-bold">30.000 đ/km</span>
                                         </div>
                                     </div>
                                     <div class="space-y-2">
@@ -444,52 +433,7 @@
 
                             <hr class="border-slate-100">
 
-                            <!-- SECTION 6: GIỚI HẠN SỐ KM -->
-                            <section class="space-y-4">
-                                <div class="flex items-center justify-between gap-4">
-                                    <div>
-                                        <h3 class="text-lg font-bold text-slate-900">Giới hạn số km</h3>
-                                        <p class="text-sm text-slate-500">Đặt giới hạn km tối đa và phí vượt mức</p>
-                                    </div>
-                                    <button type="button" role="switch" :aria-checked="kmLimitEnabled"
-                                        @click="kmLimitEnabled = !kmLimitEnabled"
-                                        class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-[#1e4e57]/40 focus:ring-offset-2"
-                                        :class="kmLimitEnabled ? 'bg-[#1e4e57]' : 'bg-slate-200'">
-                                        <span
-                                            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-300"
-                                            :class="kmLimitEnabled ? 'translate-x-5' : 'translate-x-0'" />
-                                    </button>
-                                </div>
-
-                                <div v-if="kmLimitEnabled" class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 pt-1">
-                                    <div class="space-y-2">
-                                        <label class="block text-sm font-semibold text-slate-700">Số km tối đa trong 1
-                                            ngày</label>
-                                        <input type="range" v-model="kmLimitVal" min="100" max="500" step="10"
-                                            class="w-full accent-[#1e4e57]">
-                                        <div class="flex justify-between text-xs text-slate-500">
-                                            <span>Đề xuất: <strong class="text-slate-800">{{ kmLimitVal
-                                                    }}km</strong></span>
-                                            <span class="font-bold">500km</span>
-                                        </div>
-                                    </div>
-                                    <div class="space-y-2">
-                                        <label class="block text-sm font-semibold text-slate-700">Phí vượt giới hạn (mỗi
-                                            km)</label>
-                                        <input type="range" v-model="overFeeVal" min="1" max="10"
-                                            class="w-full accent-[#1e4e57]">
-                                        <div class="flex justify-between text-xs text-slate-500">
-                                            <span>Đề xuất: <strong class="text-slate-800">{{ overFeeVal
-                                                    }}K/km</strong></span>
-                                            <span class="font-bold">10K</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </section>
-
-                            <hr class="border-slate-100">
-
-                            <!-- SECTION 7: ĐIỀU KHOẢN THUÊ XE -->
+                            <!-- SECTION 6: ĐIỀU KHOẢN THUÊ XE -->
                             <section class="space-y-3">
                                 <div>
                                     <h3 class="text-lg font-bold text-slate-900">Điều khoản thuê xe</h3>
@@ -713,9 +657,23 @@ const handleFuelConsumptionInput = () => {
     }
 }
 const description = ref('')
-const basePrice = ref(350)
+const basePrice = ref<number>(350000)
+
+const displayBasePrice = computed(() => {
+    if (!basePrice.value) return ''
+    return new Intl.NumberFormat('vi-VN').format(basePrice.value)
+})
+
+const handleBasePriceInput = (e: Event) => {
+    const target = e.target as HTMLInputElement
+    const raw = target.value.replace(/\D/g, '')
+    const num = raw ? parseInt(raw, 10) : 0
+    basePrice.value = num
+    target.value = num ? new Intl.NumberFormat('vi-VN').format(num) : ''
+}
+
 const address = ref('')
-const rentalTerms = ref('Không sử dụng xe vào mục đích phi pháp. Lái xe cẩn thận, giữ xe sạch sẽ, trả xe đúng giờ. Phụ thu 500k nếu hút thuốc lá trong xe.')
+const rentalTerms = ref('Không sử dụng xe vào mục đích phi pháp. Lái xe cẩn thận, giữ xe sạch sẽ, trả xe đúng giờ. Phụ thu 500.000 đ nếu hút thuốc lá trong xe.')
 
 const brands = ref<any[]>([])
 const carTypes = ref<any[]>([])
@@ -757,11 +715,8 @@ const discountVal = ref(20)
 const optimizeEnabled = ref(false)
 const deliveryEnabled = ref(true)
 const maxDistVal = ref(20)
-const feeVal = ref(10)
+const feeVal = ref(10000)
 const freeLimitVal = ref(0)
-const kmLimitEnabled = ref(true)
-const kmLimitVal = ref(400)
-const overFeeVal = ref(3)
 
 const buildFeatureIcon = (label: string, background: string) => {
     const svg = `
@@ -1039,8 +994,8 @@ const onSubmit = async () => {
         formData.append('fuel_consumption', consumption.toString());
         formData.append('description', description.value);
 
-        // Price (basePrice in thousands -> absolute)
-        const unitPriceVal = price * 1000;
+        // Price (unit_price in VND)
+        const unitPriceVal = price;
         formData.append('unit_price', unitPriceVal.toString());
 
         // Discount value
@@ -1061,13 +1016,8 @@ const onSubmit = async () => {
         // Delivery options
         formData.append('delivery_enabled', deliveryEnabled.value ? '1' : '0');
         formData.append('delivery_max_distance', maxDistVal.value.toString());
-        formData.append('delivery_fee', (feeVal.value * 1000).toString());
+        formData.append('delivery_fee', feeVal.value.toString());
         formData.append('delivery_free_distance', freeLimitVal.value.toString());
-
-        // Usage limits
-        formData.append('km_limit_enabled', kmLimitEnabled.value ? '1' : '0');
-        formData.append('km_limit_val', kmLimitVal.value.toString());
-        formData.append('over_fee_val', (overFeeVal.value * 1000).toString());
 
         // Rental terms
         formData.append('rental_terms', rentalTerms.value);

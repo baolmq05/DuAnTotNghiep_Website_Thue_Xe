@@ -28,7 +28,6 @@ class Car extends Model
         'transmission',
         'user_id',
         'delivery_option_id',
-        'usage_limit_id',
         'status',
         'rejection_reason',
         'deletion_reason'
@@ -101,11 +100,6 @@ class Car extends Model
     public function deliveryOption()
     {
         return $this->belongsTo(CarDeliveryOption::class, 'delivery_option_id');
-    }
-
-    public function usageLimit()
-    {
-        return $this->belongsTo(CarUsageLimit::class, 'usage_limit_id');
     }
 
     public function images()

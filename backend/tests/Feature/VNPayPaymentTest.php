@@ -75,12 +75,6 @@ class VNPayPaymentTest extends TestCase
         );
         $this->renter->update(['driving_license_id' => $license->id]);
 
-        $limit = \App\Models\CarUsageLimit::firstOrCreate(['id' => 1], [
-            'max_daily_distance' => 300,
-            'extra_distance_fee' => 5000,
-            'status' => 1,
-        ]);
-
         // 4. Car
         $this->car = Car::create([
             'name' => 'Mazda 3 2024 Luxury',
@@ -89,7 +83,6 @@ class VNPayPaymentTest extends TestCase
             'car_type_id' => $type->id,
             'car_location_id' => $location->id,
             'delivery_option_id' => $delivery->id,
-            'usage_limit_id' => $limit->id,
             'license_plate' => '51K-888.88',
             'VIN' => 'VIN999888777666',
             'engine_number' => 'ENG999888',

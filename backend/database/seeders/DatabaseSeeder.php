@@ -26,7 +26,6 @@ class DatabaseSeeder extends Seeder
             CarBrandSeeder::class,
             CarTypeSeeder::class,
             CarDeliveryOptionSeeder::class,
-            CarUsageLimitSeeder::class,
             CarSeeder::class,
             FavoriteSeeder::class,
             FavoriteItemSeeder::class,

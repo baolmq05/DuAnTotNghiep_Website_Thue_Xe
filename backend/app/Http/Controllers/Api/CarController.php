@@ -15,7 +15,6 @@ use App\Models\CarType;
 use App\Models\Feature;
 use App\Models\CarLocation;
 use App\Models\CarDeliveryOption;
-use App\Models\CarUsageLimit;
 use App\Models\CarImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -159,7 +158,6 @@ class CarController extends Controller
             'carBrand',
             'carType',
             'deliveryOption',
-            'usageLimit',
             'images',
             'features',
             'owner' => function ($q) {
@@ -276,18 +274,11 @@ class CarController extends Controller
                 'free_distance' => $request->input('delivery_enabled') == '1' ? floatval($request->input('delivery_free_distance', 0)) : 0,
             ]);
 
-            // 3. Create Usage Limit
-            $usageLimit = CarUsageLimit::create([
-                'status' => $request->input('km_limit_enabled') == '1' ? 1 : 0,
-                'max_daily_distance' => $request->input('km_limit_enabled') == '1' ? floatval($request->input('km_limit_val', 0)) : 0,
-                'extra_distance_fee' => $request->input('km_limit_enabled') == '1' ? floatval($request->input('over_fee_val', 0)) : 0,
-            ]);
-
             // Type name for car name (e.g. Camry)
             $type = CarType::find($request->car_type_id);
             $carName = $type ? $type->type_name : '';
 
-            // 4. Create Car
+            // 3. Create Car
             $car = Car::create([
                 'name' => trim($carName),
                 'license_plate' => $request->input('license_plate'),
@@ -307,7 +298,6 @@ class CarController extends Controller
                 'transmission' => $request->input('transmission'),
                 'user_id' => $user->id,
                 'delivery_option_id' => $deliveryOption->id,
-                'usage_limit_id' => $usageLimit->id,
                 'status' => 2 // 2: Chờ duyệt (Pending approval)
             ]);
 
@@ -417,21 +407,11 @@ class CarController extends Controller
                 ]
             );
 
-            // 3. Update/Create Usage Limit
-            $usageLimit = CarUsageLimit::updateOrCreate(
-                ['id' => $car->usage_limit_id],
-                [
-                    'status' => $request->input('km_limit_enabled') == '1' ? 1 : 0,
-                    'max_daily_distance' => $request->input('km_limit_enabled') == '1' ? floatval($request->input('km_limit_val', 0)) : 0,
-                    'extra_distance_fee' => $request->input('km_limit_enabled') == '1' ? floatval($request->input('over_fee_val', 0)) : 0,
-                ]
-            );
-
             // Type name for car name (e.g. Camry)
             $type = CarType::find($request->car_type_id);
             $carName = $type ? $type->type_name : '';
 
-            // 4. Update Car
+            // 3. Update Car
             $car->update([
                 'name' => trim($carName),
                 'license_plate' => $request->input('license_plate'),
@@ -450,7 +430,6 @@ class CarController extends Controller
                 'fuel_type' => $request->input('fuel_type'),
                 'transmission' => $request->input('transmission'),
                 'delivery_option_id' => $deliveryOption->id,
-                'usage_limit_id' => $usageLimit->id,
                 'status' => 2 // Chuyển về trạng thái chờ duyệt sau khi chỉnh sửa
             ]);
 

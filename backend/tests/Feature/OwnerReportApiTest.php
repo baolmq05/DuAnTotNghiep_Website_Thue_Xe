@@ -11,7 +11,6 @@ use App\Models\CarBrand;
 use App\Models\CarDeliveryOption;
 use App\Models\CarLocation;
 use App\Models\CarType;
-use App\Models\CarUsageLimit;
 use App\Models\OwnerPenalty;
 use App\Models\Report;
 use App\Models\ReportImage;
@@ -53,11 +52,6 @@ class OwnerReportApiTest extends TestCase
             'free_distance' => 5,
             'status' => 1,
         ]);
-        $limit = CarUsageLimit::firstOrCreate(['id' => 1], [
-            'max_daily_distance' => 300,
-            'extra_distance_fee' => 5000,
-            'status' => 1,
-        ]);
 
         // 2. Tạo Owner
         $this->owner = User::factory()->create([
@@ -94,7 +88,6 @@ class OwnerReportApiTest extends TestCase
             'car_type_id' => $type->id,
             'car_location_id' => $location->id,
             'delivery_option_id' => $delivery->id,
-            'usage_limit_id' => $limit->id,
             'status' => 1,
         ]);
 
