@@ -295,7 +295,7 @@
                                 <div class="flex items-center justify-between gap-4">
                                     <div>
                                         <h3 class="text-lg font-bold text-slate-900">Giảm giá</h3>
-                                        <p class="text-sm text-slate-500">Giảm giá thuê tuần (là % trên đơn giá)</p>
+                                        <p class="text-sm text-slate-500">Giảm giá thuê ngày (là % trên đơn giá)</p>
                                     </div>
                                     <!-- Toggle -->
                                     <button type="button" role="switch" id="discount_toggle"
